@@ -1,0 +1,1890 @@
+code,name,category,properties,day_price
+INMA0220,"Martin - Mac Quantum Profile LED, WLE, 475W 1-2-3",LIGHT,,85.00
+INMA0239,"Martin - Mac Encore Performance WRM LED, WLE, 486W 1-2",LIGHT,,140.00
+INMA0243,"Martin - Mac Encore Performance CLD LED, WLE, 486W 1-2",LIGHT,,140.00
+INMA0233,"Martin - Mac Viper XIP LED, IP66 LED, WLE, 760W 1-2",LIGHT,,195.00
+INMA0932,"Martin - Mac Ultra Performance LED, WLE, 1150W",LIGHT,,225.00
+INMA0228,"Martin - Era 400 Performance CLD LED, WLE, 300W 1-2",LIGHT,,75.00
+INMA0236,"Martin - Era 800 Performance 2.3.0, LED, WLE, 800W 1-2",LIGHT,,150.00
+INMA0546,"Martin - Rush MH 6 Wash LED, RGBW, 10 x 12W 2-6",LIGHT,,35.00
+INMA0944,"Martin - Mac One Beamwash LED, RGBL, 1 x 120W + 24x 0.25W 1-4-8",LIGHT,,40.00
+INMA0917,"Martin - Mac Aura Wash LED, RGBW, 19 x 10W 1-2-6",LIGHT,,50.00
+INMA0919,"Martin - Mac Aura XB Wash LED, RGBW, 19 x 15W 2-6",LIGHT,,60.00
+INMA0922,"Martin - Mac Aura PXL Wash LED, RGBW, 19 x 40W + 141 x 0.3W 1-3",LIGHT,,90.00
+INMA0936,"Martin - Mac Aura XIP Filament Wash IP54 LED, RGBW, 7 x 60W + 12 x 4W 2-4",LIGHT,,80.00
+INMA0920,"Martin - Mac Quantum Wash LED, RGBW, 50 x 15W 1-3",LIGHT,,90.00
+INMA0334,"Martin - Mac Encore Wash WRM LED, WLE, 468W 1-2",LIGHT,,125.00
+INMA0338,"Martin - Mac Encore Wash CLD LED, WLE, 486W 1-2",LIGHT,,125.00
+INMA0934,"Martin - Mac Ultra Wash LED, WLE, 1150W",LIGHT,,190.00
+INMA0250,"Martin - Mac Viper Profile HTI, 1000W 1-2",LIGHT,,125.00
+INMA0256,"Martin - Mac Viper Performance HTI, 1000W 1-2",LIGHT,,135.00
+INMA0340,"Martin - Mac Viper Wash DX HTI, 1000W 1-2",LIGHT,,125.00
+INMA0344,"Martin - Mac Viper Airfx HTI, 1000W 1-2",LIGHT,,150.00
+INVA0804,"Vari*Lite - VL1100 AS MSR, 575W",LIGHT,,100.00
+INVA0210,"Vari*Lite - VL3500Q Spot HTI, 1200W 1-2",LIGHT,,150.00
+INVA0215,"Vari*Lite - VL550D Wash halo, 1000W 1-3",LIGHT,,60.00
+INCL0664,"Robe - Esprite Profile WTE LED, WTE, 650W 1-2",LIGHT,,175.00
+INCL0656,"Robe - T1 Profile MSL LED, MSL, 550W 1-2",LIGHT,,145.00
+INCL0657,"Robe - T2 Profile MSL LED, MSL, 850W 1-2",LIGHT,,200.00
+INCL0670,"Robe - iFORTE Profile Spot, IP65 LED, WTE, 1000W",LIGHT,,275.00
+INCL0668,"Robe - iFORTE LTX Wash Beam, IP65 LED, WTE, 1000W",LIGHT,,325.00
+INCL0672,"Robe - iFORTE LTX FS Wash Beam + Camera, IP65 LED, WTE, 1000W",LIGHT,,425.00
+INCL0676,"Robe - iBOLT, IP65 WLS, LSW-5, 500W",LIGHT,,450.00
+INCL0614,"Robe - Robin Spikie Wash Beam LED, RGBW, 60W 2-4-8",LIGHT,,35.00
+INCL0615,"Robe - Robin LEDBeam 150 LED, RGBW, 7 x 40W 2-4",LIGHT,,37.50
+INCL0610,"Robe - Robin LEDBeam 350 LED, RGBW, 12 x 40W 2-4",LIGHT,,60.00
+INCL0613,"Robe - Spiider Wash Beam LED, RGBW, 18 x 40W+1 x 60W 2-4",LIGHT,,100.00
+INCL0660,"Robe - Robin CycFX 8 Moving LED Strip LED, RGBW, 8 x 15W 4",LIGHT,,50.00
+INCL0674,"Robe - TetraX Moving Bar, RGBW LED, RGBW, 9 x 40W 2-4",LIGHT,,85.00
+INCL0662,"Robe - Tetra2 Moving Bar, RGBW LED, RGBW, 18 x 40W 3",LIGHT,,90.00
+INCL0625,"Robe - Robin Pointe HRI, 280W 1-2-4",LIGHT,,85.00
+INCL0624,"Robe - MegaPointe HRI, 470W 1-3",LIGHT,,130.00
+INCL0645,"Robe - BMFL Spot HTI, 1700W 1-2",LIGHT,,150.00
+INCL0646,"Robe - BMFL Blade Spot HTI, 1700W 1-2",LIGHT,,150.00
+INCL0643,"Robe - BMFL Wash Beam HTI, 1700W",LIGHT,,150.00
+INCL0644,"Robe - BMFL Wash XF HTI, 1700W",LIGHT,,175.00
+INCL0490,"Clay Paky - SharBar Moving LED Strip LED, RGBW, 6 x 30W 2-4",LIGHT,,75.00
+INCL0494,"Clay Paky - Volero Wave LED Bar RGBW LED, RGBW, 8 x 40W 2",LIGHT,,100.00
+INCL0551,"Clay Paky - Mini Xtylos HPE LED, RGB Laser 2-6",LIGHT,,85.00
+INCL0504,"Clay Paky - Sharpy Plus HRI, 330W X8 1-2",LIGHT,,85.00
+INCL0525,"Clay Paky - Mythos² Spot HRI, 440W 1-2",LIGHT,,100.00
+INCL0506,"Clay Paky - Sharpy Wash 330 MSD, 330W 1-2-3",LIGHT,,75.00
+INCF0720,"CLF - Beam 6 LED Movinghead LED, RGBW 2-6",LIGHT,,30.00
+INCF0760,"CLF - Stinger 36-49 Pixel Matrix Movinghead LED, RGBW-CW 1-4",LIGHT,,75.00
+INCF0770,"CLF - Serius Moving LED Bar LED, RGBW 2-4",LIGHT,,45.00
+INCF0740,"CLF - AORUN Beam Movinghead HRI, 330W 1-2",LIGHT,,50.00
+INCF0739,"CLF - Poseidon Beam Ultra Movinghead IP65 Ushio, 300W 1-3",LIGHT,,90.00
+INCF0750,"CLF - ORION Hybrid Movinghead HRI, 471W 1-2",LIGHT,,95.00
+INCF0736,"CLF - Poseidon Beam Movinghead IP65 Ushio, 400W 1-2",LIGHT,,125.00
+INCF0731,"CLF - Poseidon Hybrid Movinghead IP65 Ushio, 400W 1-2",LIGHT,,150.00
+INCF0792,"CLF - Poseidon Wash XS Movinghead IP65 LED, RGBW 2-4",LIGHT,,45.00
+INCF0796,"CLF - Poseidon Wash M Movinghead IP65 LED, RGBW 1-3",LIGHT,,60.00
+INCF0794,"CLF - Poseidon Wash XL Movinghead IP65 LED, RGBW 1-2",LIGHT,,85.00
+LILE0275,"CLF - Ares XS LED-wash 21°, IP65 LED, RGBW 2-4",LIGHT,,30.00
+LILE0280,"CLF - Ares LED-wash 21°, IP65 LED, RGBW 2-4",LIGHT,,40.00
+LILE0283,"CLF - Ares LED-wash 43°, IP65 LED, RGBW 2-4",LIGHT,,40.00
+LILE0882,"CLF - Sera Batt LEDwash RGBL 17.5°, IP65 LED, RGBL 2-4",LIGHT,,45.00
+LILE0883,"CLF - Sera XS LEDwash RGBL 17.5°, IP65 LED, RGBL 2-4",LIGHT,,35.00
+LILE0888,"CLF - Sera LEDwash RGBL 15.5°, IP65 LED, RGBL 2-4",LIGHT,,45.00
+LILE0889,"CLF - Sera LEDwash RGBL 15.5°, IP65 (Black) LED, RGBL 2-4",LIGHT,,45.00
+LILE0892,"CLF - Sera SMD RGBL 102°, IP65 LED, RGBL 2-4",LIGHT,,50.00
+LILE0240,"CLF - LEDwash Wallwasher LED, RGBW 4-8",LIGHT,,10.00
+LILE0245,"CLF - LEDwash XL Wallwasher LED, RGBW 1-4-8",LIGHT,,17.50
+LILE0297,"CLF - LEDBAR (XLR3) LED, RGBW 4-12",LIGHT,,10.00
+LILE0320,"CLF - LEDBAR Pro, IP65 LED, RGBW 2-4",LIGHT,,27.50
+LILE0250,"CLF - Tricolor Mini LED-Par (XLR3) LED, RGB 6-12-24",LIGHT,,5.00
+LILE0252,"CLF - Quadcolor Mini LED-Par, IP65 (XLR3) LED, RGBW 4-8",LIGHT,,8.00
+LILE0255,"CLF - Colorpar-12 LED-Par (XLR3) LED, RGB 4-8",LIGHT,,10.00
+LILE0260,"CLF - Conan Zoom LED-Par LED, RGBW 4-8",LIGHT,,17.50
+LILE0262,"CLF - Odin Zoom LED-Par, IP65 LED, RGB+Lime 4-8",LIGHT,,30.00
+LILE0272,"CLF - Yara LED-Par, IP65 LED, RGBW 4-8",LIGHT,,12.50
+LILE0315,"CLF - Hera LED-Par, IP65 LED, RGBWAUV 4-8",LIGHT,,15.00
+LILE0270,"CLF - Hercules LED-Par LED, RGBWAUV 4-8",LIGHT,,15.00
+LILE0258,"CLF - Dynamic White LED-Par (XLR3) LED, CW-WW 4-8",LIGHT,,7.50
+LILE0304,"CLF - Spectrum P2 VW, IP65 LED, CW-WW 4-8",LIGHT,,12.50
+LILE0298,"CLF - Spectrum P1 CW LED, CW 4-8",LIGHT,,17.50
+LIEF0334,CLF - Apollo XS retro LED light (XLR5) 4-Unit KIT LED 2,LIGHT,,150.00
+LIEF0336,CLF - Apollo XS retro LED light (XLR5) 7-Unit KIT LED 2,LIGHT,,250.00
+LIEF0343,"CLF - Apollo Retro LED LED, RGB-CW 2-4",LIGHT,,40.00
+LIEF0348,"CLF - Apollo XL Retro LED LED, RGB-CW 2",LIGHT,,50.00
+LIEF0353,"CLF - LEDFAN, 0,70 x 0,70 m LED, RGB 2-4",LIGHT,,25.00
+LIEF0358,"CLF - LEDFAN XL, 1,00 x 1,00 m LED, RGB 2",LIGHT,,40.00
+INCF0780,"CLF - Nero, Tiltable LED Strobe/Wash 110°, IP65 LED, RGB-CW 2-4",LIGHT,,60.00
+LECL0322,"CLF - LEDBAR Strobe, IP65 LED, CW 2-4",LIGHT,,35.00
+INCF0799,CLF - Poseidon Mirror Movinghead IP65 1-3,LIGHT,,50.00
+INGL0204,"GLP - Impression X4 Atom IP65 (XLR4) LED, RGBW, 20W 12",LIGHT,,17.50
+INGL0284,"GLP - Impression FR 1 LED, RGBW, 60W 4-8",LIGHT,,25.00
+INGL0324,"GLP - Impression S350 Spot LED, WLE, 350W 2",LIGHT,,125.00
+INGL0345,"GLP - Impression X4 Wash LED, RGBW, 19 x 15W 2-4",LIGHT,,60.00
+INGL0350,"GLP - Impression X4 L Wash LED, RGBW, 37 x 15W 1-4",LIGHT,,100.00
+INGL0432,"GLP - Impression X5 Wash LED, RGBL, 19 x 40W 2-4",LIGHT,,90.00
+INGL0435,"GLP - Impression X5 IP Maxx LED, RGBL, 37 x 40W 1-3",LIGHT,,150.00
+INGL0401,"GLP - Impression X4 Bar 10 LED, RGBW, 10 x 15W 2-4",LIGHT,,35.00
+INGL0409,"GLP - Impression X4 Bar 20 LED, RGBW, 20 x 15W 2-4",LIGHT,,50.00
+INGL0419,"GLP - Impression FR 10 Moving LED Bar LED, RGBW, 10 x 60W 2",LIGHT,,100.00
+INGL0412,"GLP - Impression X5 IP Bar LED, RGBL, 18 x 40W 2",LIGHT,,110.00
+INAY0118,"Ayrton - Rivale Profile, IP65 LED, WLE, 430W 1-2",LIGHT,,175.00
+INAY0116,"Ayrton - Eurus Profile TC LED, WLE, 650W 1-2",LIGHT,,185.00
+INAY0130,"Ayrton - Cobra², IP65 LED, WLE, 750W 1-2",LIGHT,,185.00
+INAY0112,"Ayrton - Bora S LED, WLE, 750W 1-2",LIGHT,,195.00
+INAY0122,"Ayrton - Veloce Profile, IP65 LED, WLE, 850W 1-2",LIGHT,,200.00
+INAY0102,"Ayrton - Huracán Profile S LED, WLE, 1000W",LIGHT,,225.00
+LIUR0212,"URC - LED Zoom 210 Moving Washlight LED, RGBW, 7 x 30W 1-4-24",LIGHT,,35.00
+LIUR0153,"URC - Goldstrip LED, CREE 24",LIGHT,,12.50
+LIUR0172,"URC - Cupix 44 LED, RGB 4",LIGHT,,35.00
+LIUR0162,"URC - Goldpix 77 LED, CREE 6",LIGHT,,50.00
+LIUR0020,"URC - LED-Par Zoom IP65 LED, RGBW 4-8",LIGHT,,25.00
+LIUR0142,"URC - Power LED Strip IP65 (XLR5) LED, RGBW 12",LIGHT,,22.50
+LIUR0147,URC - Artnet controller for LED Strip RGBW,LIGHT,,10.00
+LIUR0051,"URC - Light up Wireless Akku uplighter LED, RGBA 6",LIGHT,,15.00
+LIUR0113,"URC - Citywash 300 LED Wash 45° IP67 (XLR3) LED, RGBW 4",LIGHT,,35.00
+LILE0160,"SGM - P-2 RGBW LEDwash light WFL 43°, IP65 LED 2-6",LIGHT,,40.00
+LILE0162,"SGM - P-5 RGBW LEDwash light WFL 43°, G-3 LED 2-6",LIGHT,,50.00
+LILE0168,SGM - P-5 TW LEDwash light WFL 43° LED 2-6,LIGHT,,50.00
+LILE0166,"SGM - P-6 RGBW LEDwash light NSP 10°, IP66 LED 2-4",LIGHT,,75.00
+LILE0165,"SGM - P-10 RGBW LEDwash light NSP 10°, IP65 LED 2-4",LIGHT,,125.00
+LILE0171,SGM - Q-7 White LEDwash light WFL 110° LED 2-6,LIGHT,,50.00
+LILE0173,SGM - Q-7 RGBW LEDwash light WFL 110° LED 2-6,LIGHT,,50.00
+LILE0176,SGM - Q-8 RGBW + White LEDwash light IP66 110° LED 2-4,LIGHT,,75.00
+LILE0167,SGM - Q-10 RGBW LEDWash 110° IP65 LED 2-4,LIGHT,,100.00
+LILE0901,"SGM - LB-100 LEDBalls string 0,85m / 7 led balls LED 50",LIGHT,,2.50
+LILE0920,"SGM - LT-100 LEDTube 1,00m Pixel pitch 35mm, IP20 LED 60",LIGHT,,5.00
+LILE0924,"SGM - LT-200 LEDTube 2,00m Pixel pitch 35mm, IP20 LED 60",LIGHT,,9.00
+LILE0906,"SGM - TLD 612A PSU beam 0,71m. 6 ch. output, incl Artnet 5",LIGHT,,17.50
+LIEF0050,"Acme - PIXEL LINE IP, IP65 RGB Ledbar/CW Strobe LED, RGBW 2-4-8",LIGHT,,30.00
+LIEF0039,"Acme - Tornado, IP66 RGBL Moving Pan/Tilt Bar LED, RGBL, 5 x 120W + 120x 0.5W 2",LIGHT,,125.00
+LILE0116,"Expolite - Tourled 42 CM/WP IP65 (XLR3) LED, RGB 4-8-36",LIGHT,,12.50
+INAC0172,Drop arm 20 cm,LIGHT,,4.50
+INAC0173,Drop arm 30 cm,LIGHT,,4.50
+INAC0174,Drop arm 40 cm,LIGHT,,4.50
+INAC0175,Drop arm 50 cm,LIGHT,,4.50
+INAC0178,Drop arm 50/100 cm adjustable,LIGHT,,6.50
+INAC0185,Drop arm 100/125/150/170 cm,LIGHT,,7.50
+INAC0200,Drop arm 200/360 cm adjustable per 20 cm,LIGHT,,7.50
+LIEF0090,Martin - Atomic 3000 strobe Xenon Max-15 2-5,LIGHT,,25.00
+LIEF0094,Martin - Atomic 3000 strobe unit scroller Xenon Max-15 2-4,LIGHT,,45.00
+LIEF0080,"Martin - Atomic 3000 LED strobe LED, CREE XP-L 2-4",LIGHT,,50.00
+LIEF0075,"Martin - VDO Atomic Dot WRM IP65 LED, WW 6-12",LIGHT,,10.00
+LIEF0866,"Martin - VDO Atomic Dot CLD IP65 LED, CW 12",LIGHT,,10.00
+LIEF0862,"Martin - VDO Atomic Bold IP65 LED, RGBW 4",LIGHT,,32.50
+LIEF0070,"Clay Paky - Stormy CC LED strobe LED, RGBW 2-4",LIGHT,,50.00
+LIEF0942,"Chauvet - Color STRIKE M, IP65 LED Strobe/Wash LED, RGB-CW 2-4",LIGHT,,85.00
+LIEF0060,"GLP - JDC1 LED strobe 188° Tilt LED, RGB-CREE XP L 2-4",LIGHT,,87.50
+LIEF0058,"GLP - JDC2 IP LED strobe 184° Tilt IP65 LED, WSL-RGB 1-3",LIGHT,,105.00
+LILE0333,"Showtec - Octostrip MKII 100 cm black LED, RGB 16",LIGHT,,5.00
+LILE0337,Showtec - Controller for Octostrip MKII (XLR3) 2,LIGHT,,10.00
+LIEF0921,"Chauvet - Epix Strip 500mm IP65 (XLR4) LED, RGB 8-12-36",LIGHT,,5.00
+LIEF0920,"Chauvet - Epix Strip 1000mm IP65 (XLR4) LED, RGB 12-36",LIGHT,,10.00
+LIEF0922,Chauvet - Epix Drive 2000 IP65 True1 [max. 20 strips] 1-2,LIGHT,,30.00
+LILE0546,"CLF - Juno AkkuLED, IP65 LED, RGBW 6",LIGHT,,20.00
+LIEF0228,"Astera - NYX Wireless Bulb RGBA-M, E27, IP20 LED, RGBA-M, 10W 8",LIGHT,,12.50
+LIEF0882,"Astera - LunaBulb RGBA-M, E27, IP44 LED, RGBA-M, 3.3W 8",LIGHT,,13.75
+LIEF0946,"Astera - AX2-100 Pixelbar 21° RGBMA, IP65 LED, RGB-Mint-Amber 4-6",LIGHT,,46.25
+LIEF0186,"Astera - AX 3 Wireless Akku Lightdrop LED, RGBW, 15W 8",LIGHT,,20.00
+LIEF0193,"Astera - AX 5 Wireless Akku TriplePar LED, RGBAW, 3 x 15W 8",LIGHT,,31.25
+LIEF0216,"Astera - AX-9 Wireless Akku Powerpar LED, RGBAW, 105W 8",LIGHT,,37.50
+LIEF0209,"Astera - Helios Tube Wireless Akku Pixeltube LED, RGBMA, 24W 8",LIGHT,,25.00
+LIEF0200,"Astera - Titan Tube Wireless Akku Pixeltube LED, RGBMA, 48W 8",LIGHT,,31.25
+LIEF0211,"Astera - Hyperion Tube Wireless Akku Pixeltube LED, RGBMA, 96W 4",LIGHT,,43.75
+LIEF0994,"Astera - HydraPanel FP6 40° - 100°, 17w, IP65 LED, RGBMA, 17W 1-4",LIGHT,,50.00
+LIEF0971,"Astera - PB15 Pixelbrick 13°, IP65 LED, RGBMA, 15W 8",LIGHT,,25.00
+COET0621,Astera - ART7 Wireless DMX Transmitter,LIGHT,,25.00
+LIEF0120,"Chauvet - Strike One IP65 LED, WW 2-4",LIGHT,,27.50
+LIEF0963,"Chauvet - STRIKE Array 2, IP65 LED Blinder LED, WW 2-4",LIGHT,,27.50
+LIEF0967,"Chauvet - STRIKE Array 4, IP65 LED Blinder LED, WW 2-4",LIGHT,,37.50
+LIFL0202,"Steinigke - Public light 1300W 2-Light, 1x schuko black halo",LIGHT,,5.00
+LIFL0203,"Showtec - Public light 1300W 2-Light, black incl. 1ch dim halo",LIGHT,,10.00
+LIFL0206,"Showtec - Public light 2600W 4-Light, 2x schuko black halo",LIGHT,,15.00
+LIFL0220,"Thomas - Public light 5200W 8-Light, 2x schuko black halo",LIGHT,,15.00
+LIFL0730,"Showtec - Cat eye Public light 2x 250W, 1x Schuko halo",LIGHT,,5.00
+LIFL0306,"Showtec - Active Sunstrip 1,0 m (10x 50W) halo 4-12",LIGHT,,10.00
+LIPA0079,"Thomas - Ashtray, 650W DWE 110V (Patch Con) halo 2-16-32",LIGHT,,5.00
+LIPA0081,"Rent-All - Par 36, 650W Ashtray (110V patch Con) halo 2-16-32",LIGHT,,5.00
+LIEF0290,"Portman - P1 Retro light halo, 7 x 230W 2",LIGHT,,75.00
+LIEF0292,"Portman - P2 Hexaline halo, 6 x 230W 2",LIGHT,,50.00
+LIEF0294,"Portman - P3 Pix3l halo, 3 x 230W 2-4",LIGHT,,25.00
+LIEF0298,"Portman - Mantis LED LED, RGBW-WW 2",LIGHT,,50.00
+LIEF0299,"Portman - S-Tribe LED LED, RGBW-WW 4",LIGHT,,62.50
+LIEF0301,"Robe - Patt 2013 soft light halo, 750W 1-2",LIGHT,,35.00
+LIEF0250,"Rent-All - Parabolic Factory Lamp 50cmØ halo, 300W",LIGHT,,25.00
+LIEF0157,Mirrorball 75 cm,LIGHT,,20.00
+LIEF0159,Mirrorball 100 cm,LIGHT,,25.00
+LIEF0176,Motor (for mirrorball 20-30-40-50-60 cm),LIGHT,,7.50
+LIEF0178,Motor (for mirrorball 80 & 100 cm) max. 40 kg,LIGHT,,15.00
+LIEF0936,MagicFX - Power drop for curtain drop 12,LIGHT,,16.67
+LIEF0101,MagicFX - Power Shot 1-4,LIGHT,,18.75
+LIEF0937,MagicFX - Power Shot II 4,LIGHT,,18.75
+LIRO0106,Jem - ZR 45 Smoke machine,LIGHT,,45.00
+LIRO0121,Jem - Compact Hazer Pro,LIGHT,,35.00
+LIRO0119,"Jem - Hazer Pro, Hazer",LIGHT,,50.00
+LIRO0245,MDG - Atmosphere,LIGHT,,170.00
+LIRO0144,MDG - Atmosphere ATMe,LIGHT,,175.00
+LIRO0149,MDG - Atmosphere High Output hazer,LIGHT,,250.00
+LIRO0142,MDG - theONE Atmospheric Generator,LIGHT,,295.00
+LIRO0922,MDG - ME2 fog machine Dual Nozzle,LIGHT,,250.00
+LIRO0148,MDG - Max 3000,LIGHT,,200.00
+LIRO0154,"CLF - Smoke 3100, RGB fogger, 3100W",LIGHT,,30.00
+LIRO0108,"Look - Viper 2.6, Fog generator",LIGHT,,45.00
+LIRO0112,"Look - Unique 2.1, Hazer",LIGHT,,50.00
+LIRO0252,"Jem - Glaciator Dynamic, low fog DMX / 32A CEE Red",LIGHT,,340.00
+LIRO0621,CLF - Turbine,LIGHT,,20.00
+LIRO0606,"Jem - AirForce 2, DMX fan",LIGHT,,65.00
+LIRO0609,MagicFX - Stage Blower,LIGHT,,20.00
+LIRO0612,MagicFX - Stage FX-Blower [powercon True1],LIGHT,,25.00
+LIEF0380,CLF - Spark-2 Fall Effect Hangbox 600w max. 8mtr,LIGHT,,35.00
+LIEF0382,CLF - Spark-3 groundbox 600w max. 5 mtr,LIGHT,,35.00
+LIEF0384,CLF - Spark-XL groundbox 1700w max. 15 mtr,LIGHT,,200.00
+LIEF0414,MagicFX - Stage Flame max. 8 mtr (XLR3),LIGHT,,125.00
+LIVO0110,"Robert Juliat - Followspot Alex halo, 2000W, 7°-14.5°",LIGHT,,100.00
+LIVO0112,"Robert Juliat - Followspot Margot halo, 2500W, 8.5°-16°",LIGHT,,100.00
+LIVO0005,"Robert Juliat - Followspot Korrigan MSI, 1200W, 5°-9°",LIGHT,,110.00
+LIVO0006,"Robert Juliat - Followspot Super Korrigan MSI, 1200W, 7°-14.5°",LIGHT,,130.00
+LIVO0126,"Robert Juliat - Followspot Victor dmx dim MSR, 1800W, 7°-14.5°",LIGHT,,200.00
+LIVO0022,"Robert Juliat - Followspot Ivanhoe MSR, 2500W, 9°-21°",LIGHT,,250.00
+LIVO0020,"Robert Juliat - Followspot Heloise MSR, 2500W, 15°-30°",LIGHT,,250.00
+LIVO0015,"Robert Juliat - Followspot Aramis HMI, 2500W, 4.5°-8°",LIGHT,,200.00
+LIVO0018,"Robert Juliat - Followspot Cyrano HMI, 2500W, 3°-8°",LIGHT,,275.00
+LIVO0190,"Robert Juliat - Followspot Merlin dmx dim HMI, 2500W, 3°-12°",LIGHT,,350.00
+LIVO0030,"Robert Juliat - Followspot Lancelot HTI, 4000W, 2°-5°",LIGHT,,580.00
+LIVO0032,"Robert Juliat - Followspot Lancelot dmx dim HTI, 4000W, 2°-5°",LIGHT,,635.00
+LIVO0153,Followspot chair for all followspots Robert Juliat 360° rang,LIGHT,,100.00
+INCL0276,Robe - RoboSpot Base Station,LIGHT,,580.00
+COMA0012,Follow-Me 3D system multiple target set V2 Single [3 piece],LIGHT,,960.00
+COMA0014,Follow-Me 3D Track-it extension tag Set [10 tags],LIGHT,,350.00
+COMA0015,Follow-Me 3D Track-it Anchor Set [4 Anchors],LIGHT,,225.00
+LIPR0052,"CLF - LEDKO Profile Daylight LED, CW, 5600K 2-6",LIGHT,,55.00
+LIPR0054,"CLF - LEDKO Profile V2, Full Spectrum ETL LED, RGBW, 3200K-10000K 2-6",LIGHT,,62.50
+LIPR0030,"ETC - S4 LED Series 2 Daylight HD LED, CW, 4000K-6500K 2-6",LIGHT,,60.00
+LIPR0031,"ETC - S4 LED Series 2 Lustr CMY HD LED, CMY, 2200K-6500K 2-6",LIGHT,,75.00
+LIPR0028,"ETC - S4 LED Series 3 Lustr X8 LED, DR-RGB-A-L-I-C , 1900-10450K",LIGHT,,90.00
+LIPR0068,ETC - S4 Lenstube / 15-30° zoom,LIGHT,,10.00
+LIPR0069,ETC - S4 Lenstube / 25-50° zoom,LIGHT,,12.50
+LIPR0073,ETC - S4 EDLT Lenstube / 19°,LIGHT,,8.50
+LIPR0074,ETC - S4 EDLT Lenstube / 26°,LIGHT,,8.50
+LIPR0075,ETC - S4 EDLT Lenstube / 36°,LIGHT,,8.50
+LIPR0079,ETC - S4 EDLT Lenstube CYC adapter,LIGHT,,10.00
+LIPR0088,ETC - S4 junior Profile 575W / 25°-50° zoom halo,LIGHT,,12.50
+LIPR0106,ETC - S4 Profile 750W / 15-30° zoom halo,LIGHT,,17.50
+LIPR0108,ETC - S4 Profile 750W / 25-50° zoom halo,LIGHT,,17.50
+LIPR0097,ETC - S4 Profile 750W / 5° halo,LIGHT,,30.00
+LIPR0099,ETC - S4 Profile 750W / 10° halo,LIGHT,,22.50
+LIPR0100,ETC - S4 Profile 750W / 14° halo,LIGHT,,17.50
+LIPR0101,ETC - S4 Profile 750W / 19° halo,LIGHT,,15.00
+LIPR0102,ETC - S4 Profile 750W / 26° halo,LIGHT,,15.00
+LIPR0104,ETC - S4 Profile 750W / 36° halo,LIGHT,,15.00
+LIPR0105,ETC - S4 Profile 750W / 50° halo,LIGHT,,15.00
+LIPR0109,ETC - S4 Profile 750W / 70° halo,LIGHT,,17.50
+LIPR0096,ETC - S4 Profile 750W / 90° halo,LIGHT,,17.50
+LIPR0136,"Robert Juliat - Profile 613SX halo, 1000W, 28°-54°",LIGHT,,15.00
+LIPR0138,"Robert Juliat - Profile 614SX halo, 1000W, 16°-35°",LIGHT,,15.00
+LIPR0141,"Robert Juliat - Profile 710SX halo, 2000W, 10°-25°",LIGHT,,25.00
+LIPR0144,"Robert Juliat - Profile 713SX V2 halo, 2000W, 29°-50°",LIGHT,,25.00
+LIPR0143,"Robert Juliat - Profile 714SX2 halo, 2000W, 15°-40°",LIGHT,,25.00
+LIPR0165,"Robert Juliat - Profile 914S HMI, 1200W, 11°–34°",LIGHT,,150.00
+LIPR0170,"Robert Juliat - Profile 930SNX + CAD-900 MSR, 2500W, 10°-25°",LIGHT,,200.00
+LIPR0173,"Robert Juliat - Profile 933SNX MSR, 2500W, 29°-50°",LIGHT,,200.00
+LIPR0175,"Robert Juliat - Profile 934SNX MSR, 2500W, 16°-38°",LIGHT,,200.00
+LIFR0046,"Desisti - Piccoletto DMX M/O Daylight 30W 5600K LED, CW 4",LIGHT,,25.00
+LIFR0054,"Desisti - SuperLED F4.7 P/O Daylight 60W 5600K LED, CW 4-8",LIGHT,,35.00
+LIFR0066,"Desisti - SuperLED F6 P/O Daylight 150W 5600K LED, CW 1-3",LIGHT,,45.00
+LIFR0074,"Desisti - SuperLED F10 P/O Daylight 190W 5600K LED, CW 1-3",LIGHT,,50.00
+LIFR0080,"Desisti - SuperLED F14 P/O Daylight 400W 5600K LED, CW 1-2",LIGHT,,125.00
+LIFR0053,"Desisti - SuperLED F4.7 P/O VW 60W 2800K-6600K LED, CW-WW 4-8",LIGHT,,50.00
+LIFR0072,"Desisti - SuperLED F6 P/O VW 120W 2800K-6600K LED, CW-WW 1-3",LIGHT,,50.00
+LIFR0082,"Desisti - SuperLED F7 P/O VW 160W 2700K-6500K LED, CW-WW 1-3",LIGHT,,60.00
+LIFR0076,"Desisti - SuperLED F10HP P/O VW 330W, 2800- 6600K LED, CW-WW 1-3",LIGHT,,70.00
+LIFR0166,"Desisti - Magis P/O Fresnel 650W, incl. Dutch TV-hook halo",LIGHT,,8.00
+LIFR0168,"Desisti - Leonardo P/O Fresnel 1000W, incl. Dutch TV-hook halo",LIGHT,,12.50
+LIFR0170,"Desisti - Leonardo P/O Fresnel 2000W, incl. Dutch TV-hook halo",LIGHT,,17.50
+LIFR0507,"Desisti - Leonardo P/O Fresnel 5000W, incl. Dutch TV-Hook halo",LIGHT,,25.00
+LIFR0060,"Arri - L5-C P/O VW 115W 2800K-10000K black LED, RGBW 2-4",LIGHT,,60.00
+LIFR0065,"Arri - L7-C LE2 P/O VW 220W 2800K-10000K black LED, RGBW 1-2",LIGHT,,80.00
+LIFR0086,"Arri - L10-C LE2 P/O VW 510W 2800K-10000K black LED, RGBW",LIGHT,,120.00
+LIFR0002,Arri - Junior 150 PLUS Fresnel 150W M/O grey halo 10,LIGHT,,7.50
+LIFR0005,Arri - Junior 650 PLUS Fresnel 650W M/O black halo 4-8,LIGHT,,10.00
+LIFR0315,Arri - True Blue ST1 P/O Fresnel 1000W halo,LIGHT,,15.00
+LIFR0330,Arri - True Blue ST2 P/O Fresnel 2000W halo,LIGHT,,20.00
+LIFR0510,Arri - True Blue ST5 P/O Fresnel 5000W halo,LIGHT,,25.00
+LIFR0130,"Elation - KL Fresnel 6 FC, LED RGBMA 220W 6500K, 10°-32° LED, RGBMA 2-4",LIGHT,,25.00
+LIFR0140,"Elation - KL Fresnel 8 FC, LED RGBMA 515W 6500K, 10°-50° LED, RGBMA 1-3",LIGHT,,30.00
+LIFR0607,"Manfrotto - 427B-6.5, Operating Pole 1,9 / 6.5 m",LIGHT,,12.50
+LILE0972,"CLF - Softled 100, VW 3200-5600K LED, CW-WW 2-4-6",LIGHT,,20.00
+LILE0986,"CLF - Softled 200, VW 3200-5600K LED, CW-WW 2-5",LIGHT,,30.00
+LILE0997,"CLF - Softled 400, VW 3200-6000K LED, CW-WW",LIGHT,,40.00
+LILE0978,"CLF - Snapgrid for Softled 100, VW 1-4",LIGHT,,30.00
+LILE0990,"CLF - Snapgrid for Softled 200, VW 1-2",LIGHT,,40.00
+LISL0801,"Creamsource - Vortex4S, 325W 110° IP65 LED, RRGBBW 2",LIGHT,,100.00
+LISL0811,"Creamsource - Vortex8S, 650W 110° IP65 LED, RRGBBW 2",LIGHT,,180.00
+LILE0691,"TheLight - Velvet Mini 1 DMX (includes Vlock mount) LED, CW-WW",LIGHT,,50.00
+LILE0696,"TheLight - Velvet Light 1 Studio M/O LED, CW-WW 1-2",LIGHT,,50.00
+LILE0701,"TheLight - Velvet Light 2 Studio M/O LED, CW-WW 1-3",LIGHT,,75.00
+LILE0733,"Arri - Skypanel S30-C LED fullcolor Soft Diffusion Panel M/O LED, RGBW 1-2",LIGHT,,145.00
+LILE0738,"Arri - Skypanel S60-C LED fullcolor Soft Diffusion Panel P/O LED, RGBW 1-2",LIGHT,,200.00
+LILE0743,"Arri - Skypanel S60-C LED fullcolor Soft Diffusion Panel M/O LED, RGBW 1-2",LIGHT,,190.00
+LILE0752,"Arri - Skypanel S120-C LED fullcolor Soft Diffusion Panel MO LED, RGBW",LIGHT,,260.00
+LILE0757,"Arri - Skypanel S360-C LED fullcolor Soft Diffusion Panel MO LED, RGBW 1-2",LIGHT,,550.00
+LISL0728,Arri - Heavy Diffusion for Skypanel S60-C,LIGHT,,20.00
+LISL0763,Arri - DOP Choice SnapGrid 40° for SnapBag S60,LIGHT,,50.00
+LISL0752,Arri - Chimera POP Bank for Skypanel S60-C,LIGHT,,55.00
+LISL0758,Arri - SBA60 DOP Choice snapbag for Skypanel S60-C,LIGHT,,55.00
+LILE0750,Arri - Barndoor for Skypanel S60-C,LIGHT,,30.00
+LILE0756,Arri - Barndoor for Skypanel S-120,LIGHT,,60.00
+LIDL0090,Arri - D-5 575W HMI HMI,LIGHT,,70.00
+LIDL0092,Arri - D-12 1200W HMI HMI,LIGHT,,100.00
+LIDL0096,Arri - D-25 2500W HMI [2KW Body] HMI,LIGHT,,130.00
+LIDL0201,"Studio Beam, CDM/HCI-150 black 4200K CDM",LIGHT,,10.00
+LIDL0205,"Studio Beam, CDM/HCI-150 silver 4200K CDM",LIGHT,,10.00
+LIPA0140,ETC - S4 Par 575W black halo,LIGHT,,7.50
+LIPA0139,ETC - S4 Par 750W black halo,LIGHT,,7.50
+LIPA0211,"Thomas - Par 64, 1000W fourbar pin 1,2 MFL (CP62) black halo 6",LIGHT,,15.00
+LIPA0330,"Thomas - Par 64, 1000W sixbar pin 1,2 MFL (CP62) black halo 6",LIGHT,,20.00
+LIPA0505,Aircraft fourbar Par64 long black CEE blue/CEE yellow SET halo,LIGHT,,20.00
+LIPA0508,Aircraft fourbar Par64 short black CEE blue/CEE yellow SET halo,LIGHT,,20.00
+LIBU0690,"Floodlight - 30W LED 3000k IP65, black incl. market clamp LED 15-33",LIGHT,,3.50
+LIBU0473,"Exposupply - LFR-150 Reno, LED Flood IP66, 90º, 4000k, black LED",LIGHT,,12.50
+LIBU0469,"Fenon - FL-816, LED Flood IP65 150w, 60º, 5000k, Alu LED",LIGHT,,15.00
+LIBU0689,Floodlight - 150W symmetric black incl. market clamp halo,LIGHT,,3.50
+LIBU0688,Floodlight - 500W symmetric black halo,LIGHT,,3.50
+LIBU0715,"Gewiss - Horus 2 Floodlight, 150W White 942 HQI A-symmetric HQI",LIGHT,,10.00
+LIBU0720,"Gewiss - Titano Floodlight, 400W White 4000K HQI A-symmetric HQI",LIGHT,,10.00
+LIBU0722,"Gewiss - Titano Floodlight, 400W White 4000K HQI symmetric HQI",LIGHT,,10.00
+LIBU0725,Rent-All - Floodlight 1000W HQI symmetric HQI,LIGHT,,15.00
+LIUR0251,"URC - Garland LED String 15 x 4,3W - 10 Meter LED",LIGHT,,12.50
+LIUR0256,"URC - Garland LED String 38 x 4,3W - 25 Meter LED",LIGHT,,25.00
+LIBU0783,"Lighting cable 10,0m (20x LED 2W Dim) Outdoor [CEE 16A/1] LED",LIGHT,,20.00
+LIBU0785,"Lighting cable 15,0m (28x LED 2W Dim) Outdoor [CEE 16A/1] LED",LIGHT,,24.50
+LIBU0787,"Lighting cable 25,0m (48x LED 2W Dim) Outdoor [CEE 16A/1] LED",LIGHT,,32.00
+LIBU0218,Rent-All - AirDome Base Ø60cm,LIGHT,,32.50
+LIBU0222,"Rent-All - AirDome raincover, H=60cm for Base Ø60cm",LIGHT,,2.50
+LIBU0191,Rent-All - AirDome Base Ø85cm,LIGHT,,37.50
+LIBU0214,"Rent-All - AirDome raincover, H=80cm for Base Ø85cm",LIGHT,,2.50
+LIBU0216,"Rent-All - AirDome raincover, H=100cm for Base Ø85cm",LIGHT,,2.50
+LIBU0152,Rent-All - Raincover base Large Ø65cm with Fans [Black] 1-12,LIGHT,,20.00
+LIBU0980,Rent-All - Raincover (for Atomic & Scroller),LIGHT,,2.50
+COMA0801,"MA lighting - Lightcommander 12/2, console",LIGHT,,35.00
+COMA0802,"MA lighting - Lightcommander II 24/6, console",LIGHT,,55.00
+COMA0510,MA lighting - GrandMA-2 on PC command wing,LIGHT,,125.00
+COMA0513,MA lighting - GrandMA-2 on PC fader wing,LIGHT,,60.00
+COMA0812,"MA lighting - GrandMA-2 Light, console",LIGHT,,450.00
+COMA0807,"MA lighting - GrandMA-2 Full-size, console",LIGHT,,550.00
+COMA081,MA lighting - GrandMA-2 faderwing 15 fader,LIGHT,,80.00
+COMA0536,MA lighting - GrandMA-3 on PC command wing,LIGHT,,125.00
+COMA0540,"MA lighting - GrandMA-3 Compact XT, console",LIGHT,,425.00
+COMA0542,"MA lighting - GrandMA-3 Light, console",LIGHT,,575.00
+COMA0544,"MA lighting - GrandMA-3 Full-size, console",LIGHT,,725.00
+COMA0520,MA lighting - GrandMA-3 Extension,LIGHT,,80.00
+COMA0817,MA lighting - GrandMA-3 processing unit M,LIGHT,,150.00
+COMA0816,MA lighting - GrandMA-3 processing unit L,LIGHT,,225.00
+COMA0814,MA lighting - GrandMA-3 processing unit XL,LIGHT,,450.00
+COMA0811,MA lighting - Network Processing Unit (NPU),LIGHT,,175.00
+COMA0815,MA lighting - GrandMA-2 4 port node onPC,LIGHT,,75.00
+COMA0818,MA lighting - GrandMA-2 8 port node,LIGHT,,85.00
+COMA0348,MA lighting - GrandMA-3 4 port node onPC,LIGHT,,75.00
+COMA0803,MA lighting - GrandMA-3 8 port node,LIGHT,,90.00
+COHI0835,High End - Road Hog 4 console,LIGHT,,225.00
+COHI0838,High End - Full Boar 4 console,LIGHT,,300.00
+COHI0842,High End - Wholehog 4 console,LIGHT,,500.00
+COHI0827,High End - USB Playback console Wing,LIGHT,,75.00
+COHI0830,High End - Playback Wing for Hog-4,LIGHT,,150.00
+COHI0828,High End - Expansion console Wing,LIGHT,,250.00
+COHI0826,High End - DMX Proccessor 8000 Unit,LIGHT,,125.00
+CODI0200,ETC - SmartFade 24/96 ch DMX Controller,LIGHT,,40.00
+COMA0305,ETC - EOS GIO desk DMX 9216 ch.,LIGHT,,500.00
+COAV0106,Avolites - Quartz console,LIGHT,,175.00
+COAV0104,Avolites - Pearl Tiger Touch II console,LIGHT,,200.00
+COAV0801,Avolites - Arena console,LIGHT,,250.00
+COAV0158,Avolites - Diamond 7-330 console,LIGHT,,500.00
+CODI0902,Chamsys - Magicq MQ70 Compact console,LIGHT,,200.00
+CODI0912,Chamsys - Magicq MQ250m Stadium console 64 universes,LIGHT,,375.00
+CODI0153,Chamsys - Magicq MQ500m Stadium console 256 universes,LIGHT,,500.00
+CODI0156,Chamsys - Magicq MQ500m Stadium wing,LIGHT,,175.00
+DISO0050,"ADB - Memorack 30 - 6x5kW/6x32A Single Phase/32A, 63A CEE IN",LIGHT,,85.00
+DIDI0552,"ADB - Memorack 30 - 24x3kW / 9xH8 / 125A CEE, PIN 1-9",LIGHT,,150.00
+DIDI0562,ADB - Memorack 30 - 36x3kW+ 12xC16 + 32A/15xH8/PL400thru 1-9,LIGHT,,200.00
+DISO0010,"ADB - Memorack 30 - 12x3kW/2x Soc419 /12x16A/32A, 63A CEE IN",LIGHT,,80.00
+DISO0020,"ADB - Memorack 30 - 36x3kW/14xSoc419/12x16A/32A, PL IN/OUT",LIGHT,,200.00
+DISO0015,"ADB - Memorack 30 - 24x3kW/4x Soc419/24x16A/32A, 125A CEE IN",LIGHT,,145.00
+DIDI0330,"Avolites - 24 x 2,5 KW + 24x 16A Art-2000 dimmerrack+patch",LIGHT,,165.00
+DIDI0340,"Avolites - 24 x 2,5 KW Art-2000 dimmerrack+patch, 125A CEE",LIGHT,,165.00
+DIDI0410,"Avolites - 36 x 2,5 KW + 12x 16A Art-2000 dimmerrack+patch",LIGHT,,225.00
+DIDI0500,"Avolites - 48 x 2,5 KW Art-2000 dimmerrack+patch, PL PIN 1,2",LIGHT,,275.00
+DIDI0495,"Avolites - 48 x 2,5 KW Art-2000 dimmerrack+patch, PL PIN 1,9",LIGHT,,275.00
+DIDI0207,"LSC - 6 x 5,0 KW Pro dimmer, 63A CEE [2x32A cee out]",LIGHT,,65.00
+DIDI0210,"LSC - 12 x 2,3 KW Pro dimmer, 32A CEE, PIN 1,9",LIGHT,,50.00
+DIDI0205,"LSC - 12 x 3,6 KW GenVI dimmer, 32A CEE, PIN 1,2",LIGHT,,50.00
+DIDI0230,"LSC - 12 x 2,3 KW Pro dimmerrack + patch, 63A CEE, PIN 1-2",LIGHT,,75.00
+DIDI0300,"LSC - 24 x 2,3 KW Pro dimmerrack + patch, 125A CEE, PIN 1-2",LIGHT,,150.00
+DIDI0805,"Showtec - Single MKII/DP1, DMX Dimmer 1CH / 2,3kW 1-2-4",LIGHT,,10.00
+COAC0718,Chair lighting/audio console (seat height 59-83cm) 1-2,LIGHT,,25.00
+COET0207,"LSC - MDRT 5-Way Truss-Mount DMX Splitter, 5 pins",LIGHT,,10.00
+COET0104,"ELC - DT229, DMX Splitter (2x 5p in / 8x 5p out)",LIGHT,,30.00
+COET0108,"ELC - DT2210, DMX Splitter (2x 5p in / 10x 5p out)",LIGHT,,25.00
+COET0302,"ELC - Node-8, Ethernet 8 DMX router in/out, Gigabit",LIGHT,,75.00
+COET0291,"ELC - NodeGBX 8, Ethernet in/out, 8 port DMX router, Gigabit",LIGHT,,75.00
+COET0307,ELC - DMXLAN switch8 Gigabit Fiberport LC,LIGHT,,85.00
+COET0308,"ELC - DMXLAN switchGBX, 18port, Fiberport LC, Gigabit",LIGHT,,85.00
+COET0790,"ELC - kit Stagerack, 1x ELC node-8, 4x ELC DT2210, Gigabit",LIGHT,,200.00
+COET0511,"Luminex - LumiSplit 1.6 DMX Splitter, 1x 5P In > 6x 5P Out",LIGHT,,25.00
+COET0501,Luminex - Lumisplit 2.10 DMX Splitter (2x 5p in/ 10x 5p out),LIGHT,,40.00
+COET0506,"Luminex - DMX512-A 1.5 HUB, 1x 5P In/Thr > 5x 5P Out)",LIGHT,,25.00
+COET0509,Luminex - DMX 2.10 HUB DMX Splitter (2x 5p in/ 10x 5p out),LIGHT,,42.50
+COET0528,"Luminex - Luminode 12, DMX Router in/out, Gigabit",LIGHT,,75.00
+COET0520,"Luminex - Ethernet DMX8 MKII, DMX Router in/out, 100mbit",LIGHT,,80.00
+COET0532,Luminex - Ethernet switch 8 ports Gigabit,LIGHT,,50.00
+COET0536,"Luminex - Gigacore 10+POE Switch, 8x RJ45 /2x Opticalcon Duo",LIGHT,,75.00
+COET0544,"Luminex - Gigacore 16XT POE+, 12x RJ45 / 4x SFP, Gigabit",LIGHT,,75.00
+COET0540,"Luminex - Gigacore 16RFO Switch, 12x RJ45 /4x Opicalcon duo",LIGHT,,142.50
+COET0555,"Luminex - Gigacore 20T POE++, 16x RJ45, 1Gb / 4x SFP, 10Gb",LIGHT,,150.00
+COET0549,"Luminex - Gigacore 26i Switch, RJ45+SFP, Gigabit [1 Pc]",LIGHT,,80.00
+COET0751,"FCM - Fiberfox chassis set Gigabit,Combine only with Gigabit",LIGHT,,35.00
+COET0808,"Fiberfox 4way 100m (multimode ""50/125µm,OM"") outdoor, 600MHz",LIGHT,,75.00
+COET0810,"Fiberfox 4way 150m (multi mode""50/125µm,OM"") outdoor, 600MHz",LIGHT,,95.00
+COET0811,"Fiberfox 4way 250m (multi mode""50/125µm,OM"") outdoor, 600MHz",LIGHT,,130.00
+FIOP0011,Neutrik - Opticalcon Duo Multimode Fiber 2-way 50m,LIGHT,,60.00
+FIOP0015,Neutrik - Opticalcon Duo Multimode Fiber 2-way 75m,LIGHT,,65.00
+FIOP0019,Neutrik - Opticalcon Duo Multimode Fiber 2-way 100m,LIGHT,,85.00
+FIOP0027,Neutrik - Opticalcon Duo Multimode Fiber 2-way 250m,LIGHT,,185.00
+FIOP0150,Neutrik - Opticalcon Quad Multimode Fiber 4-way 50m,LIGHT,,100.00
+FIOP0154,Neutrik - Opticalcon Quad Multimode Fiber 4-way 100m Reel,LIGHT,,175.00
+FIOP0156,Neutrik - Opticalcon Quad Multimode Fiber 4-way 150m Reel,LIGHT,,250.00
+FIOP0034,MTP - Opticalcon MTP Multimode Fiber 6-way 250m,LIGHT,,295.00
+FIOP0037,MTP - MTP Multimode > Opticalcon Duo adapter KIT[1 Pc],LIGHT,,190.00
+VICA0665,HP - Procurve Switch 2615 (POE) 8x 100Mbit (+2x dual p.port),LIGHT,,35.00
+COET0309,HP - Procurve Switch 2915 (POE) 8x 1Gbit (+2x dual p.port),LIGHT,,45.00
+COET0359,Aruba - 2930F switch (POE) 12x 1Gbit + 2x SFP+,LIGHT,,60.00
+COET0328,"Netgear - M4300, 8x10G RJ45 + 8x10G Fiber Switch Managed",LIGHT,,115.00
+COET0325,"Netgear - M4300, 12x10G RJ45+12x10G Fiber Switch Managed",LIGHT,,130.00
+COET0329,Ubiquiti - Nanobeam 5AC-19 5Ghz Wireless AC Bridge KIT,LIGHT,,25.00
+VICA0836,"Cradlepoint - IBR900 4G+ M2M Router, Powercon True in/out",LIGHT,,40.00
+COET0911,"RADwin - Winlink 1000, ODU with Integrated Antenna",LIGHT,,100.00
+COET0921,RADwin - 2000 D+ ODU PtP 5.x GHz Radio,LIGHT,,125.00
+VICA0826,Ruckus - Wireless Unleased R310 Accespoint,LIGHT,,25.00
+VICA0800,Ruckus - Zoneflex 7731 outdoor PtP bridge (802.11n),LIGHT,,150.00
+COET0651,"LumenRadio - Luna, Single Universe DMX Transceiver",LIGHT,,20.00
+COET0657,"LumenRadio - Aurora, Single Universe DMX/RDM Transceiver",LIGHT,,30.00
+COET0661,"LumenRadio - Stardust, Eight Universe DMX/RDM Transceiver",LIGHT,,50.00
+VIPR1534,Panasonic - ET-D3LEW50 (0.7:1) fixed lens,VIDEO,,225.00
+VIPR1536,Panasonic - ET-D3LEW60 (0.9-1.1:1) zoom lens,VIDEO,,225.00
+VIPR1532,Panasonic - ET-D3LEW10 (1.3-1.7:1) zoom lens,VIDEO,,275.00
+VIPR0531,Panasonic - ET-D3LES20 (1.7-2.4:1) zoom lens,VIDEO,,100.00
+VIPR1539,Panasonic - ET-D3LET30 (2.4-4.7:1) zoom lens,VIDEO,,150.00
+VIPR1537,Panasonic - ET-D3LET40 (4.6-7.4:1) zoom lens,VIDEO,,350.00
+VIPR1538,Panasonic - ET-D3LET80 (7.3-13.8:1) zoom lens,VIDEO,,350.00
+VIPR1540,Panasonic - ET-D75LE95 (0.36:1) fixed focus lens,VIDEO,,600.00
+VIPR1545,Panasonic - ET-D75LE50 (0.8:1) fixed focus lens,VIDEO,,225.00
+VIPR1556,Panasonic - ET-D75LE6 (0.9-1.1:1) zoom lens,VIDEO,,275.00
+VIPR1549,Panasonic - ET-D75LE10 (1.4-1.9:1) zoom lens,VIDEO,,125.00
+VIPR1551,Panasonic - ET-D75LE1 (1.5-2.0:1) zoom lens,VIDEO,,100.00
+VIPR1550,Panasonic - ET-D75LE20 (1.7-2.4:1) zoom lens,VIDEO,,100.00
+VIPR1548,Panasonic - ET-D75LE30 (2.4-4.7:1) zoom lens,VIDEO,,100.00
+VIPR1554,Panasonic - ET-D75LE40 (4.6-7.4:1) zoom lens,VIDEO,,225.00
+VIPR0852,Panasonic - PT-VMZ50 5.000 lm WUXGA LCD Laser Projector,VIDEO,,150.00
+VIPR0854,Panasonic - PT-RZ670 6.500 lm WUXGA DLP Laser Projector,VIDEO,,500.00
+VIPR0876,Panasonic - PT-RZ770 7.200 lm WUXGA DLP Laser Projector,VIDEO,,600.00
+VIPR0880,Panasonic - PT-RZ970 10.000 lm WUXGA DLP Laser Projector,VIDEO,,750.00
+VIPR1559,Panasonic - ET-DLE030 (0.38:1) ultra short throw Lens,VIDEO,,200.00
+VIPR1564,Panasonic - ET-DLE055 (0.8:1) short throw lens,VIDEO,,100.00
+VIPR1563,Panasonic - ET-DLE085 (0.8-1.0:1) short throw zoom Lens,VIDEO,,150.00
+VIPR1558,Panasonic - ET-DLE100 (1.3-1.8:1) zoom lens,VIDEO,,75.00
+VIPR1568,Panasonic - ET-DLE150 (1.3-1.8:1) zoom lens,VIDEO,,115.00
+VIPR1557,Panasonic - ET-DLE170 (1.8-2.4) standard zoom lens,VIDEO,,75.00
+VIPR1565,Panasonic - ET-DLE200 (2.4-4.0:1) zoom lens,VIDEO,,75.00
+VIPR1566,Panasonic - ET-DLE250 (2.3-3.6:1) zoom lens,VIDEO,,75.00
+VIPR1562,Panasonic - ET-DLE350 (3.6-5.4:1) zoom lens,VIDEO,,75.00
+VIPR1569,Panasonic - ET-DLE450 (5.4-8.6:1) zoom lens,VIDEO,,75.00
+VIPR0417,Epson - EB-L1755U 15.000 lm WUXGA Laser Projector,VIDEO,,950.00
+VIPR0452,Epson - ELPLX01 UST Lens for L1405 (0.35:1),VIDEO,,300.00
+VIPR0453,Epson - ELPLX02 UST Lens for L1505/L1755 (0.35:1),VIDEO,,375.00
+VIPR0458,Epson - ELPLU04 Lens for L1505/L1755 (0.64 - 0.77:1) for use L1405 (0.87-1.05:1),VIDEO,,150.00
+VIPR0459,Epson - ELPLW05 Lens for L1505/L1755 (0.77 - 1.07:1) for use L1405 (1.04-1.46:1),VIDEO,,75.00
+VIPR0460,Epson - ELPLW06 Lens for L1505/L1755 (1.19 - 1.62:1),VIDEO,,125.00
+VIPR0496,Epson - ELPLM15 Lens for L1505/L1755 (1.57 - 2.56:1) for use L1405 (2.16-3.48:1),VIDEO,,75.00
+VIPR0491,Epson - ELPLM10 Lens for L1505/L1755 (2.42 - 3.71:1) for use L1405 (3.32-5.06:1),VIDEO,,90.00
+VIPR0462,Epson - ELPLM11 Lens for L1505/L1755 (4.54 - 5.41:1),VIDEO,,90.00
+VIPR0468,Epson - ELPLL08 Lens for L1505/L1755 (5.27 - 7.41:1) for use L1405 (7.21-10.11:1),VIDEO,,125.00
+VISC0312,Stumpfl - 16:9 Monoblox32 238x143 (218x123)cm front&rear KIT,VIDEO,,115.00
+VISC0302,Stumpfl - 16:9 Monoblox32 286x170 (266x150)cm front&rear KIT,VIDEO,,115.00
+VISC0313,Stumpfl - 16:9 Monoblox32 345x203 (325x183)cm front&rear KIT,VIDEO,,135.00
+VISC0314,Stumpfl - 16:9 Monoblox32 392x230 (372x210)cm front&rear KIT,VIDEO,,160.00
+VISC0315,Stumpfl - 16:9 Monoblox64 447x260 (427x240)cm front&rear KIT,VIDEO,,200.00
+VISC0316,Stumpfl - 16:9 Monoblox64 508x294 (488x274)cm front&rear KIT,VIDEO,,215.00
+VISC0317,Stumpfl - 16:9 Monoblox64 630x363 (610x343)cm front&rear KIT,VIDEO,,315.00
+VISC0319,"Stumpfl - 16:9 Vario64 Variolock, 820x470 (800x450) F&R KIT",VIDEO,,495.00
+VILE0282,Novastar - M3 MCTRL-660 LED Controller,VIDEO,,75.00
+VILE0284,Novastar - M3 MCTRL-660 PRO LED Controller,VIDEO,,90.00
+VILE0261,Novastar - MCTRL R5 LED Controller,VIDEO,,125.00
+VILE0276,Novastar - MCTRL 4K LED Controller,VIDEO,,200.00
+VILE0957,Novastar - MX20 All-in-one COEX Series LED Controller,VIDEO,,100.00
+VILE0956,Novastar - MX30 All-in-one COEX Series 4K LED Controller,VIDEO,,200.00
+VILE0954,Novastar - MX40 Pro COEX Series 4K LED Controller,VIDEO,,250.00
+VILE0267,Novastar - CVT10M Pro Fibreglass converter to ethernet IP65,VIDEO,,75.00
+VICO0020,Novastar - MCTRL-660 HD LED Systemrack,VIDEO,,360.00
+VICO0104,Novastar - MX40 Pro 4K LED Systemrack Single,VIDEO,,590.00
+VICO0102,Novastar - MX40 Pro 4K LED Systemrack Double,VIDEO,,780.00
+VICO0016,URC - Linsn TS802D LED Systemrack Large incl. Imagepro II-JR,VIDEO,,400.00
+VICO0018,URC - Linsn TS801D LED Systemrack Small incl. Imagepro II-JR,VIDEO,,250.00
+VILE0361,"Martin - P3-050, System Controller",VIDEO,,125.00
+VILE0382,"Martin - P3-300, System Controller",VIDEO,,450.00
+VILE0364,"Martin - P3-Powerport 1000, Max 40 meter LEDstrip IP65",VIDEO,,75.00
+VILE0366,"Martin - P3-Powerport 1500, Max 40 meter LEDstrip IP20",VIDEO,,75.00
+VILE0220,"Eastar - Dazzle III stack frame Basic KIT 1,50 x 4,00m (WxH)",VIDEO,,100.00
+VILE0221,Eastar - Dazzle III stack frame Extension KIT 2 x 4m (WxH),VIDEO,,100.00
+VILE0286,"Infiled - AR stack frame Basic KIT W=4,00 x H=4,00m(Max.)",VIDEO,,100.00
+VILE0208,Eastar - Dazzle III P2.60 mm LED-panel 50x50cm 4-8,VIDEO,,37.50
+VILE0160,Eastar - Shine+ P3.91mm indoor curvable LED-panel 50x 50cm 4-8,VIDEO,,37.50
+VILE0164,Eastar - Shine+ P3.91mm indoor curvable LED-panel 50x100cm 4,VIDEO,,37.50
+VILE0224,Infiled - ILRSSIRX curvable 2.5 mm LED-panel 50x50cm IP30 8,VIDEO,,60.00
+VILE0244,Infiled - ILRSSIRX 3.9 mm LED-panel 50x50cm IP30 curved 8,VIDEO,,50.00
+VILE0234,Infiled - ILRSSIRX 3.9 mm LED-panel 50x50cm IP30 straight 8,VIDEO,,50.00
+VILE0108,"URC - P5.7mm, ultra contrast LED-panel 64x64 cm True 1 8",VIDEO,,31.25
+VILE0410,"CLF - Video LED-ball PH10 indoor, diameter 1 meter incl. control",VIDEO,,500.00
+VILE0540,"Martin - VDO Sceptron 10, 320mm 10",VIDEO,,12.50
+VILE0550,"Martin - VDO Sceptron 10, 1000mm 20",VIDEO,,15.00
+VILE0441,"Martin - VDO Face 5 HC 5.2mm LED-panel 50x56,25cm IP65 4-8",VIDEO,,37.50
+VILE0296,"Infiled - AR3.9, P3.9mm outdoor LED-Panel 50x50 A10sPro 8",VIDEO,,43.75
+VILE0298,"Infiled - AR3.9, P3.9mm outdoor LED-Panel 100x50+Bar A10sPro 8-12",VIDEO,,75.00
+VILE0932,"Infiled - AR7.8, P7.81 Outdoor LED-panel 50x50cm 8-24",VIDEO,,31.25
+VILE0934,"Infiled - AR7.8, P7.81 Outdoor LED-panel + Climbbar 100x50cm 8-12",VIDEO,,40.00
+VILE0936,"Infiled - ART7.8, P7.81 Touring Outdoor LED-panel 50x50cm 8-20",VIDEO,,35.00
+VILE0938,"Infiled - ART7.8, P7.81 Touring LED-panel 100x50cm + Windbar 10",VIDEO,,53.50
+KAET0200,Infiled - Cable Set Power & Data for 20 tiles AR/ART,VIDEO,,47.50
+KAET0202,Infiled - Cable Set Power & Data for 80 tiles AR/ART,VIDEO,,190.00
+VILE0112,URC - P10mm SMD solid LED-panel V-5 64x64 cm True 1 LINSN 6-20,VIDEO,,25.00
+VICO0512,Inter-Tech - 4U-4129-N X299X+ Vmix Live Production 4K [1pc],VIDEO,,400.00
+VICO0490,"HP - Probook 4740S 17,3"" HD+ incl. Arkaos Express",VIDEO,,100.00
+VICO0488,HP - Probook 470 G5 I7 8550U Notebook + Arkaos Pro KIT,VIDEO,,150.00
+VICO0470,Arkaos - Media Master Pro V5 incl. Desktop PC (4xDVI/1x SDI),VIDEO,,475.00
+VIVI0181,Blackmagic Design - BM252 Hyperdeck Studio Pro 2 4K recorder,VIDEO,,125.00
+VIVI0183,Blackmagic Design - BM354 Hyperdeck Studio Mini UHD recorder,VIDEO,,125.00
+VIVI0185,Blackmagic Design - HyperDeck Studio 4K Pro recorder,VIDEO,,150.00
+VICO0954,"Pixelhue - X400, Dual Mediaserver, empty frame, 4K@60hz",VIDEO,,500.00
+VICO0472,Brightsign - XT1143 Expanded I/O Media Player,VIDEO,,30.00
+VICO0474,Brightsign - XT1144 Expanded I/O Media Player,VIDEO,,30.00
+VIVI0202,Blackmagic Design - ATEM Constellation 8K switcher,VIDEO,,500.00
+VIVI0204,Blackmagic Design - ATEM 2 M/E Advanced Panel 20,VIDEO,,225.00
+VICO0077,"Barco - Ex, Event Master expansion event unit",VIDEO,,90.00
+VICO0161,"Barco - PDS-902-3G, Seamless Video Switcher VGA/DVI/SDI",VIDEO,,200.00
+VICO0064,Barco - EC-50 Compact event controller,VIDEO,,350.00
+VICO0805,Barco - IMAGE PRO 4K,VIDEO,,350.00
+VICO0803,Barco - IMAGE PRO II,VIDEO,,250.00
+VICO0920,"Pixelhue - P20, seamless switcher, 8 in/ 8 out, 4K@60hz",VIDEO,,300.00
+VICO0970,"Pixelhue - U5, event controller, compact 4K@60hz",VIDEO,,350.00
+VICO0974,"Pixelhue - U5 PRO, event controller, fullsize, 4K@60hz",VIDEO,,850.00
+VIVI0207,"Analog Way - VIO 4K, Multi I/O 4K@60Hz 4:4:4",VIDEO,,300.00
+COAC0123,"Iiyama - Prolite T2235MSC 21,5"" touch monitor",VIDEO,,50.00
+VIMO0650,"Iiyama - Prolite TF4237MSC-B4AG 42"" touch 1080p LED",VIDEO,,200.00
+VIMO0652,"Iiyama - Prolite TF4338MSC-B1AG 43"" touch 1080p LED",VIDEO,,250.00
+VIMO0654,"Iiyama - Prolite TF6538UHSC-B1AG 65"" touch 4k LED",VIDEO,,350.00
+VIMO0631,"Panasonic - TH-50BF1, Touch Screen LCD Display",VIDEO,,300.00
+VIMO0632,"Panasonic - TH-65BF1, Touch Screen LCD Display",VIDEO,,400.00
+VIMO0633,"Panasonic - TH-80BF1, Touch Screen LCD Display",VIDEO,,850.00
+VIMO0696,"BenQ - SL4302K 43"" UHD60 IPS Pantone LED monitor",VIDEO,,125.00
+VIMO0623,"Panasonic - TH-43EQ1W, 43"" LED LCD 4K monitor",VIDEO,,125.00
+VIMO0640,"Panasonic - TH-43EQ2W, 43"" LED LCD 4K monitor",VIDEO,,125.00
+VIMO0624,"Panasonic - TH-55EQ1W, 55"" LED LCD 4K monitor",VIDEO,,150.00
+VIMO0625,"Panasonic - TH-65EQ1W, 65"" LED LCD 4K monitor",VIDEO,,225.00
+VIMO0641,"Panasonic - TH-65SQ1W, 65"" LED LCD 4K monitor",VIDEO,,225.00
+VIMO0626,"Panasonic - TH-75EQ1W, 75"" LED LCD 4K monitor",VIDEO,,275.00
+VIMO0644,"Panasonic - TH-75SQ1W, 75"" LED LCD 4K monitor",VIDEO,,275.00
+VIMO0627,"Panasonic - TH-86EQ1W, 86"" LED LCD 4K monitor",VIDEO,,300.00
+VIMO0646,"Panasonic - TH-86SQ1W, 86"" LED LCD 4K monitor",VIDEO,,325.00
+VIDS0925,"Samsung - QM43R 43"" 4K LED monitor",VIDEO,,125.00
+VIDS0990,"Samsung - QM43C, 43"" UHD Signage Display",VIDEO,,125.00
+VIDS0992,"Samsung - QM55C, 55"" UHD Signage Display",VIDEO,,150.00
+VIDS0994,"Samsung - QM65C, 65"" UHD Signage Display",VIDEO,,175.00
+VIDS0970,"Samsung - QM75R 75"" 4K LED monitor",VIDEO,,275.00
+VIDS0998,"Samsung - QM85C, 85"" UHD Signage Display",VIDEO,,300.00
+VIDS0984,"Samsung - LH85QM-N 85"" 4K LED monitor",VIDEO,,325.00
+VIMO0352,"Philips - BD9870 98"" UHD monitor",VIDEO,,750.00
+PHMO0344,"Lilliput -BM150-4KS 15"" LCD 4K video monitor [HDMI-SDI-DVI]",VIDEO,,50.00
+VIVI0291,"Blackmagic Design - SmartView 4K 2 (60 FPS) 15.6""",VIDEO,,50.00
+VIMO0234,"BenQ - RL2455 24"" HD Monitor dvi/hdmi/vga 50/60Hz",VIDEO,,30.00
+VIMO0235,"BenQ - BL2711U 27"" UHD monitor",VIDEO,,35.00
+VIMO0690,"Benq - PD2705U-T 27"" 4K IPS monitor Calibrated HDR-10, USB-C",VIDEO,,45.00
+VICO0576,"Roland - V-600UHD, 4K HDR Multi-format Video Switcher",VIDEO,,350.00
+VICO0820,Roland - V-800HD Multi-format Seamless Video Switcher,VIDEO,,350.00
+VICO0822,Roland - V-800HD MKII Multi-format Seamless Video Switcher,VIDEO,,350.00
+VICO0573,"Roland - VR-50HD, Audio/Video Multi format Switcher/Mixer",VIDEO,,300.00
+VICO0543,Roland - XS-1HD Multi-format Seamless Video Switcher,VIDEO,,100.00
+VICO0548,Roland - V-1HD HDMI multi-format Seamless Video Switcher,VIDEO,,85.00
+VICO0545,Roland - V-1SDI 3G-SDI multi-format Seamless Video Switcher,VIDEO,,95.00
+VICO0293,"Roland - VC-100UHD, 4K SDI/HDMI Seamless Scaler/ converter",VIDEO,,225.00
+VICO0199,"Lightware - MX2 8x8 HDMI20-L, 8x8 HDMI Matrix",VIDEO,,225.00
+VICO0225,Lightware - MX2 16x16 HDMI20 Audio-R 16x16 HDMI Matrix,VIDEO,,475.00
+VICO0563,Roland - XS-84H 8:4 HDMI Matrix Seamless Video Switcher,VIDEO,,350.00
+VICO0201,"Lightware - MX8x8DVI-HDCP-Pro, 8x8 DVI Matrix",VIDEO,,225.00
+VICO0221,"Lightware - MX16x16DVI-Plus, 16x16 DVI Matrix",VIDEO,,350.00
+VIVI0281,Blackmagic Design - Videohub 40x40 12G,VIDEO,,170.00
+VIVI0285,Blackmagic Design - Videohub 80x80 12G,VIDEO,,400.00
+VICO0193,BlackMagic Design - 3G SDI 16x16 Matrix Rack,VIDEO,,120.00
+VICO0173,"BMD - Ultimatte12 Keying processor, 12G SDI UHD60, 10bit",VIDEO,,400.00
+VICO0177,"BMD - Ultimatte Smart remote 4, remote for Ultimatte12",VIDEO,,175.00
+VIVI0098,"Blackmagic Design - Micro Converter SDI/HDMI 12G, Bi-Dir",VIDEO,,25.00
+VICO0610,"Decimator - MDCrossV2 HDMI SDI X-Converter, SDI DA1:2(4)",VIDEO,,25.00
+VICO0615,"Decimator - 12G-Cross, 4K HDMI/SDI Bi-directional converter",VIDEO,,37.50
+VIVI0317,"Decimator - DMON-12S, 12 Channel 3G/HD/SD-SDI Multiviewer",VIDEO,,60.00
+VIVI0195,Blackmagic Design - Multiview 4 6G-SDI +Mini Smart Panel KIT,VIDEO,,40.00
+VIVI0219,"Magewell - USB capture HDMI+ loop + 3,5mm audio in 4K dongle",VIDEO,,45.00
+VIVI0223,Magewell - 12G SDI 4K Plus + loop to Full NDI 4K dongle,VIDEO,,60.00
+VICO0542,Roland - VC-1-SC Up/Down/cross scaler,VIDEO,,35.00
+VIVI0511,Roland - VC-1-DL HDMI/SDI x-converter/AV-delay,VIDEO,,20.00
+VIVI0297,Blackmagic Design - Teranex Mini Audio>SDI 12G + Smart Panel,VIDEO,,25.00
+VIVI0930,HDCP - HDMI to DVI-D converter,VIDEO,,20.00
+VICO0305,Lightware - HDMI20 OPTC TX/RX220 optical KIT,VIDEO,,200.00
+VIVI0123,Kramer - 673 4ch 3G HD-SDI over single fiber KIT:,VIDEO,,125.00
+VIVI0119,Kramer - TP-580TXR HDMI over HDBaseT Transmitter,VIDEO,,10.00
+VICO0853,Datapath - FX-4/DP Multi Display control 4K@60Hz,VIDEO,,200.00
+VICO0855,"Datapath - X-4 Multi Display control, 4 screens, DVI",VIDEO,,75.00
+VIVI0934,Kramer - VM-4H2 1:4 HDMI 2.0 Distribution Amplifier,VIDEO,,30.00
+VIVI0136,Kramer - VM-3H2 1:3 HDMI 2.0 Distribution Amplifier,VIDEO,,25.00
+VIVI0965,Kramer - VM-10H2 1:10 HDMI 2.0 Distribution Amplifier,VIDEO,,60.00
+VIVI0932,Kramer - VM-4HDxl 1:4 3G/HD/SD-SDI Distributor,VIDEO,,25.00
+VIVI0126,Kramer - VM-10HDxl 1:10 3G/HD/SD-SDI Distributor,VIDEO,,30.00
+VICA0141,Panasonic - AW-UE70 UHD Intergrated Camera HD-SDI black,VIDEO,,175.00
+VICA0150,Panasonic - AW-HE120KEJ Intergrated Camera HD-SDI black,VIDEO,,235.00
+VICA0145,Panasonic - AW-UE150KEJ 4K Intergrated Camera HD-SDI black,VIDEO,,350.00
+VICA0147,Panasonic - AW-HE130KEJ Intergrated Camera HD-SDI black,VIDEO,,275.00
+VICA0151,Panasonic - AW-RP50EJ Remote Camera Controller,VIDEO,,100.00
+VICA0154,Panasonic - AW-RP120EJ Remote Camera Controller,VIDEO,,335.00
+VICA0160,Panasonic - AW-RP150G Remote Camera Controller,VIDEO,,350.00
+VICA0102,Panasonic - AG-DVX200 4K Camcorder,VIDEO,,175.00
+VICA0025,Marshall - CV346 HD Compact Camera,VIDEO,,30.00
+VICA0188,"RGBLink - PTZ Intergrated Camera 20x Zoom, NDI, SDI/HDMI",VIDEO,,75.00
+VIST0800,"Manfrotto - MVH502A,546BK tripod for camera",VIDEO,,25.00
+VIST0810,"Manfrotto - 181B, foldable dolly for MVH502A Tripod [1 Pc]",VIDEO,,25.00
+VICA0518,Bosch - VG5-7230EPC4 - autodome IP camera,VIDEO,,250.00
+VICA0519,Bosch - VG5-7230EPC5 - autodome IP camera,VIDEO,,250.00
+VICA0390,AXIS - T8310 Video Surveillance Control Board KIT,VIDEO,,65.00
+VICA0028,Axis - M3046-V 4MP IP camera + micro HDMI & SD Card,VIDEO,,40.00
+VICA0541,SuperMicro - SYS7048AT Security Center Server / Client KIT:,VIDEO,,650.00
+VICA0544,SuperMicro - SYS7048AT Security Center Client KIT:,VIDEO,,325.00
+GELA0116,L-Acoustics - X4i 4-6,SOUND,,10.00
+GELA0094,L-Acoustics - 5XT 4-6,SOUND,,20.00
+GELA0071,L-Acoustics - X8 2-4,SOUND,,30.00
+GELA0079,L-Acoustics - X12 2,SOUND,,37.50
+GELA0087,L-Acoustics - X15 HiQ 2,SOUND,,45.00
+GELA0026,L-Acoustics - SYVA Top 2,SOUND,,125.00
+GELA0028,L-Acoustics - SYVA LOW 2,SOUND,,50.00
+GELA0147,L-Acoustics - A-10 Focus 2,SOUND,,50.00
+GELA0146,L-Acoustics - A-10 Wide 2,SOUND,,50.00
+GELA0149,L-Acoustics - A-15 Focus 2,SOUND,,75.00
+GELA0148,L-Acoustics - A-15 Wide 2,SOUND,,75.00
+GELA0141,L-Acoustics - KIVA II 4-6,SOUND,,45.00
+GELA0198,L-Acoustics - KARA II 3-6,SOUND,,60.00
+GELA0204,L-Acoustics - K3 2-4,SOUND,,105.00
+GELA0192,L-Acoustics - K2 2-4,SOUND,,125.00
+GELA0190,L-Acoustics - K1 4,SOUND,,172.50
+GELA0254,"L-Acoustics - L2 10°, KIT [1 piece]",SOUND,,640.00
+GELA0256,"L-Acoustics - L2D 60°, KIT [1 piece]",SOUND,,640.00
+GELA0214,L-Acoustics - SB-15M subwoofer 1-2,SOUND,,30.00
+GELA0232,L-Acoustics - SB-15P Powered subwoofer 2,SOUND,,60.00
+GELA0194,L-Acoustics - K1 Sub 4,SOUND,,65.00
+GELA0219,"L-Acoustics - SB18, subwoofer 1-3",SOUND,,35.00
+GELA0218,"L-Acoustics - KS21, subwoofer 1-3",SOUND,,70.00
+GELA0221,"L-Acoustics - KS28, subwoofer 1-4",SOUND,,100.00
+PRTO0907,"Teqsas - LAP-TEQ, Clinometer Sensor Module 2",SOUND,,37.50
+PRTO0906,"Teqsas - LAP-TEQ, Clinometer Display Module",SOUND,,100.00
+PRTO0432,Measurement KIT (Angle/distance),SOUND,,100.00
+GELA0360,L-Acoustics - LA 4X/1 AES amprack KIT,SOUND,,65.00
+GELA0362,L-Acoustics - LA 4X/2 AES amprack KIT,SOUND,,150.00
+GELA0363,"L-Acoustics - LA 4X/3 AES amprack, 32A CEE red KIT",SOUND,,235.00
+GELA0369,L-Acoustics - LA 8/1 AES amprack KIT,SOUND,,75.00
+GELA0376,"L-Acoustics - LA 8/3 AES amprack, 32A CEE red KIT",SOUND,,295.00
+GELA0354,L-Acoustics - LA 12X/1 AES amprack KIT,SOUND,,145.00
+GELA0359,"L-Acoustics - LA 12X/3 AES/AVB amprack, 32A CEE red KIT",SOUND,,575.00
+GELA0348,L-Acoustics - LA 7.16 multi-channel AVB amprack KIT,SOUND,,285.00
+GELA0349,"L-Acoustics - LA 7.16/3 AVB amprack, 32A CEE red KIT",SOUND,,895.00
+GELA0317,L-Acoustics - P1 AVB processor (4in/4out or 4in/4out AES),SOUND,,170.00
+GELA0315,"Dolby - Lake, LM-44 processor (4in/4out or 8in/8out AES)",SOUND,,100.00
+GELA0080,L-Acoustics - X-UL12 Long Ubracket for X12 incl. QT,SOUND,,8.00
+GELA0082,L-Acoustics - X-US1215 Short Ubracket for X12/X15 incl. QT,SOUND,,8.00
+GELA0088,L-Acoustics - X-UL15 Long Ubracket for X15 incl. QT,SOUND,,8.00
+GELA0481,L-Acoustics - A-10BUMP Flying Frame for vertically arraying,SOUND,,27.50
+GELA0482,L-Acoustics - A-10LIFT Flying Frame for horizontal arraying,SOUND,,10.00
+GELA0485,L-Acoustics - A-15BUMP Flying Frame for vertically arraying,SOUND,,32.50
+GELA0486,L-Acoustics - A-15LIFT Flying Frame for horizontal arraying,SOUND,,10.00
+GELA0487,L-Acoustics - ATILT for stacking A-10 and A-15,SOUND,,27.50
+GELA0488,L-Acoustics - AMOUNT pole mount for A-10 and A-15,SOUND,,6.50
+GELA0490,L-Acoustics - X-Bar rigging bar for one A-10 / A-15,SOUND,,4.50
+GELA0677,L-Acoustics - KIBU SB Bumper KIT,SOUND,,60.00
+GELA0684,L-Acoustics - KIET Empty (Rigging element for max. 2 KIVA),SOUND,,7.50
+GELA0776,L-Acoustics - KARA bumper KIT,SOUND,,100.00
+GELA0693,L-Acoustics - M-Jack SET for Kara,SOUND,,80.00
+GELA0777,L-acoustics - KARA Pullback plate KIT,SOUND,,30.00
+GELA0782,L-Acoustics - Kara Link KIT (rigging for Kara under K2),SOUND,,50.00
+GELA0789,L-Acoustics - Kara under K3 Link Kit [2 Pieces],SOUND,,50.00
+GELA0184,L-Acoustics - Kara MINIBU with Extension arms KIT,SOUND,,35.00
+GELA0689,L-Acoustics - M-Jack Angarmex,SOUND,,1.25
+GELA0786,L-Acoustics - K3 bumper KIT,SOUND,,150.00
+GELA0788,L-Acoustics - K3 Tilt for Stacking KIT [2 Pieces],SOUND,,125.00
+GELA0775,L-Acoustics - K2 bumper KIT,SOUND,,180.00
+GELA0784,L-Acoustics - K2 rigbar KIT (rigging for 12x K2 or Pullback),SOUND,,50.00
+GELA0779,L-Acoustics - K2 Link KIT (rigging for 1array K2 under K1),SOUND,,10.00
+GELA0694,"L-Acoustics - K-Jack SET for K2, K3, KS21 & KS28",SOUND,,40.00
+GELA0750,L-Acoustics - L2 Bumper KIT,SOUND,,195.00
+GELA0759,L-Acoustics - K1 bumper KIT,SOUND,,230.00
+GELA0411,L-Acoustics - KS28 Sub Bumper KIT,SOUND,,80.00
+GELA0377,L-Acoustics - LARAK Bump,SOUND,,20.00
+GEME0338,"QSC - CP8, Compact active 2-way speaker 4",SOUND,,12.50
+GEME0325,"QSC - K10.2, active 2-way DSP speaker 2",SOUND,,22.50
+GEME0328,"QSC - K12.2, active 2-way DSP speaker 2",SOUND,,25.00
+GEME0332,"QSC - KS118, 18"" active DSP Subwoofer",SOUND,,50.00
+GEME0452,"QSC - LS118, 18"" active Dante Subwoofer",SOUND,,70.00
+GEME0343,QSC - Vertical Hangingbracket with Triggerclamp for K10.2 2-4,SOUND,,10.00
+GEME0346,QSC - Vertical Hangingbracket with Triggerclamp for K12.2 2-4,SOUND,,12.50
+GEME0412,"QSC - LA108, Dante powered line array element 3-4",SOUND,,45.00
+GEME0426,"QSC - LA112, Dante powered line array element 4",SOUND,,30.00
+GEME0430,"QSC - LA108 AF, Bumperkit for LA108",SOUND,,30.00
+GEME0440,"QSC - LA112 AF, Bumperkit for LA112",SOUND,,40.00
+GEAL0060,Crown - XTI 2002 Single amprack KIT,SOUND,,40.00
+GEAL0061,Crown - XTI 2002 Dual amprack KIT,SOUND,,60.00
+GEAL0063,Crown - I-TECH 3500HD Single amprack KIT,SOUND,,85.00
+GEAL0002,JBL - AC-15 Loudspeaker incl. Fly bracket 4,SOUND,,7.50
+GEAL0004,JBL - AC-26 Loudspeaker incl. Fly bracket 2-6,SOUND,,35.00
+GEAL0006,JBL - AM- 7212 Loudspeaker incl. Fly bracket 4,SOUND,,50.00
+GETA0221,Yamaha - TF-1 Digital mixing Desk,SOUND,,80.00
+GETA0224,Yamaha - QL-1 Digital mixing Desk,SOUND,,215.00
+GETA0223,Yamaha - QL-5 Digital mixing Desk,SOUND,,345.00
+GETA0225,Yamaha - CL-1 Digital mixing Desk,SOUND,,295.00
+GETA0226,Yamaha - CL-3 Digital mixing Desk,SOUND,,350.00
+GETA0227,Yamaha - CL-5 Digital mixing Desk,SOUND,,450.00
+GETA0932,"Yamaha - DM3s Digital mixing Desk, No Dante, 96kHz",SOUND,,80.00
+GETA0933,"Yamaha - DM3 Digital mixing Desk, Dante, 96kHz",SOUND,,90.00
+GETA0938,"Yamaha - DM7 Compact Digital mixing Desk, Dante, 96kHz",SOUND,,270.00
+GETA0942,"Yamaha - DM7 Digital mixing Desk, Dante, 96kHz",SOUND,,495.00
+GETA0169,"Yamaha - DM7-EX, Dante Digital Mixer with extension set",SOUND,,655.00
+GETA0210,Yamaha - I/O Dante Rack 16-8 - Rio1608D KIT,SOUND,,110.00
+GETA0214,Yamaha - I/O Dante Rack 32-16 - Rio3224D KIT,SOUND,,175.00
+GETA0211,Yamaha - I/O Dante Rack D2 16-8 - Rio1608-D2 KIT,SOUND,,125.00
+GETA0215,Yamaha - I/O Dante Rack D2 32-16 - Rio3224-D2 KIT,SOUND,,195.00
+GETA0219,Yamaha - DSP-R10 DSP Engine for PM-10,SOUND,,600.00
+GETA0218,Yamaha - RPio622 I/O Rack for PM-10,SOUND,,600.00
+GETA0426,"DiGiCo - S21, Live Digital Console",SOUND,,150.00
+GETA0533,DiGiCo - SD12 96ch. Update incl. Optocore module,SOUND,,575.00
+GETA0532,"DiGiCo - SD11, Live Digital Console",SOUND,,200.00
+GETA0515,"DiGiCo - SD8, Live Digital Console incl. opticalcon",SOUND,,600.00
+GETA0420,"DiGiCo - SD10, Live Digital Console incl. opticalcon",SOUND,,775.00
+GETA0417,"DiGiCo - SD10-T, Live Digital Console incl. opticalcon",SOUND,,875.00
+GETA0920,"DiGiCo- Quantum, Q225 PULSE Live Digital Console, HMA+Waves",SOUND,,825.00
+GETA0480,DiGiCo - SD rack MINI 32Bit 16in/16out [no infra] OpticalCON,SOUND,,240.00
+GETA0452,"DiGiCo - MQ-Rack, 48 in/ 20 out/ 4xAES/EBU out",SOUND,,220.00
+GETA0475,"DiGiCo - SD rack, 56in/24out/4AES [LK37 infra] Optocore",SOUND,,425.00
+GETA0476,"DiGiCo - SD rack, 56in/32out/4AES [LK150 infra] OpticalCON",SOUND,,425.00
+GETA0478,"DiGiCo - SD rack 32 Bit, 56in/32out/8AES [LK150] OpticalCON",SOUND,,550.00
+GETA0368,Allen & Heath - SQ5 Digital Console KIT,SOUND,,100.00
+GETA0360,Allen & Heath - DLIVE S7000 Console KIT,SOUND,,450.00
+GETA0382,Allen & Heath - DLIVE DX168 (16in + 8out Analog),SOUND,,40.00
+GETA0364,Allen & Heath - DLIVE DM64 Digital I/O 64in/32out Rack KIT,SOUND,,350.00
+GEOB0731,"Waves - MaxxBCL, Bass and Level enhancement and compressor",SOUND,,85.00
+GEOB0030,"Waves - Soundgrid Server C + Axis One computer I5, [1 Pc]",SOUND,,185.00
+GEOB0451,"Lexicon - PCM 91, Digital Reverberator",SOUND,,11.00
+GEOB0452,"Lexicon - 480L, Digital Effects System",SOUND,,100.00
+GEOB0456,"Lexicon - 960L, Digital Effects System",SOUND,,250.00
+GEOB0714,"Avalon - Vt 737sp, Mono PreAmp - compressor - equaliser",SOUND,,100.00
+GEOB0715,"Avalon - Vt 747sp, Twinsignal path opto-compressor-equaliser",SOUND,,100.00
+GEOB0720,"Tube Tech - LCA 2B, TUBE VCA compressor",SOUND,,75.00
+GEOB0722,Tube Tech - MMC 1A Mic preamp & multi compressor,SOUND,,75.00
+GEOB0700,Manley - Voxbox Combo,SOUND,,100.00
+GEOB0712,"Summit Audio - TLA-100A, Tube leveling amplifier",SOUND,,45.00
+GEOB0314,"BSS - DPR-901II, Mono 4-Bands Multi band Compressor [1pc]",SOUND,,35.00
+GEOB0411,Bricasti - M7 Stereo Reverb processor,SOUND,,200.00
+GEOB0718,Empirical Labs - Distressor EL-8,SOUND,,50.00
+PRCO0708,"Riedel - Bolero, Wireless POE Stand Alone antenna KIT [1 Pc]",SOUND,,75.00
+PRCO0712,"Riedel - Bolero, I/O audio interface KIT [1 Piece]",SOUND,,85.00
+PRCO0710,"Riedel - Bolero, EPS-1005 External PSU for antenna [1 Pc]",SOUND,,55.00
+PRCO0603,GreenGo - Wired intercom BPX KIT [4 pieces],SOUND,,140.00
+PRCO0605,GreenGo - Wired intercom BPX KIT [6 pieces],SOUND,,210.00
+PRCO0607,GreenGo - Wireless intercom WBPX KIT [4 pieces],SOUND,,300.00
+PRCO0608,GreenGo - Wireless intercom WBPX KIT [6 pieces],SOUND,,450.00
+PRCO0610,GreenGo - WAA active antenna for WBPX + SW5 switch,SOUND,,55.00
+PRCO0611,GreenGo - MCXD 32 channel wired desk station,SOUND,,65.00
+PRCO0630,GreenGo - InterfaceX V4 2x4wire 2wire audio interface KIT,SOUND,,35.00
+PRCO0633,GreenGo - Beacon Signal Flasher Call Light,SOUND,,10.00
+PRCO0114,GreenGo - HS-200D Headset (double-ear),SOUND,,10.00
+PRCR0212,Kenwood - NX-320E3 Digital Radio UHF (Nexedge K1) [1 Piece],SOUND,,30.00
+PRCR0210,Kenwood - NX-1300NE3 Digital Radio UHF(Nexedge K1) [1 Piece],SOUND,,35.00
+PRCR0416,Kenwood - NX-1800NE Base Station UHF NXDN/DMR 260 ch.,SOUND,,30.00
+PRCO0414,"Kenwood - TK3401E Digital 2-Way Radio, 16CH [6 Pieces]",SOUND,,150.00
+PRCR0202,Kenwood - TK3701D Digital 2-way Radio (K1) [1 Piece],SOUND,,25.00
+PRCO0416,"Kenwood - TK3701E Digital 2-Way Radio, 16CH [6 Pieces]",SOUND,,160.00
+PRCR0394,Motorola - DM3400 Base Station UHF Digital [1 Piece],SOUND,,50.00
+PRCR0424,Mototrbo - SLR5500 repeater UHF1 [1 Piece],SOUND,,200.00
+PRCR0226,Mototrbo - DP2400E Digital Radio UHF (M12) [1 Piece],SOUND,,30.00
+PRCR0228,Mototrbo - DP2600E Digital Radio UHF (M12) [1 Piece],SOUND,,30.00
+PRCR0232,Mototrbo - DP3400E Digital Radio UHF (M7) [1 Piece],SOUND,,30.00
+PRCR0244,Motorola - CP40 Digital Radio UHF 16ch. (M1) [1 Piece],SOUND,,25.00
+GEDJ0139,"Pioneer - CDJ-2000 Nexus II, CD Player",SOUND,,80.00
+GEDJ0137,"Pioneer - CDJ-3000, DJ Multiplayer [USB/SD/HDD]",SOUND,,80.00
+GEDJ0346,Pioneer - DJM-900NXS2,SOUND,,60.00
+GEDJ0351,Pioneer - DJM-2000 Nexus,SOUND,,50.00
+GEDJ0352,Pioneer - DJM-A9 4-Channel DJ Mixer,SOUND,,70.00
+GEDJ0356,Pioneer - DJM-V10 Six channel DJ Mixer,SOUND,,135.00
+GEDJ0158,Pioneer - RMX-1000 Remix Station,SOUND,,40.00
+GEDJ0390,Allen & Heath - Xone 92,SOUND,,50.00
+GEDJ0392,Allen & Heath - Xone 96,SOUND,,75.00
+GEDJ0811,"Rent-All - DJ booth ""Chesterfield small""",SOUND,,100.00
+GEDJ0812,"Rent-All - DJ booth ""Chesterfield""",SOUND,,100.00
+GEZZ0233,Rent-All - Suncover for Pioneer CDJ-2000 & 3000,SOUND,,5.00
+GEWL0600,"Shure - ULXD 4D, Dual Receiver, H51 534-598MHz, ch.29/36",SOUND,,65.00
+GEWL0602,"Shure - ULXD 4Q, Quad Receiver, H51 534-598MHz, ch.29/36",SOUND,,125.00
+GEWL0608,"Shure - ULXD D1, bodypack transmitter, H51 534-598MHz, ch.29/36",SOUND,,15.00
+GEWL0606,"Shure - ULXD D2, handheld transmitter, H51 (no head) 534-598MHz, ch.29/36",SOUND,,20.00
+GEWL0620,"Shure - ULXD D8 Gooseneck Base Transmitter, H51 534-598MHz, ch.29/36",SOUND,,40.00
+GEWL0700,"Shure - AD4D-E, Dual Wireless Digital Receiver, G56 470-636MHz, ch.21/41",SOUND,,110.00
+GEWL0702,"Shure - AD4Q-E, Quad Wireless Digital Receiver, G56 470-636MHz, ch.21/41",SOUND,,220.00
+GEWL0708,"Shure - AD1, Bodypack Transmitter, G56 470-636MHz, ch.21/41",SOUND,,17.50
+GEWL0709,"Shure - ADX1, Bodypack Transmitter, G56 470-636MHz, ch.21/41",SOUND,,45.00
+GEWL0710,"Shure - ADX1M, bodypack transmitter, G56 (Lemo) 470-636MHz, ch.21/41",SOUND,,90.00
+GEWL0706,"Shure - AD2, Handheld Transmitter, G56 (no head) 470-636MHz, ch.21/41",SOUND,,20.00
+GEWL0707,"Shure - ADX2, Handheld Transmitter, G56 (no head) 470-636MHz, ch.21/41",SOUND,,70.00
+GEMI1712,"Shure - SM 58, Head",SOUND,,5.00
+GEMI1706,"Shure - Beta 58A, Head",SOUND,,7.50
+GEMI1702,"Shure - Beta 87A, Head",SOUND,,7.50
+GEWL1712,"Shure - KSM8, Head black",SOUND,,20.00
+GEWL1714,"Shure - KSM9, Head black",SOUND,,20.00
+GEWL1716,"Shure - KSM9 HS, Head black",SOUND,,20.00
+GEWL1718,"Shure - KSM11, Head black",SOUND,,25.00
+GEWL1720,"Shure - Nexadyne 8/C, Cardioid Dynamic , Head Black",SOUND,,7.50
+GEWL1722,"Shure - Nexadyne 8/S, Supercardioid Dynamic , Head Black",SOUND,,7.50
+GEMI1672,DPA - D:facto Supercardioid mic head [1pc],SOUND,,25.00
+GEWL1325,"Shure - SBRC-E, Battery Rack Charger (for 8x SB900)",SOUND,,100.00
+GEWL1335,"Shure - SBRC-E, Battery Rack Charger (for 8x SB910)",SOUND,,100.00
+GEWL1334,"Shure - SBRC-E, Battery Rack Charger (for 8x SB910M)",SOUND,,100.00
+GEWL1333,"Shure - SBRC-E, Battery Rack Charger (for 8x SB920)",SOUND,,100.00
+GEWL1942,"Shure - UA845-UWB-E, antenna distribution (VHF & UHF) Antenna, 174-1805MHz",SOUND,,35.00
+GEWL1940,"Shure - UA845-SWB-E, active antenna splitter Antenna, 470-952MHz",SOUND,,32.00
+GEMI0155,"Shure - UA870-WB or UA874-WB, UHF active directional antenna Antenna, 470-900MHz",SOUND,,14.00
+GEMI0156,"Shure - UA860-SWB passive UHF omni-directional antenna Antenna, 470-1100MHz",SOUND,,5.00
+GEWL1353,"Shure - Axient AXT630E, Antenna Distribution Antenna, 470-698MHz",SOUND,,35.00
+GEWL1320,"Shure - Axient AXT600-E, Spectrum Manager 470-952MHz",SOUND,,150.00
+GEWL1319,"Shure - AD 600, Digital Spectrum Manager Wide Band 174-2400MHz",SOUND,,190.00
+GEWL1388,"Shure - Axient AD610, Showlink Access Point diversity",SOUND,,15.00
+GEIE0150,"Shure - AD PSM IEM 2-WAY KIT, CH41/48 [G56] 470-636MHz, ch.21/41",SOUND,,185.00
+GEIE0152,"Shure - AD PSM IEM 4-WAY KIT, CH41/48 [G56] 470-636MHz, ch.21/41",SOUND,,475.00
+GEIE0624,"Shure - ADXR=-A, IEM Bodypack Receiver, G56 470-636MHz, ch.21/41",SOUND,,35.00
+GEIE0512,"Shure - P10TE, IEM Dual Wireless Transmitter, G10E 470-542Mhz, ch.21/29",SOUND,,55.00
+GEIE0514,"Shure - P10TE, IEM Dual Wireless Transmitter, J8E 554-626MHz, ch.31/40",SOUND,,55.00
+GEIE0510,"Shure - P10TE, IEM Dual Wireless Transmitter, L8E 626-698MHz, ch.41/48",SOUND,,55.00
+GEIE0613,"Shure - P10R+, IEM Bodypack Receiver, G10E 470-542Mhz, ch.21/29",SOUND,,25.00
+GEIE0614,"Shure - P10R+, IEM Bodypack Receiver, J8E 554-626MHz, ch.31/40",SOUND,,25.00
+GEIE0611,"Shure - P10R+, IEM Bodypack Receiver, L8E 626-698MHz, ch.41/48",SOUND,,25.00
+GEIE0772,"Shure - AD8CE, 8ch. Ant. combiner for AD Digital PSM 470-960MHz",SOUND,,125.00
+GEIE0753,"Shure - PA821B-E, Ant. combiner for IEM (8V) 470-870MHz",SOUND,,100.00
+GEWL0919,"Shure - HA-8089, Helical Antenna for In Ear system 470-900MHz",SOUND,,35.00
+GEIE0704,"Shure - P4HW, Hardwired Bodypack Personal Monitor [PSM400]",SOUND,,25.00
+GEIE0731,"Shure - P9HW, Hardwired Bodypack Personal Monitor",SOUND,,25.00
+GEWL0302,"Sennheiser - EM3732-II Receiver, L 470-638MHz, ch.21/41",SOUND,,100.00
+GEWL0301,"Sennheiser - EM3732-I Receiver, N 614-702MHz, ch.39/49",SOUND,,100.00
+GEWL0303,"Sennheiser - EM3732-II Receiver, N 622-790MHz, ch.40/60",SOUND,,100.00
+GEWL0560,"Sennheiser - SK5212-II bodypack transmitter, L 470-638MHz, ch.21/41",SOUND,,35.00
+GEWL0535,"Sennheiser - SKM5200-II BK handheld transmitter, L (no head) 470-636MHz, ch.21/41",SOUND,,35.00
+GEWL0561,"Sennheiser - SK5212-II bodypack transmitter, N 622-790MHz, ch.40/61",SOUND,,35.00
+GEWL0538,"Sennheiser - SKM5200-II BK handheld transmitter, N (no head) 622-790MHz, ch.40/61",SOUND,,35.00
+GEWL0541,"Sennheiser - SKM5200-II SB handheld transmitter, N (no head) 622-790MHz, ch.40/61",SOUND,,35.00
+GEWL0803,"Sennheiser - ME5005, super cardioid head",SOUND,,7.50
+GEWL0804,"Neumann - KK104S, cardioid head (for Sennheiser) black",SOUND,,15.00
+GEWL0910,"Sennheiser - ASA 3000-EU, Active antenna splitter Antenna, 470-870MHz",SOUND,,30.00
+GEMI0916,"Sennheiser - AD 3700, Directional antenna Antenna, 470-866MHz",SOUND,,100.00
+GEMI0915,"Sennheiser - A 3700, Active Omni Directional antenna Antenna, 470-866MHz",SOUND,,17.50
+GEMI0302,Shure - SM 81 Cardioid Condenser Microphone,SOUND,,10.00
+GEMI0311,Shure - beta 98 AMP/C miniature cardioid Microphone,SOUND,,6.00
+GEMI0086,Shure - betaWB98H/C Cardioid condenser instrument Microphone,SOUND,,10.00
+GEMI0117,Shure - KSM 27 Large-diaphragm Cardioid Microphone,SOUND,,10.00
+GEMI0326,Shure - KSM32/CG Large Diaphragm Cardioid Microphone,SOUND,,15.00
+GEMI0129,Shure - KSM 137 Cardioid Condenser Microphone,SOUND,,8.00
+GEMI0225,"Shure - Nexadyne 8/C, Cardioid Dynamic Microphone [Black]",SOUND,,10.00
+GEMI0332,Shure - SM 87 Supercardioid condenser vocal Microphone,SOUND,,10.00
+GEMI0306,Shure - beta 87(A) Supercardioid condenser Microphone,SOUND,,9.00
+GEMI0720,"Shure - beta 98 D/S, Mini Supercardioid Condenser Drum Mic",SOUND,,12.00
+GEMI0226,"Shure - Nexadyne 8/S, Supercardioid Dynamic Microphone",SOUND,,10.00
+GEMI0049,Shure - MX 418/C Gooseneck Microphone [2 Pieces] KIT,SOUND,,14.00
+GEMI0047,Shure - MX 418S Gooseneck Microphone [4 Pieces] KIT,SOUND,,28.00
+GEMI0039,Shure - MX 400DP/MX 410LP C Discusion Microphone [4 pcs] KIT,SOUND,,30.00
+GEMI0995,"Shure - TH53T-O-MTQG, Twinplex Omni Headband, beigé TA4F",SOUND,,28.00
+GEMI0181,Sennheiser - MD521 Cardioid dynamic Microphone,SOUND,,15.00
+GEMI0137,"Sennheiser - e904, Cardioid Dynamic drum Microphone",SOUND,,10.00
+GEMI0140,Sennheiser - e908 B-ew Cardioid condenser Clip-on Microphone,SOUND,,10.00
+GEMI0138,"Sennheiser - e608, Supercardioid Dynamic Clip-on Microphone",SOUND,,10.00
+GEMI0136,"Sennheiser - e906, Supercardioid Dynamic Microphone",SOUND,,10.00
+GEMI0197,Sennheiser - MD 441 Super Cardioid Dynamic Microphone,SOUND,,15.00
+GEMI0370,Sennheiser - MKH-55 Supercardioid condenser Microphone,SOUND,,30.00
+GEMI0608,Sennheiser - MKE 40 Microphone (TA4F),SOUND,,17.50
+GEMI0354,Sennheiser - MKH-40 cardioid condenser Microphone,SOUND,,20.00
+GEMI0358,Sennheiser - MKH-416 shotgun Condenser Microphone,SOUND,,15.00
+GEMI0373,Sennheiser - AmbeoVR cardioid ambisonic condenser [1 Piece],SOUND,,45.00
+GEMI0482,"Sennheiser - HSP4 Cardioid Headset, beige (TA4F)",SOUND,,30.00
+GEMI0359,"Sennheiser - MZH 3040 + ME35, Gooseneck Mic [2 Pieces]",SOUND,,25.00
+GEMI0356,"Sennheiser - MZH 3042 + ME34, Gooseneck Mic [2 Pieces]",SOUND,,25.00
+GEMI0471,"DPA - 2011c, Twin diaphragm Cardioid condenser Microphone",SOUND,,35.00
+GEMI0680,"DPA - 4011TL, or 4011A Cardioid Microphone P48",SOUND,,35.00
+GEMI0463,"DPA - 4023, Compact Cardioid Microphone",SOUND,,30.00
+GEMI0323,DPA - 4055 open cardioid condenser microphone,SOUND,,30.00
+GEMI0892,"DPA - 4488 CORE F/M, Cardioid Headband, beigé MicroDot",SOUND,,35.00
+GEMI0890,"DPA -4466 CORE F/M, Omnidirectional Headband, beigé MicroDot",SOUND,,35.00
+GEMI0697,"DPA - 4066-F/M, Omnidirectional Headband, beigé (MicroDot)",SOUND,,35.00
+GEMI0698,"DPA - 4088-F/M, Cardioid Headband, beigé (MicroDot)",SOUND,,35.00
+GEMI0768,"DPA - D-VOTE 4099, CORE Microphone [loud SPL, Red]",SOUND,,30.00
+GEMI0769,"DPA - D:VOTE 4099, CORE Microphone [Loud SPL]",SOUND,,30.00
+GEMI0766,"DPA - D:VOTE 4099, CORE Microphone [Extreme Loud]",SOUND,,30.00
+GEMI0468,"DPA - 4060-F/03, Omnidirectional Hi-Sens, beigé (Microdot)",SOUND,,20.00
+GEMI0707,"DPA - 4061-F/03, Omnidirectional, Lo-Sens, beigé (TA4F)",SOUND,,20.00
+GEMI0706,"DPA - 4061-F/03, Omnidirectional, Lo-Sens, beigé (Lemo 3p)",SOUND,,20.00
+GEMI0657,DPA - 4011A Cardioid Microphone on gooseneck 30cm,SOUND,,35.00
+GEMI0660,DPA - 4011A Cardioid Microphone on gooseneck 45cm,SOUND,,35.00
+GEMI0403,"Neumann - KM184mt Cardioid Condenser Microphone, black",SOUND,,15.00
+GEMI0409,Neumann - TLM 103 large-diaphragm cardioid cond. Microphone,SOUND,,25.00
+GEMI0412,Neumann - KMS105 Supercardioid condenser Microphone,SOUND,,15.00
+GEMI0418,Neumann - U87 Multi-Pattern Condenser Microphone Black,SOUND,,50.00
+GEMI0100,AKG - D112 Cardioid dynamic drum Microphone,SOUND,,10.00
+GEMI0141,AKG - C451/CK1 Cardioid condenser Microphone,SOUND,,12.50
+GEMI0276,AKG - C414 XLS Multi-Pattern Condenser Microphone,SOUND,,30.00
+GEMI0348,AKG - C747 shotgun condenser Microphone,SOUND,,15.00
+GEMI0162,Audix - D2 Hypercardioid dynamic drum Microphone,SOUND,,5.00
+GEMI0173,Audix - D4 Hypercardioid dynamic drum Microphone,SOUND,,5.00
+GEMI0552,Audio-Technica - AE3000 Cardioid condenser Microphone,SOUND,,6.00
+GEMI0557,Audio-Technica - at4050 Multi-Pattern Condenser Microphone,SOUND,,20.00
+GEMI0387,"Austrian Audio - CC8 cardioid Condensor Microphone, Black",SOUND,,12.50
+GEMI0437,Austrian Audio - OC818 Multi-Pattern Microphone Black,SOUND,,25.00
+GEMI0151,Beyerdynamic - M88 TG Hypercardioid dynamic Microphone,SOUND,,10.00
+GEMI0572,Yamahiko - CPS-PF1R Condenser Pickup element,SOUND,,35.00
+GEMI0562,Royer Labs - R-121Live Ribbon dynamic Microphone,SOUND,,35.00
+GEMI0575,Schoeps - CMC6 microphone amplifier + MK4 Cardioid head,SOUND,,25.00
+GEMI0797,"Countryman - H6 (O-W6) headset microphone, beigé",SOUND,,15.00
+GEMI0243,Catch box - pro blue,SOUND,,25.00
+GEMI0246,Catch box - pro green,SOUND,,25.00
+GEMI0240,Catch box - pro orange,SOUND,,25.00
+GEMI0244,Catch box - pro dark grey,SOUND,,25.00
+GEMI0802,"BSS - AR133, Active DI box",SOUND,,6.00
+GEMI0806,"Radial - JDI, Passive Direct Box",SOUND,,10.00
+GEMI0812,"Radial - J48, Active Direct Box",SOUND,,10.00
+GEMI0816,"Radial - J48 Stereo, Active Direct Box",SOUND,,15.00
+GEMI0807,"Radial - JDI Stereo, Passive Direct Box",SOUND,,15.00
+GEMI0809,"Radial - JDI Duplex, Dual passive direct box",SOUND,,25.00
+GEMI0813,Radial - Twin iso 2ch line level isolator,SOUND,,10.00
+GEDI0108,Sonifex - Redbox RB-DDA22 AES distributor (1in/6 out),SOUND,,20.00
+GEOB0521,RME audio - MADI face XT USB 3.0 Audio interface [1 Piece],SOUND,,60.00
+GETA0851,"RME audio - MADI Router, 12 port-madi optical, coax, RJ-45",SOUND,,50.00
+GETA0850,"RME audio - MADI Bridge, MADI distributor",SOUND,,25.00
+GETA0554,DiGiCo - UB MADI USB Interface,SOUND,,25.00
+GETA0576,"DiGiCo - Purple box, Madi to optical converter,Multi mode",SOUND,,60.00
+GETA0876,"Optocore - M8-OPT, optical madi switch 256 i/o optocorefiber",SOUND,,80.00
+GETA0854,DirectOut Tec - Split Converter Optical SC and BNC Madi,SOUND,,30.00
+GETA0859,DirectOut Tec - Madi sample rate converter BNC/SC,SOUND,,100.00
+GETA0271,Yamaha - NIO500D16 Dante 16xAES I/O,SOUND,,100.00
+GETA0274,Yamaha - RSIO64-D Audio interface for MY Cards[1 Piece],SOUND,,120.00
+GETA0279,Yamaha - RMio64-D Dante/MADI I/O,SOUND,,125.00
+GETA0495,Mackie - BIG knob Studio command System mixer,SOUND,,25.00
+GEST0102,"K&M - 210/4, Mic Stand S feet/high adj./2p boom [bl] [2 Pcs]",SOUND,,6.00
+GEST0103,"K&M - 210/9, Mic Stand L feet/high adj./2p boom [bl] [2 Pcs]",SOUND,,6.00
+GEST0104,"K&M - 259, Mic Stand S feet/low adj./2p boom [bl] [2 Pcs]",SOUND,,6.00
+GEST0101,K&M - case microphone stands 12x K&M large/boom,SOUND,,35.00
+GEST0105,K&M - case microphone stands 12x K&M low/boom,SOUND,,35.00
+GEST0107,"K&M - 260, Mic stand Ø250mm /high adj. /NO boom [bl] [2 pcs]",SOUND,,6.00
+GEST0108,"K&M - 260, Mic stand Ø250mm /high adj. /NO boom [bl] [6 pcs]",SOUND,,18.00
+GEST0130,K&M - speaker stand 214/6 [black],SOUND,,5.00
+GEST0129,K&M - speaker stand 214/6 B2B [black],SOUND,,5.00
+GEST0128,K&M - 26735 round base speaker stand [2 pieces],SOUND,,10.00
+GEST0124,K&M - 26735 round base speaker stand [6 pieces],SOUND,,30.00
+RITA0110,"Chainhoist manual operated, 1000kg, 10,0m",RIGGING,,15.00
+RITA0111,"Chainhoist manual operated, 1000kg, 12,0m",RIGGING,,17.50
+RITA0322,"ChainMaster - 160kg, D8+, 4m/pm 24,0m",RIGGING,,35.00
+RITA0325,"ChainMaster - 250kg, D8, 4m/pm 24,0m",RIGGING,,32.50
+RITA0327,"ChainMaster - 250kg, D8+, 4m/pm 24,0m",RIGGING,,35.00
+RITA0326,"ChainMaster - 320kg, D8, 4m/pm 24,0m",RIGGING,,32.50
+RITA0360,"ChainMaster - 320kg, D8+ SB, 4m/pm 24,0m",RIGGING,,40.00
+RITA0362,"ChainMaster - 320kg, D8+ SK, 4m/pm 24,0m blackchain",RIGGING,,40.00
+RITA0330,"ChainMaster - 500kg, D8+, 4m/pm 24,0m",RIGGING,,45.00
+RITA0332,"ChainMaster - 500kg, D8+, 4m/pm 36,0m",RIGGING,,60.00
+RITA0364,"ChainMaster - 750kg, D8+, 4m/pm 24,0m",RIGGING,,67.50
+RITA0335,"ChainMaster - 1000kg, D8, 4m/pm 24,0m",RIGGING,,45.00
+RITA0345,"ChainMaster - 1000kg, D8+, 4m/pm 24,0m PK blackchain",RIGGING,,75.00
+RITA0338,"ChainMaster - 1000kg, D8+, 4m/pm 24,0m double part",RIGGING,,75.00
+RITA0343,"ChainMaster - 1000kg, D8+, 4m/pm 36,0m",RIGGING,,75.00
+RITA0350,"ChainMaster - 2000kg, D8, 4m/pm 24,0m double part",RIGGING,,85.00
+RITA0352,"ChainMaster - 2000kg, D8, 4m/pm 36,0m double part",RIGGING,,95.00
+RITA0375,"ChainMaster - 320kg, D8+ Ultra, IP66 4m/pm 24,0m",RIGGING,,45.00
+RITA0381,"ChainMaster - 500kg, D8+ Ultra, IP66 4m/pm 24,0m",RIGGING,,55.00
+RITA0385,"ChainMaster - 500kg, D8+ Ultra, IP66 4m/pm 36,0m",RIGGING,,65.00
+RITA0348,"ChainMaster - 1000kg, D8+, 4m/pm 24,0m PK blackchain IP66",RIGGING,,80.00
+RITA0346,"ChainMaster - 1000kg, D8+, 4m/pm 36,0m PK blackchain IP66",RIGGING,,90.00
+RITA0514,"CM Prostar - B 250kg, D8, DC 4m/pm 20,0m",RIGGING,,35.00
+RITA0522,"CM Lodestar - F 500kg, D8, DC 4m/pm 20,0m",RIGGING,,40.00
+RITA0526,"CM Lodestar - F 500kg, D8, DC 4m/pm 25,0m",RIGGING,,40.00
+RITA0611,"CM Lodestar - L 1000kg, D8, DC 4m/pm 30,0m",RIGGING,,50.00
+RITA0700,"CM Lodestar - L 1000kg, D8 DC 4m/pm, 35,5m",RIGGING,,60.00
+RITA0826,"CM Lodestar - L 1000kg, DC 4m/pm 25,0m double brake",RIGGING,,75.00
+RITA0828,"CM Lodestar - L 1000kg, DC 4m/pm 30,0m double brake",RIGGING,,75.00
+RITA0820,"CM Lodestar - LL 1000kg, D8, DC 8m/pm (DS) 35,5m",RIGGING,,60.00
+RITA0850,"CM Lodestar - RR 2000kg, D8, DC 4m/pm 30,0m double chain",RIGGING,,85.00
+RITA0864,"CM Lodestar - RRS 2000kg, D8, DC 4m/pm, 30,0m",RIGGING,,100.00
+RITA0026,"Movecat - VMK-S 500kg, C1, 24m/pm 24,0m (silver chain)",RIGGING,,300.00
+RITA0011,"Movecat - VMK-S 125kg, C1, 40m/pm 24,0m, (black chain)",RIGGING,,250.00
+RITA0013,"Movecat - VMK-S 250kg, C1, 33m/pm, 24,0m (black chain)",RIGGING,,275.00
+RITA0016,"Movecat - VMK-S 500kg, C1, 24m/pm, 24,0m (black chain)",RIGGING,,300.00
+RITA0041,Movecat - I-Motion basic-C showcontroller,RIGGING,,825.00
+RITA0036,Movecat - I-Motion NDB-6 Network Distribution box,RIGGING,,100.00
+RITA0034,Movecat - I-Motion NMB-14 Network Master box,RIGGING,,225.00
+RITA0038,Movecat - I-Motion NBB Network NDC Booster box,RIGGING,,25.00
+RITA0031,Movecat - V-Motion variable Motion Powerpack for hoist CEE,RIGGING,,187.50
+RITA0063,Movecat - I-Motion MRC-24ID Remote controller,RIGGING,,100.00
+RIKA0503,"Hoist Controller for 1x DC hoist, 16A CEE red",RIGGING,,5.00
+RIKA0541,Rent-All controller for 12x DC hoist 32A CEE/3xH16,RIGGING,,50.00
+RIKA0543,Rent-All controller for 24x DC hoist 63A CEE/6xH16,RIGGING,,125.00
+RIKA0570,"LLT - Controller for 8x DC Hoist, 32A, H16+Socapex [1 Pc]",RIGGING,,75.00
+RIKA0576,"LLT - Controller for 32x DC Hoist, 125A, H16+Socapex [1 Pc]",RIGGING,,350.00
+RITA0070,BroadWeigh - 4.75kN Wireless Loadcell KIT [4 pieces],RIGGING,,350.00
+RITA0071,BroadWeigh - 4.75kN Wireless Loadcell Extension [4 pieces],RIGGING,,225.00
+RITA0073,BroadWeigh - 4.75kN Wireless Loadcell Extension [8 pieces],RIGGING,,450.00
+RIKA0239,"Hoist harting KIT [RED] 16 pins (1,5mm²) 15,0 m [10 piece]",RIGGING,,30.00
+RIKA0240,"Hoist harting KIT [RED] 16 pins (1,5mm²) 20,0 m [10 piece]",RIGGING,,40.00
+RIKA0241,"Hoist harting KIT [RED] 16 pins (1,5mm²) 25,0 m [10 piece]",RIGGING,,50.00
+RIKA0242,"Hoist harting KIT [RED] 16 pins (1,5mm²) 30,0 m [10 piece]",RIGGING,,65.00
+RIKA0244,"Hoist harting KIT [RED] 16 pins (1,5mm²) 35,0 m [10 piece]",RIGGING,,65.00
+RIKA0455,Hoist break-out= harting 16p > 4x 16A CEE red 4p [10pc],RIGGING,,50.00
+RIKA0412,"Hoist cable KIT 4p red Chain Master/Lodes 2,5 m [50 piece]",RIGGING,,60.00
+RIKA0414,"Hoist cable KIT 4p red Chain Master/Lodes 5,0 m [50 piece]",RIGGING,,75.00
+RIKA0416,"Hoist cable KIT 4p red Chain Master/Lodes 10,0 m [40 piece]",RIGGING,,80.00
+RIKA0418,"Hoist cable KIT 4p red Chain Master/Lodes 15,0 m [30 piece]",RIGGING,,75.00
+RIKA0422,"Hoist cable KIT 4p red Chain Master/Lodes 25,0 m [20 piece]",RIGGING,,80.00
+RIKA0430,Hoist cable KIT 4p red Chain Master+ H16 mixed for 12 hoists,RIGGING,,80.00
+TRFA0025,"Eurotruss - FD31 single tube silver 0,25m",RIGGING,,1.50
+TRFA0050,"Eurotruss - FD31 single tube silver 0,50m",RIGGING,,1.50
+TRFA0075,"Eurotruss - FD31 single tube silver 0,75m",RIGGING,,1.50
+TRFA0100,"Eurotruss - FD31 single tube silver 1,00m",RIGGING,,1.50
+TRFA0150,"Eurotruss - FD31 single tube silver 1,50m",RIGGING,,1.75
+TRFA0200,"Eurotruss - FD31 single tube silver 2,00m",RIGGING,,2.00
+TRFA0300,"Eurotruss - FD31 single tube silver 3,00m",RIGGING,,2.50
+TRFA0502,Eurotruss - FD31 single tube silver corner L90 (2-way 90°),RIGGING,,1.50
+TRFA0600,"Eurotruss - FD31 single tube black 0,50m",RIGGING,,1.75
+TRFA0605,"Eurotruss - FD31 single tube black 0,75m",RIGGING,,1.75
+TRFA0601,"Eurotruss - FD31 single tube black 1,00m",RIGGING,,1.75
+TRFA0620,"Eurotruss - FD31 single tube black 1,50m",RIGGING,,2.00
+TRFA0625,"Eurotruss - FD31 single tube black 2,00m",RIGGING,,2.25
+TRFA0635,"Eurotruss - FD31 single tube black 3,00m",RIGGING,,2.75
+TRFA0672,Eurotruss - FD31 single tube black corner L90 (2-way 90°),RIGGING,,2.00
+TRFA0510,Eurotruss - HD/FD31 single tube black boxcorner KIT,RIGGING,,2.50
+TRFA0730,"Rent-All - FD31 stand 2.50m KIT [4 pieces], [black]",RIGGING,,20.00
+TRFB0005,"Eurotruss - FD32 flat silver 0,50m",RIGGING,,2.00
+TRFB0007,"Eurotruss - FD32 flat silver 0,75m",RIGGING,,2.00
+TRFB0010,"Eurotruss - FD32 flat silver 1,00m",RIGGING,,2.00
+TRFB0015,"Eurotruss - FD32 flat silver 1,50m",RIGGING,,2.50
+TRFB0020,"Eurotruss - FD32 flat silver 2,00m",RIGGING,,3.00
+TRFB0026,"Eurotruss - FD32 flat silver 2,50m",RIGGING,,3.50
+TRFB0030,"Eurotruss - FD32 flat silver 3,00m",RIGGING,,4.00
+TRFB0040,"Eurotruss - FD32 flat silver 4,00m",RIGGING,,6.00
+TRFB0502,Eurotruss - FD32 flat silver corner L90/V (2-way 90°),RIGGING,,4.00
+TRFB0050,"Eurotruss - FD32 flat black 0,50m",RIGGING,,1.50
+TRFB0075,"Eurotruss - FD32 flat black 0,75m",RIGGING,,1.50
+TRFB0100,"Eurotruss - FD32 flat black 1,00m",RIGGING,,1.75
+TRFB0150,"Eurotruss - FD32 flat black 1,50m",RIGGING,,2.50
+TRFB0200,"Eurotruss - FD32 flat black 2,00m",RIGGING,,3.00
+TRFB0250,"Eurotruss - FD32 flat black 2,50m",RIGGING,,3.75
+TRFB0300,"Eurotruss - FD32 flat black 3,00m",RIGGING,,4.50
+TRFB0400,"Eurotruss - FD32 flat black 4,00m",RIGGING,,6.00
+TRFB0402,Eurotruss - FD32 flat black corner L90/H (2-way 90°),RIGGING,,4.00
+TRFC0029,"Eurotruss - FD33 triangle silver 0,29m",RIGGING,,2.50
+TRFC0050,"Eurotruss - FD33 triangle silver 0,50m",RIGGING,,2.50
+TRFC0075,"Eurotruss - FD33 triangle silver 0,75m",RIGGING,,2.50
+TRFC0100,"Eurotruss - FD33 triangle silver 1,00m",RIGGING,,2.50
+TRFC0150,"Eurotruss - FD33 triangle silver 1,50m",RIGGING,,3.00
+TRFC0200,"Eurotruss - FD33 triangle silver 2,00m",RIGGING,,4.00
+TRFC0250,"Eurotruss - FD33 triangle silver 2,50m",RIGGING,,5.00
+TRFC0300,"Eurotruss - FD33 triangle silver 3,00m",RIGGING,,6.00
+TRFC0400,"Eurotruss - FD33 triangle silver 4,00m",RIGGING,,9.00
+TRFC0440,Eurotruss - FD33 triangle silver corner L90/H (2-way 90°),RIGGING,,5.50
+TRFC0445,Eurotruss - FD33 triangle silver corner LU/R (3-way 90°),RIGGING,,5.00
+TRFC0446,Eurotruss - FD33 triangle silver corner LU/L (3-way 90°),RIGGING,,5.00
+TRFC0450,Eurotruss - FD33 triangle silver corner T/H (3-way),RIGGING,,4.50
+TRFC0460,Eurotruss - FD33 triangle silver corner X/H (4-way),RIGGING,,5.50
+TRFC0490,Eurotruss - FD33 triangle silver baseplate,RIGGING,,3.00
+TRFC0498,"Eurotruss - FD33 triangle black 0,29m",RIGGING,,3.00
+TRFC0500,"Eurotruss - FD33 triangle black 0,50m",RIGGING,,3.00
+TRFC0501,"Eurotruss - FD33 triangle black 0,75m",RIGGING,,3.00
+TRFC0510,"Eurotruss - FD33 triangle black 1,00m",RIGGING,,3.50
+TRFC0515,"Eurotruss - FD33 triangle black 1,50m",RIGGING,,4.50
+TRFC0520,"Eurotruss - FD33 triangle black 2,00m",RIGGING,,5.00
+TRFC0525,"Eurotruss - FD33 triangle black 2,50m",RIGGING,,6.50
+TRFC0530,"Eurotruss - FD33 triangle black 3,00m",RIGGING,,7.50
+TRFC0540,"Eurotruss - FD33 triangle black 4,00m",RIGGING,,10.00
+TRFC0442,Eurotruss - FD33 triangle black corner L90/H (2-way 90°),RIGGING,,6.00
+TRFC0562,Eurotruss - FD33 triangle black corner T/H (3-way),RIGGING,,5.50
+TRFC0650,Eurotruss - FD33 triangle black corner X/H (4-way),RIGGING,,5.50
+TRFD0100,"Eurotruss - FD34 square silver 1,00m",RIGGING,,4.00
+TRFD0150,"Eurotruss - FD34 square silver 1,50m",RIGGING,,5.00
+TRFD0200,"Eurotruss - FD34 square silver 2,00m",RIGGING,,6.00
+TRFD0250,"Eurotruss - FD34 square silver 2,50m",RIGGING,,7.50
+TRFD0300,"Eurotruss - FD34 square silver 3,00m",RIGGING,,9.00
+TRFD0495,Eurotruss - FD34 square silver corner L45 (2-way 45º),RIGGING,,12.50
+TRFD0502,Eurotruss - FD34 square silver corner L90 (2-way 90º),RIGGING,,6.00
+TRFD0504,Eurotruss - FD34 square silver corner L120 (2-way 120º),RIGGING,,6.00
+TRFD0503,Eurotruss - FD34 square silver corner L135 (2-way 135º),RIGGING,,6.00
+TRFD0600,Eurotruss - FD34 square silver corner LD (3-way 90°),RIGGING,,10.00
+TRFD0602,Eurotruss - FD34 square silver corner T 50/50 (3-way),RIGGING,,10.00
+TRFD0605,Eurotruss - FD34 square silver corner T 71/50 (3-way),RIGGING,,10.00
+TRFD0606,Eurotruss - FD34 square silver corner T 75/50 (3-way),RIGGING,,10.00
+TRFD0608,Eurotruss - FD34 square silver corner TD 50/50 (4-way),RIGGING,,10.00
+TRFD0610,Eurotruss - FD34 square silver corner TD 71/50 (4-way),RIGGING,,10.00
+TRFD0620,Eurotruss - FD34 square silver corner X 50/50 (4-way),RIGGING,,10.00
+TRFD0640,Eurotruss - FD34 square silver corner X 75/50 (4-way),RIGGING,,10.00
+TRFD0635,Eurotruss - FD34 square silver corner X 71/71 (4-way),RIGGING,,10.00
+TRFD0650,Eurotruss - FD34 square silver corner XD 50/50 (5-way),RIGGING,,10.00
+TRFD0645,Eurotruss - FD34 square silver corner XD 75/50 (5-way),RIGGING,,10.00
+TRFD0675,Eurotruss - FD34 square silver bookcorner KIT,RIGGING,,10.00
+TRFD0695,"Eurotruss - FD34 square silver baseplate 0,315 x 0,315m",RIGGING,,3.50
+TRCI0003,"Eurotruss - FD34 Topplate with FD31 Single Tube circle 1,00m",RIGGING,,20.00
+TRON1908,"Rent-All - FD34/44 baseplate 0,58 x 0,58m / ALU square empty",RIGGING,,10.00
+TRON1210,"Rent-All-FD34 baseplate 0,58x0,58m/square empty steel[black]",RIGGING,,7.50
+TRON1902,"Rentall baseplate 0,99 x 0,99m (for FD34/44+XD+ST)empty",RIGGING,,12.50
+TRFD0744,"Eurotruss - FD34 square black 0,21m",RIGGING,,4.00
+TRFD0745,"Eurotruss - FD34 square black 0,25m",RIGGING,,4.00
+TRFD0750,"Eurotruss - FD34 square black 0,29m",RIGGING,,4.00
+TRFD0755,"Eurotruss - FD34 square black 0,50m",RIGGING,,4.00
+TRFD0756,"Eurotruss - FD34 square black 0,71m",RIGGING,,5.00
+TRFD0760,"Eurotruss - FD34 square black 0,75m",RIGGING,,4.00
+TRFD0765,"Eurotruss - FD34 square black 1,00m",RIGGING,,5.00
+TRFD0770,"Eurotruss - FD34 square black 1,50m",RIGGING,,6.00
+TRFD0780,"Eurotruss - FD34 square black 2,00m",RIGGING,,8.00
+TRFD0785,"Eurotruss - FD34 square black 2,50m",RIGGING,,10.00
+TRFD0790,"Eurotruss - FD34 square black 3,00m",RIGGING,,12.00
+TRFD0800,"Eurotruss - FD34 square black 4,00m",RIGGING,,16.00
+TRFD0806,Eurotruss - FD34 square black corner L45 (2-way 45º),RIGGING,,12.50
+TRFD0808,Eurotruss - FD34 square black corner L60 (2-way 60º),RIGGING,,12.50
+TRFD0810,Eurotruss - FD34 square black corner L90 (2-way 90º),RIGGING,,10.00
+TRFD0858,Eurotruss - FD34 square black corner L120 (2-way 120º),RIGGING,,10.00
+TRFD0860,Eurotruss - FD34 square black corner L135 (2-way 135º),RIGGING,,10.00
+TRFD0825,Eurotruss - FD34 square black corner LD (3-way 90°),RIGGING,,10.00
+TRFD0830,Eurotruss - FD34 square black corner T 50/50 (3-way),RIGGING,,10.00
+TRFD0835,Eurotruss - FD34 square black corner T 71/50 (3-way),RIGGING,,12.50
+TRFD0840,Eurotruss - FD34 square black corner TD 50/50 (4-way),RIGGING,,12.50
+TRFD0842,Eurotruss - FD34 square black corner TD 71/50 (4-way),RIGGING,,10.00
+TRFD0843,Eurotruss - FD34 square black corner X 50/50 (4-way),RIGGING,,12.50
+TRFD0844,Eurotruss - FD34 square black corner X 71/71 (4-way),RIGGING,,11.00
+TRFD0846,Eurotruss - FD34 square black corner XD 50/50 (5-way),RIGGING,,11.00
+TRFD0855,Eurotruss - FD34 square black bookcorner KIT,RIGGING,,11.00
+TRFD0730,"Eurotruss - FD34 square black baseplate 0,315 x 0,315m",RIGGING,,5.00
+TRCI0002,"Eurotruss - FD34 Topplate with FD31 Black Tube circle 1,00m",RIGGING,,25.00
+TRHD7011,"Eurotruss - HD34 square silver 0,105m",RIGGING,,5.00
+TRHD7021,"Eurotruss - HD34 square silver 0,21m",RIGGING,,5.00
+TRHD7025,"Eurotruss - HD34 square silver 0,25m",RIGGING,,5.00
+TRHD7029,"Eurotruss - HD34 square silver 0,29m",RIGGING,,5.00
+TRHD7050,"Eurotruss - HD34 square silver 0,50m",RIGGING,,5.00
+TRHD7071,"Eurotruss - HD34 square silver 0,71m",RIGGING,,5.00
+TRHD7075,"Eurotruss - HD34 square silver 0,75m",RIGGING,,5.00
+TRHD7081,"Eurotruss - HD34 square silver 0,81m",RIGGING,,5.00
+TRHD7100,"Eurotruss - HD34 square silver 1,00m",RIGGING,,5.00
+TRHD7125,"Eurotruss - HD34 square silver 1,25m",RIGGING,,6.00
+TRHD7200,"Eurotruss - HD34 square silver 2,00m",RIGGING,,8.00
+TRHD7250,"Eurotruss - HD34 square silver 2,50m",RIGGING,,10.00
+TRHD7300,"Eurotruss - HD34 square silver 3,00m",RIGGING,,12.00
+TRHD7400,"Eurotruss - HD34 square silver 4,00m",RIGGING,,16.00
+TRHD7500,Eurotruss - HD34 square silver corner L45 (2-way 45º),RIGGING,,15.00
+TRHD7505,Eurotruss - HD34 square silver corner L60 (2-way 60º),RIGGING,,15.00
+TRHD7510,Eurotruss - HD34 square silver corner L90 (2-way 90º),RIGGING,,11.00
+TRHD7520,Eurotruss - HD34 square silver corner L135 (2-way 135º),RIGGING,,12.50
+TRHD7525,Eurotruss - HD34 square silver corner LD (3-way 90°),RIGGING,,12.50
+TRHD7530,Eurotruss - HD34 square silver corner T 50/50 (3-way),RIGGING,,12.50
+TRHD7535,Eurotruss - HD34 square silver corner T 71/50 (3-way),RIGGING,,12.50
+TRHD7545,Eurotruss - HD34 square silver corner TD 50/50 (4-way),RIGGING,,15.00
+TRHD7550,Eurotruss - HD34 square silver corner TD 71/50 (4-way),RIGGING,,15.00
+TRHD7555,Eurotruss - HD34 square silver corner X 50/50 (4-way),RIGGING,,12.50
+TRHD7560,Eurotruss - HD34 square silver corner X 71/50 (4-way),RIGGING,,12.50
+TRHD7565,Eurotruss - HD34 square silver corner X 71/71 (4-way),RIGGING,,12.50
+TRHD7575,Eurotruss - HD34 square silver corner XD 50/50 (5-way),RIGGING,,15.00
+TRHD7580,Eurotruss - HD34 square silver corner XD 71/50 (5-way),RIGGING,,15.00
+TRFD0660,Eurotruss - HD34 square silver boxcorner KIT,RIGGING,,20.00
+TRFD0401,"Eurotruss - HD34 square black 0,105m",RIGGING,,5.00
+TRFD0402,"Eurotruss - HD34 square black 0,21m",RIGGING,,6.00
+TRFD0404,"Eurotruss - HD34 square black 0,25m",RIGGING,,6.00
+TRFD0416,"Eurotruss - HD34 square black 0,29m",RIGGING,,6.00
+TRFD0403,"Eurotruss - HD34 square black 0,50m",RIGGING,,6.00
+TRFD0408,"Eurotruss - HD34 square black 0,71m",RIGGING,,6.00
+TRFD0405,"Eurotruss - HD34 square black 0,75m",RIGGING,,6.00
+TRFD0406,"Eurotruss - HD34 square black 1,00m",RIGGING,,7.50
+TRFD0414,"Eurotruss - HD34 square black 1,50m",RIGGING,,8.00
+TRFD0407,"Eurotruss - HD34 square black 2,00m",RIGGING,,10.00
+TRFD0409,"Eurotruss - HD34 square black 2,50m",RIGGING,,12.50
+TRFD0410,"Eurotruss - HD34 square black 3,00m",RIGGING,,14.00
+TRFD0430,Eurotruss - HD34 square black corner L90 (2-way 90°),RIGGING,,10.00
+TRFD0432,Eurotruss - HD34 square black corner LD (3-way 90°),RIGGING,,12.50
+TRFD0434,Eurotruss - HD34 square black corner T 50/50 (3-way),RIGGING,,12.50
+TRFD0436,Eurotruss - HD34 square black corner T 71/50 (3-way),RIGGING,,12.50
+TRFD0438,Eurotruss - HD34 square black corner TD 50/50 (4-way),RIGGING,,12.50
+TRFD0442,Eurotruss - HD34 square black corner X 50/50 (4-way),RIGGING,,12.50
+TRFD0450,Eurotruss - HD34 square black boxcorner KIT,RIGGING,,25.00
+TRFE0021,"Eurotruss - HD44 square silver 0,21m",RIGGING,,5.00
+TRFE0025,"Eurotruss - HD44 square silver 0,25m",RIGGING,,5.00
+TRFE0029,"Eurotruss - HD44 square silver 0,29m",RIGGING,,5.00
+TRFE0050,"Eurotruss - HD44 square silver 0,50m",RIGGING,,5.00
+TRFE0075,"Eurotruss - HD44 square silver 0,75m",RIGGING,,5.00
+TRFE0081,"Eurotruss - HD44 square silver 0,81m",RIGGING,,5.00
+TRFE0100,"Eurotruss - HD44 square silver 1,00m",RIGGING,,5.00
+TRFE0200,"Eurotruss - HD44 square silver 2,00m",RIGGING,,9.00
+TRFE0250,"Eurotruss - HD44 square silver 2,50m",RIGGING,,11.00
+TRFE0300,"Eurotruss - HD44 square silver 3,00m",RIGGING,,13.00
+TRFE0510,Eurotruss - HD44 square silver corner L45 (2-way 45º),RIGGING,,15.00
+TRFE0515,Eurotruss - HD/FD44 square silver corner L60 (2-way 60º),RIGGING,,15.00
+TRFE0502,Eurotruss - HD/FD44 square silver corner L90 (2-way 90º),RIGGING,,15.00
+TRFE0518,Eurotruss - HD44 square silver corner L120 (2-way 120º),RIGGING,,15.00
+TRFE0501,Eurotruss - HD/FD44 square silver corner L135 (2-way 135º),RIGGING,,15.00
+TRFE0512,Eurotruss - HD44 square silver corner LD90 (3-way 90º),RIGGING,,15.00
+TRFE0503,Eurotruss - HD/FD44 square silver corner T 60/50 (3-way),RIGGING,,15.00
+TRFE0511,Eurotruss - HD44 square silver corner TD (4-way),RIGGING,,15.00
+TRFE0610,Eurotruss - FD44/XD square silver bookcorner KIT,RIGGING,,15.00
+TRFE0608,Eurotruss - HD44 square silver boxcorner KIT,RIGGING,,25.00
+TRFE0621,"Eurotruss - HD44 square black 0,21m",RIGGING,,6.00
+TRFE0625,"Eurotruss - HD44 square black 0,25m",RIGGING,,6.00
+TRFE0629,"Eurotruss - HD44 square black 0,29m",RIGGING,,6.00
+TRFE0650,"Eurotruss - HD44 square black 0,50m",RIGGING,,6.00
+TRFE0675,"Eurotruss - HD44 square black 0,75m",RIGGING,,6.00
+TRFE0681,"Eurotruss - HD44 square black 0,81m",RIGGING,,6.00
+TRFE0700,"Eurotruss - HD44 square black 1,00m",RIGGING,,6.00
+TRFE0750,"Eurotruss - HD44 square black 1,50m",RIGGING,,9.00
+TRFE0800,"Eurotruss - HD44 square black 2,00m",RIGGING,,11.00
+TRFE0850,"Eurotruss - HD44 square black 2,50m",RIGGING,,14.00
+TRFE0900,"Eurotruss - HD44 square black 3,00m",RIGGING,,16.00
+TRFE1102,Eurotruss - HD44 square black corner L90 (2-way 90º),RIGGING,,18.00
+TRFE1101,Eurotruss - HD44 square black corner L135 (2-way 135º),RIGGING,,18.00
+TRFE1103,Eurotruss - HD44 square black corner T (3-way),RIGGING,,18.00
+TRFE1200,Eurotruss - HD44 square black boxcorner KIT,RIGGING,,30.00
+TRXD0095,"Eurotruss - XD rectangle silver 0,50m",RIGGING,,9.00
+TRXD0097,"Eurotruss - XD rectangle silver 0,75m",RIGGING,,9.00
+TRXD0100,"Eurotruss - XD rectangle silver 1,00m",RIGGING,,10.00
+TRXD0110,"Eurotruss - XD rectangle silver 1,50m",RIGGING,,12.00
+TRXD0120,"Eurotruss - XD rectangle silver 2,00m",RIGGING,,14.00
+TRXD0130,"Eurotruss - XD rectangle silver 2,50m",RIGGING,,16.00
+TRXD0140,"Eurotruss - XD rectangle silver 3,00m",RIGGING,,18.00
+TRXD0611,Eurotruss - XD rectangle silver boxcorner KIT,RIGGING,,23.00
+TRXD0395,"Eurotruss - XD rectangle black 0,50m",RIGGING,,10.00
+TRXD0398,"Eurotruss - XD rectangle black 0,75m",RIGGING,,10.00
+TRXD0400,"Eurotruss - XD rectangle black 1,00m",RIGGING,,12.00
+TRXD0410,"Eurotruss - XD rectangle black 1,50m",RIGGING,,14.00
+TRXD0420,"Eurotruss - XD rectangle black 2,00m",RIGGING,,15.50
+TRXD0430,"Eurotruss - XD rectangle black 2,50m",RIGGING,,17.50
+TRXD0440,"Eurotruss - XD rectangle black 3,00m",RIGGING,,20.00
+TRXD0450,Eurotruss - XD rectangle black boxcorner KIT,RIGGING,,26.00
+TRST0050,"Eurotruss - ST square silver 0,50m",RIGGING,,10.00
+TRST0100,"Eurotruss - ST square silver 1,00m",RIGGING,,10.00
+TRST0150,"Eurotruss - ST square silver 1,50m",RIGGING,,12.50
+TRST0200,"Eurotruss - ST square silver 2,00m",RIGGING,,15.00
+TRST0250,"Eurotruss - ST square silver 2,50m",RIGGING,,17.50
+TRST0300,"Eurotruss - ST square silver 3,00m",RIGGING,,20.00
+TRST0610,Eurotruss - ST square silver boxcorner KIT,RIGGING,,27.50
+TRST0495,"Eurotruss - ST square black 0,50m",RIGGING,,15.00
+TRST0497,"Eurotruss - ST square black 0,75m",RIGGING,,40.00
+TRST0500,"Eurotruss - ST square black 1,00m",RIGGING,,30.00
+TRST0503,"Eurotruss - ST square black 1,50m",RIGGING,,25.00
+TRST0505,"Eurotruss - ST square black 2,00m",RIGGING,,22.00
+TRST0506,"Eurotruss - ST square black 2,50m",RIGGING,,25.00
+TRST0507,"Eurotruss - ST square black 3,00m",RIGGING,,30.00
+TRST0611,Eurotruss - ST square black boxcorner KIT,RIGGING,,30.00
+TRXT0100,"Eurotruss - XT rectangle silver 1,00m",RIGGING,,15.00
+TRXT0175,"Eurotruss - XT rectangle silver 1,75m",RIGGING,,20.00
+TRXT0250,"Eurotruss - XT rectangle silver 2,50m",RIGGING,,30.00
+TRXT0802,Eurotruss - XT Boxcorner 90° in 4 directions KIT,RIGGING,,35.00
+TRXT0500,"Eurotruss - XT rectangle black 1,00m",RIGGING,,15.00
+TRXT0675,"Eurotruss - XT rectangle black 1,75m",RIGGING,,20.00
+TRXT0750,"Eurotruss - XT rectangle black 2,50m",RIGGING,,30.00
+TRRT5008,"Eurotruss - PRT-122 Prerig Truss L=1,22M Black",RIGGING,,55.00
+TRRT5012,"Eurotruss - PRT-244 Prerig Truss L=2,44M Black",RIGGING,,65.00
+TRTT0100,"Eurotruss - TT rectangle black 1,00m",RIGGING,,30.00
+TRTT0200,"Eurotruss - TT rectangle black 2,00m",RIGGING,,35.00
+TRTT0250,"Eurotruss - TT rectangle black 2,50m",RIGGING,,40.00
+TRTT0300,"Eurotruss - TT rectangle black 3,00m",RIGGING,,45.00
+TRTT0409,Eurotruss - TT Boxcorner in 8 directions KIT [black],RIGGING,,45.00
+TRTT0512,"Eurotruss - TTU rectangle silver 2,40m",RIGGING,,35.00
+TRTT0520,"Eurotruss - TTU rectangle silver 3,00m",RIGGING,,45.00
+TRTT0610,"Eurotruss - TTS rectangle silver 1,00m",RIGGING,,25.00
+TRTT0620,"Eurotruss - TTS rectangle silver 2,00m",RIGGING,,35.00
+TRTT0630,"Eurotruss - TTS rectangle silver 3,00m",RIGGING,,45.00
+TRCW5072,Eurotruss - CWT-240 Catwalk Truss (Body) L=240cm,RIGGING,,100.00
+TRCW5075,Eurotruss - CWT-320 Catwalk Truss (Body) L=320cm,RIGGING,,115.00
+TRCW5082,Eurotruss - CWT- HR-240 Hand Railing L=240cm,RIGGING,,7.50
+TRCW5085,Eurotruss - CWT- HR-320 Hand Railing L=320cm,RIGGING,,10.00
+TRGR0515,"Eurotruss - TD44 square silver 1,50m",RIGGING,,10.00
+TRGR0520,"Eurotruss - TD44 square silver 2,00m",RIGGING,,14.00
+TRGR0530,"Eurotruss - TD44 square silver 3,00m",RIGGING,,21.00
+TRGR0400,Eurotruss - Groundsupport TD44 Base Silver KIT,RIGGING,,100.00
+TRGR0500,Eurotruss - Groundsupport TD44 Base Black KIT,RIGGING,,110.00
+TRGR0402,Rent-All - Gsupport TD44 basedeck for ballast,RIGGING,,25.00
+TRON0219,CS1 - Spacer L= 15 mm for HD/FD [M > M],RIGGING,,1.00
+TRON0218,CS1 - Spacer L= 30 mm for HD/FD [M > M],RIGGING,,1.00
+TRON0220,CS1 - Spacer L= 50 mm for HD/FD [M > M],RIGGING,,1.00
+TRON0221,CS1 - Spacer L= 80 mm for HD/FD [M > M],RIGGING,,1.00
+TRON0223,CS1 - Spacer L= 90 mm for HD/FD [M > F],RIGGING,,1.00
+TRON0226,CS1 - Spacer L=100 mm for HD/FD [M > F],RIGGING,,1.00
+TRON0224,CS1 - Spacer L=105 mm for HD/FD [M > F],RIGGING,,1.00
+TRON0212,CS1 - Bold-On Receiver L=100mm for HD/FD KIT [120pcs],RIGGING,,54.00
+TRON0210,CS1 - Bold-On Receiver L=105mm for HD/FD KIT [120pcs],RIGGING,,54.00
+TRON0216,CS1 - Bold-On Receiver L=100mm for HD/FD KIT [120pcs] (BL),RIGGING,,60.00
+TRON0217,CS1 - Bold-On Receiver L=105mm for HD/FD KIT [120pcs] (BL),RIGGING,,60.00
+TRCI0007,"Eurotruss - FD31 single tube silver circle Ø 1,50m (2 cuts)",RIGGING,,12.00
+TRCI0010,"Eurotruss - FD31 single tube silver circle Ø 2,00m (2 cuts)",RIGGING,,15.00
+TRCI0011,"Eurotruss - FD31 single tube silver circle Ø 2,50m (2 cuts)",RIGGING,,17.50
+TRCI0015,"Eurotruss - FD31 single tube silver circle Ø 3,00m (2 cuts)",RIGGING,,20.00
+TRCI0013,"Eurotruss - FD31 single tube silver circle Ø 3,00m (4 cuts)",RIGGING,,20.00
+TRCI0020,"Eurotruss - FD31 single tube silver circle Ø 4,00m (4 cuts)",RIGGING,,22.50
+TRCI0025,"Eurotruss - FD31 single tube silver circle Ø 6,00m (4 cuts)",RIGGING,,25.00
+TRCI0030,"Eurotruss - FD31 single tube silver circle Ø 8,00m (8 cuts)",RIGGING,,30.00
+TRCI0035,"Eurotruss - FD31 single tube silver circle Ø 10,00m (8 cuts)",RIGGING,,40.00
+TRCI0039,"Eurotruss - FD31 single tube silver circle Ø 15,00m (12cuts)",RIGGING,,60.00
+TRCI0042,"Eurotruss - FD31 single tube silver circle Ø 27,00m (16cuts)",RIGGING,,100.00
+TRCI0050,"Eurotruss - FD31 single tube black circle Ø 3,00m (2 cuts)",RIGGING,,22.00
+PTCI0120,"Protruss - single tube silver circle Ø 3,00m (4 cuts)",RIGGING,,25.00
+PTCI0125,Protruss - single tube silver circle Ø 3.50m (4 cuts),RIGGING,,25.00
+PTCI0130,"Protruss - single tube silver circle Ø 4,00m (4 cuts)",RIGGING,,30.00
+PTCI0155,"Protruss - single tube black circle Ø 1,00m (2 cuts)",RIGGING,,12.50
+PTCI0160,"Protruss - single tube black circle Ø 2,00m (4 cuts)",RIGGING,,15.00
+PTCI0165,"Protruss - single tube black circle Ø 3,00m (4 cuts)",RIGGING,,25.00
+PTCI0170,"Protruss - single tube black circle Ø 4,00m (4 cuts)",RIGGING,,40.00
+PTCI0175,"Protruss - single tube black circle Ø 5,00m (8 cuts)",RIGGING,,40.00
+PTCI0180,"Protruss - single tube black circle Ø 6,00m (8 cuts)",RIGGING,,45.00
+PTCI0184,"Protruss - single tube black circle Ø 7,00m (8 cuts)",RIGGING,,50.00
+TRCI0100,"Eurotruss - FD34 square silver circle Ø 1,50m (4 cuts)",RIGGING,,50.00
+TRCI0111,"Eurotruss - FD34 square silver circle Ø 2,00m (4 cuts)",RIGGING,,60.00
+TRCI0120,"Eurotruss - FD34 square silver circle Ø 3,00m (4 cuts)",RIGGING,,90.00
+TRCI0130,"Eurotruss - HD/FD34 square silver circle Ø 4,00m (4 cuts)",RIGGING,,100.00
+TRCI0140,"Eurotruss - FD34 square silver circle Ø 5,00m (4 cuts)",RIGGING,,125.00
+TRCI0160,"Eurotruss - FD34 square silver circle Ø 6,00m (6 cuts)",RIGGING,,175.00
+TRCI0170,"Eurotruss - HD/FD34 square silver circle Ø 6,00m (8 cuts)",RIGGING,,175.00
+TRCI0186,"Eurotruss - FD34 square silver circle Ø 7,00m (8 cuts)",RIGGING,,200.00
+TRCI0190,"Eurotruss - HD34 square silver circle Ø 7,50m (8 cuts)",RIGGING,,175.00
+TRCI0200,"Eurotruss - FD34 square silver circle Ø 8,00m (8 cuts)",RIGGING,,225.00
+TRCI0210,"Eurotruss - HD/FD34 square silver circle Ø 10,00m (8 cuts)",RIGGING,,275.00
+TRCI0220,"Eurotruss - FD34 square silver circle Ø 15,00m (16 cuts)",RIGGING,,350.00
+TRCI0080,"Eurotruss - FD34 square black circle Ø 2,00m (4 cuts)",RIGGING,,75.00
+TRCI0082,"Eurotruss - FD34 square black circle Ø 3,00m (4 cuts)",RIGGING,,100.00
+TRCI0084,"Eurotruss - FD34 square black circle Ø 4,00m (4 cuts)",RIGGING,,125.00
+TRCI0086,"Eurotruss - FD34 square black circle Ø 5,00m (4 cuts)",RIGGING,,150.00
+TRCI0088,"Eurotruss - FD34 square black circle Ø 6,00m (8 cuts)",RIGGING,,200.00
+TRCI0090,"Eurotruss - FD34 square black circle Ø 7,50m (8 cuts)",RIGGING,,225.00
+TRCI0092,"Eurotruss - FD34 square black circle Ø 10,00m (8 cuts)",RIGGING,,350.00
+TRCI0096,"Eurotruss - FD34 square black circle Ø 15,00m (16 cuts)",RIGGING,,450.00
+TRCI0276,"Eurotruss - HD44 square silver circle Ø 4,00m (4 cuts)",RIGGING,,110.00
+TRCI0280,"Eurotruss - HD/FD44 square silver circle Ø 5,00m (4 cuts)",RIGGING,,110.00
+TRCI0290,"Eurotruss - FD44 square silver circle Ø 8,00m (8 cuts)",RIGGING,,250.00
+TRCI0300,"Eurotruss - FD44 square silver circle Ø 10,00m (12 cuts)",RIGGING,,250.00
+TRCI0310,"Eurotruss - FD44 square silver circle Ø 12,00m (12 cuts)",RIGGING,,300.00
+TRCI0320,"Eurotruss - HD/FD44 square silver circle Ø 15,00m (16 cuts)",RIGGING,,400.00
+TRCI0325,"Eurotruss - HD44 square silver circle Ø 18,00m (16 cuts)",RIGGING,,500.00
+TRCI0330,"Eurotruss - HD/FD44 square silver circle Ø 20,00m (24 cuts)",RIGGING,,550.00
+TRCI0340,"Eurotruss - HD44 square silver circle Ø 25,00m (28 cuts)",RIGGING,,575.00
+TRCI0350,"Eurotruss - FD44 square silver circle Ø 30,00m (32 cuts)",RIGGING,,750.00
+TRCI0240,"Eurotruss - HD44 square black circle Ø 8,00m (8 cuts)",RIGGING,,250.00
+TRCI0244,"Eurotruss - HD/FD44 square black circle Ø 12,00m (12 cuts)",RIGGING,,350.00
+TRCI0332,"Eurotruss - HD/FD44 square black circle Ø 20,00m (24 cuts)",RIGGING,,600.00
+PTCI0305,"Protruss - H30V square silver circle Ø 2,00m (4 cuts)",RIGGING,,60.00
+PTCI0310,"Protruss - H30V square silver circle Ø 3,00m (4 cuts)",RIGGING,,90.00
+PTCI0315,"Protruss - H30V square silver circle Ø 4,00m (4 cuts)",RIGGING,,100.00
+PTCI0320,"Protruss - H30V square silver circle Ø 5,00m (4 cuts)",RIGGING,,125.00
+PTCI0325,"Protruss - H30V square silver circle Ø 5,00m (8 cuts)",RIGGING,,125.00
+PTCI0330,"Protruss - H30V square silver circle Ø 6,00m (8 cuts)",RIGGING,,175.00
+PTCI0335,"Protruss - H30V square silver circle Ø 7,00m (8 cuts)",RIGGING,,200.00
+PTCI0340,"Protruss - H30V square silver circle Ø 8,00m (8 cuts)",RIGGING,,225.00
+PTCI0345,"Protruss - H30V square silver circle Ø 9,00m (8 cuts)",RIGGING,,250.00
+PTCI0350,"Protruss - H30V square silver circle Ø 10,00m (8 cuts)",RIGGING,,275.00
+PTCI0360,"Protruss - H30V square silver circle Ø 12,00m (12 cuts)",RIGGING,,325.00
+PTCI0405,"Protruss - H30V square black circle Ø 2,00m (4 cuts)",RIGGING,,75.00
+PTCI0410,"Protruss - H30V square black circle Ø 2,00m (8 cuts)",RIGGING,,80.00
+PTCI0415,"Protruss - H30V square black circle Ø 3,00m (4 cuts)",RIGGING,,100.00
+PTCI0420,"Protruss - H30V square black circle Ø 4,00m (4 cuts)",RIGGING,,125.00
+PTCI0440,"Protruss - H30V square black circle Ø 6,00m (8 cuts)",RIGGING,,200.00
+PTCI0455,"Protruss - H30V square black circle Ø 8,00m (8 cuts)",RIGGING,,250.00
+PTCI0460,"Protruss - H30V square black circle Ø 9,00m (8 cuts)",RIGGING,,300.00
+PTCI0475,"Protruss - H30V square black circle Ø 12,00m (12 cuts)",RIGGING,,400.00
+PTCI0480,"Protruss - H30V square black circle Ø 12,00m (16 cuts)",RIGGING,,400.00
+PTCI0505,"Protruss - H40V square silver circle Ø 4,00m (4 cuts)",RIGGING,,150.00
+PTCI0515,"Protruss - H40V square silver circle Ø 6,00m (8 cuts)",RIGGING,,175.00
+PTCI0535,"Protruss - H40V square silver circle Ø 10,00m (16 cuts)",RIGGING,,250.00
+PTCI0550,"Protruss - H40V square silver circle Ø 15,00m (16 cuts)",RIGGING,,335.00
+PTCI0565,"Protruss - H40V square silver circle Ø 18,00m (16 cuts)",RIGGING,,450.00
+PTCI0570,"Protruss - H40V square silver circle Ø 20,00m (24 cuts)",RIGGING,,550.00
+PTCI0575,"Protruss - H40V square silver circle Ø 25,00m (32 cuts)",RIGGING,,650.00
+PTCI0585,"Protruss - H40V square silver circle Ø 30,00m (32 cuts)",RIGGING,,750.00
+PTCI0605,"Protruss - H40V square black circle Ø 4,00m (4 cuts)",RIGGING,,160.00
+PTCI0650,"Protruss - H40V square black circle Ø 14,00m (12 cuts)",RIGGING,,385.00
+PTCI0655,"Protruss - H40V square black circle Ø 15,00m (16 cuts)",RIGGING,,390.00
+PTCI0660,"Protruss - H40V square black circle Ø 16,00m (12 cuts)",RIGGING,,400.00
+PTCI0670,"Protruss - H40V square black circle Ø 20,00m (24 cuts)",RIGGING,,700.00
+PLHV0021,"Prolyte - H30V square silver 0,21m",RIGGING,,5.00
+PLHV0025,"Prolyte - H30V square silver 0,25m",RIGGING,,5.00
+PLHV0029,"Prolyte - H30V square silver 0,29m",RIGGING,,5.00
+PLHV0050,"Prolyte - H30V square silver 0,50m",RIGGING,,5.00
+PLHV0071,"Prolyte - H30V square silver 0,71m",RIGGING,,5.00
+PLHV0100,"Prolyte - H30V square silver 1,00m",RIGGING,,5.00
+PLHV0200,"Prolyte - H30V square silver 2,00m",RIGGING,,8.00
+PLHV0300,"Prolyte - H30V square silver 3,00m",RIGGING,,12.00
+PLHV0400,"Prolyte - H30V square silver 4,00m",RIGGING,,16.00
+PLHV0505,Prolyte - H30V square silver corner C002 (2-way 60°),RIGGING,,15.00
+PLHV0510,Prolyte - H30V square silver corner C003 (2-way 90°),RIGGING,,11.00
+PLHV0515,Prolyte - H30V square silver corner C004 (2-way 120°),RIGGING,,12.50
+PLHV0520,Prolyte - H30V square silver corner C005 (2-way 135°),RIGGING,,12.50
+PLHV0525,Prolyte - H30V square silver corner C012 (3-way L90+Down),RIGGING,,12.50
+PLHV0527,Prolyte - H30V square silver corner C016 (4-way X-piece),RIGGING,,12.50
+PLHV0530,Prolyte - H30V square silver corner C017 (3-way T-Joint),RIGGING,,12.50
+PLHV0535,Prolyte - H30V square silver corner C020 (4-way T+Down),RIGGING,,15.00
+PLHV0545,Prolyte - H30V square silver corner C024 (5-way X+Down),RIGGING,,15.00
+PLHV0571,Prolyte - H30V square silver boxcorner KIT,RIGGING,,20.00
+PLHV0576,Prolyte - H30V square silver bookcorner KIT,RIGGING,,17.50
+PLHV0582,Prolyte - H30V square silver baseplate 2kg (33cmx33cm),RIGGING,,5.00
+PLHV0604,"Prolyte - H30V square black 0,21m",RIGGING,,7.50
+PLHV0605,"Prolyte - H30V square black 0,25m",RIGGING,,7.50
+PLHV0607,"Prolyte - H30V square black 0,29m",RIGGING,,8.00
+PLHV0610,"Prolyte - H30V square black 0,50m",RIGGING,,8.00
+PLHV0612,"Prolyte - H30V square black 0,71m",RIGGING,,8.00
+PLHV0616,"Prolyte - H30V square black 1,00m",RIGGING,,8.00
+PLHV0622,"Prolyte - H30V square black 2,00m",RIGGING,,12.00
+PLHV0626,"Prolyte - H30V square black 3,00m",RIGGING,,18.00
+PLHV0630,"Prolyte - H30V square black 4,00m",RIGGING,,24.00
+PLHV0636,Prolyte - H30V square black corner C003 (2-way 90°),RIGGING,,13.00
+PLHV0637,Prolyte - H30V square black corner C004 (2-way 120°),RIGGING,,15.00
+PLHV0638,Prolyte - H30V square black corner C005 (2-way 135°),RIGGING,,15.00
+PLHV0641,Prolyte - H30V square black corner C012 (3-way L90+Down),RIGGING,,15.00
+PLHV0643,Prolyte - H30V square black corner C016 (4-way X-piece),RIGGING,,15.00
+PLHV0644,Prolyte - H30V square black corner C017 (3-way T-Joint),RIGGING,,15.00
+PLHV0647,Prolyte - H30V square black corner C020 (4-way T+Down),RIGGING,,17.50
+PLHV0649,Prolyte - H30V square black corner C024 (5-way X+Down),RIGGING,,17.50
+PLHV0651,Prolyte - H30V square black boxcorner KIT,RIGGING,,25.00
+PLHV0653,Prolyte - H30V square black bookcorner KIT,RIGGING,,20.00
+PLHV0588,Prolyte - H30V square black baseplate 2kg (33cmx33cm),RIGGING,,5.00
+PLCI0308,"Prolyte - H30V square silver circle Ø 2,00m (4 cuts)",RIGGING,,60.00
+PLCI0316,"Prolyte - H30V square silver circle Ø 3,00m (4 cuts)",RIGGING,,90.00
+PLCI0324,"Prolyte - H30V square silver circle Ø 4,00m (4 cuts)",RIGGING,,100.00
+PLCI0330,"Prolyte - H30V square silver circle Ø 5,00m (8 cuts)",RIGGING,,125.00
+PLCI0336,"Prolyte - H30V square silver circle Ø 6,00m (8 cuts)",RIGGING,,175.00
+PLCI0342,"Prolyte - H30V square silver circle Ø 7,00m (8 cuts)",RIGGING,,200.00
+PLCI0348,"Prolyte - H30V square silver circle Ø 8,00m (8 cuts)",RIGGING,,225.00
+PLCI0354,"Prolyte - H30V square silver circle Ø 9,00m (12 cuts)",RIGGING,,250.00
+PLCI0360,"Prolyte - H30V square silver circle Ø 10,00m (12 cuts)",RIGGING,,275.00
+PLCI0366,"Prolyte - H30V square silver circle Ø 12,00m (12 cuts)",RIGGING,,325.00
+PLCI0408,"Prolyte - H30V square black circle Ø 2,00m (4 cuts)",RIGGING,,75.00
+PLCI0416,"Prolyte - H30V square black circle Ø 3,00m (4 cuts)",RIGGING,,100.00
+PLCI0424,"Prolyte - H30V square black circle Ø 4,00m (4 cuts)",RIGGING,,125.00
+PLCI0454,"Prolyte - H30V square black circle Ø 9,00m (12 cuts)",RIGGING,,300.00
+PLCI0430,"Prolyte - H30V square black circle Ø 5,00m (8 cuts)",RIGGING,,150.00
+PLCI0436,"Prolyte - H30V square black circle Ø 6,00m (8 cuts)",RIGGING,,200.00
+PLCI0442,"Prolyte - H30V square black circle Ø 7,00m (8 cuts)",RIGGING,,225.00
+PLCI0448,"Prolyte - H30V square black circle Ø 8,00m (8 cuts)",RIGGING,,250.00
+PLCI0460,"Prolyte - H30V square black circle Ø 10,00m (12 cuts)",RIGGING,,350.00
+PLCI0466,"Prolyte - H30V square black circle Ø 12,00m (12 cuts)",RIGGING,,400.00
+PLSV0696,"Prolyte - S52SV square black 0,25m",RIGGING,,16.00
+PLSV0698,"Prolyte - S52SV square black 0,50m",RIGGING,,16.00
+PLSV0701,"Prolyte - S52SV square black 0,60m",RIGGING,,16.00
+PLSV0704,"Prolyte - S52SV square black 0,80m",RIGGING,,16.00
+PLSV0706,"Prolyte - S52SV square black 1,00m",RIGGING,,18.00
+PLSV0708,"Prolyte - S52SV square black 1,20m",RIGGING,,18.00
+PLSV0710,"Prolyte - S52SV square black 1,50m",RIGGING,,19.00
+PLSV0712,"Prolyte - S52SV square black 1,60m",RIGGING,,19.00
+PLSV0716,"Prolyte - S52SV square black 2,00m",RIGGING,,23.00
+PLSV0720,"Prolyte - S52SV square black 2,40m",RIGGING,,25.00
+PLSV0722,"Prolyte - S52SV square black 2,50m",RIGGING,,25.00
+PLSV0726,"Prolyte - S52SV square black 3,00m",RIGGING,,30.00
+PLSV0733,Prolyte - S52SV square black boxcorner [Empty],RIGGING,,50.00
+PLSF0605,"Prolyte - S52F folding black 0,60m",RIGGING,,13.00
+PLSF0610,"Prolyte - S52F folding black 0,80m",RIGGING,,13.00
+PLSF0630,"Prolyte - S52F folding black 1,50m",RIGGING,,19.00
+PLSF0635,"Prolyte - S52F folding black 1,60m",RIGGING,,19.00
+PLSF0640,"Prolyte - S52F folding black 2,40m",RIGGING,,25.00
+PLSF0660,Prolyte - S52F folding black corner C016 (4-way),RIGGING,,33.00
+PTRT0700,"Protruss - P36APT black 0,60m (Pre rig truss)",RIGGING,,22.00
+PTRT0705,"Protruss - P36APT black 0,82m (Pre rig truss)",RIGGING,,22.00
+PTRT0715,"Protruss - P36APT black 1,20m (Pre rig truss)",RIGGING,,22.00
+PTRT0720,"Protruss - P36APT black 1,50m (Pre rig truss)",RIGGING,,25.00
+PTRT0725,"Protruss - P36APT black 2,40m (Pre rig truss)",RIGGING,,28.00
+PTRT0735,"Protruss - P36APT black 3,00m (Pre rig truss)",RIGGING,,30.00
+PTRT0774,Protruss - P36APT black - boxcorner KIT,RIGGING,,28.00
+PTRT0717,"Protruss - P36APT silver - dolly (Touring) - 1,20m",RIGGING,,20.00
+PTRT0727,"Protruss - P36APT silver - dolly (Touring) - 2,40m",RIGGING,,26.00
+PLGR0050,"Prolyte - S40T square black - mast section - 0,50m",RIGGING,,8.50
+PLGR0100,"Prolyte - S40T square black - mast section - 1,00m",RIGGING,,8.50
+PLGR0300,"Prolyte - S40T square black - mast section - 3,00m",RIGGING,,24.00
+PLGR0500,Prolyte Tower 1T black - base+top+sleeve+H30V - 0.5m KIT,RIGGING,,50.00
+PLGR0600,Prolyte Tower 2T black - base+top+sleeve+S40T (S52F+S36R),RIGGING,,85.00
+TRAL0050,"Pipe Aluminium silver 50mmØ 0,50m",RIGGING,,0.75
+TRAL0075,"Pipe Aluminium silver 50mmØ 0,75m",RIGGING,,1.00
+TRAL0100,"Pipe Aluminium silver 50mmØ 1,00m",RIGGING,,1.00
+TRAL0150,"Pipe Aluminium silver 50mmØ 1,50m",RIGGING,,2.00
+TRAL0200,"Pipe Aluminium silver 50mmØ 2,00m",RIGGING,,2.50
+TRAL0250,"Pipe Aluminium silver 50mmØ 2,50m",RIGGING,,3.00
+TRAL0300,"Pipe Aluminium silver 50mmØ 3,00m",RIGGING,,3.50
+TRAL0400,"Pipe Aluminium silver 50mmØ 4,00m",RIGGING,,4.50
+TRAL0500,"Pipe Aluminium silver 50mmØ 5,00m",RIGGING,,6.00
+TRAL0799,"Pipe Aluminium black 50mmØ 0,50m",RIGGING,,0.75
+TRAL0802,"Pipe Aluminium black 50mmØ 0,75m",RIGGING,,1.00
+TRAL0805,"Pipe Aluminium black 50mmØ 1,00m",RIGGING,,1.00
+TRAL0810,"Pipe Aluminium black 50mmØ 1,50m",RIGGING,,2.00
+TRAL0815,"Pipe Aluminium black 50mmØ 2,00m",RIGGING,,2.50
+TRAL0816,"Pipe Aluminium black 50mmØ 2,50m",RIGGING,,2.50
+TRAL0825,"Pipe Aluminium black 50mmØ 3,00m",RIGGING,,3.50
+TRAL0830,"Pipe Aluminium black 50mmØ 4,00m",RIGGING,,4.50
+TRAL0845,"Pipe Aluminium black 50mmØ 5,00m",RIGGING,,6.00
+TRDI0198,Scaffclamp single 25mm (small),RIGGING,,2.00
+TRDI0197,Scaffclamp double 25mm (small),RIGGING,,2.25
+TRDI0200,Scaffclamp double 50mm (large),RIGGING,,2.25
+TRDI0192,Scaffclamp double 25mm (small) [black],RIGGING,,2.25
+TRDI0194,Scaffclamp single 50mm (large) [black],RIGGING,,2.00
+TRDI0201,Scaffclamp double 50mm (large) [black],RIGGING,,2.25
+TRDI0208,Scaffclamp (large) with eye M12 Max 340kg,RIGGING,,2.00
+TRDI0206,Scaffclamp with spigot,RIGGING,,2.00
+TRDI0228,Rent-All - Tree clamp black incl. 50 cm pipe,RIGGING,,7.50
+STPE0722,"ALP-Lift telescopic boom lift PHCI 940 WH 9,4 mtr[230V]",RIGGING,,225.00
+STPE0724,ALP-Lift telescopic boom lift PHCI 1100 WH 11 mtr[230V],RIGGING,,275.00
+STPE0726,ALP-Lift telescopic boom lift PHC 1200 WH 12 mtr[230V],RIGGING,,275.00
+STPE0728,ALP-Lift telescopic boom lift PH1300 WH 13mtr+ Bokpoot[230V],RIGGING,,275.00
+STPE0732,ALP-Lift telescopic boom lift Selfdrive AMWP9.5 WH 9.50 mtr,RIGGING,,450.00
+STST0040,"ALP - Theatre lift TLC 750F 300 KG 7,50 meter",RIGGING,,75.00
+STST0045,"ALP - lift E760SB 300KG 7,60 meter",RIGGING,,75.00
+STST0023,"Manfrotto - 087NWB, Wind-Up Stand 3,80m/30kg (Black)",RIGGING,,12.50
+STST0104,"Manfrotto - 126BSU Heavy Duty Stand, Black / 40KG / 3,3M",RIGGING,,15.00
+STST0055,Manfrotto - 297FBASE floorstand 40kg 28mm spigot [Black],RIGGING,,5.00
+STST0105,Manfrotto - 143N Magic Arm (W/O Accessories),RIGGING,,12.50
+STST0035,"VMB - TE 074 stand winch 230KG 5,35 M (black)",RIGGING,,22.50
+STST0037,"VMB - TE 076 stand winch 220KG 6,50m (black)",RIGGING,,30.00
+STST0048,"VMB - TL-A400/8 Line array Lift 400KG 8,20 mtr (1,98 folded)",RIGGING,,85.00
+STST0049,"VMB - FAS-01 support for Line array Lift with 3,27Kn Shackle",RIGGING,,5.00
+STST0081,"VMB - Showlift SL18 Automated Tower 55KG 4,1 M (XLR5)",RIGGING,,450.00
+STST0210,Sidelight telescopic ballet tower a-sym. H200-L80 [1pc],RIGGING,,25.00
+STST0053,Rent-All Floor Cross black foldable 40x35cm,RIGGING,,2.50
+PTCB0200,Concrete baseplate 350kg (0.75m x 0.75m) H30V only [1 Piece],RIGGING,,80.00
+PTCB0250,Concrete baseplate 880kg (1.15m x 1.15m) [1 Piece],RIGGING,,100.00
+DOPD0190,"Wentex Pipe & Drape FOH kit, 9 mtr",RIGGING,,100.00
+DOPD0200,"Wentex Pipe & Drape FOH kit, 15/18 mtr",RIGGING,,175.00
+DOPD0210,"Wentex Pipe & Drape H-300 kit, 15/18 mtr",RIGGING,,225.00
+POPO0490,"Eurotruss - Stagedeck Pro Black Hexa 2,0 x 1,0m / 500 kg/m² 6",RIGGING,,10.00
+POPO0492,"Eurotruss - Stagedeck Pro Black Hexa 2,0 x 0,75m / 500 kg/m²",RIGGING,,8.50
+POPO0494,"Eurotruss - Stagedeck Pro Black Hexa 2,0 x 0,50m / 500 kg/m²",RIGGING,,8.50
+POPO0496,"Eurotruss - Stagedeck Pro Black Hexa 1,0 x 1,0m / 500 kg/m² 6",RIGGING,,7.50
+POPO0498,"Eurotruss - Stagedeck Pro Black Hexa 1,0 x 0,50m / 500 kg/m²",RIGGING,,7.50
+POPO0501,"Eurotruss - Stagedeck Pro Black Hexa 0,50 x 0,5m / 500 kg/m²",RIGGING,,5.00
+POPO0499,"Eurotruss - Stagedeck Pro 1,0x1,0x1,4m triangle / 500 kg/m²",RIGGING,,7.50
+POPO0509,"Leg for Stagedeck/stagedex KIT 44x 0,20 m",RIGGING,,11.00
+POPO0511,"Leg for Stagedeck/stagedex KIT 80x 0,40 m",RIGGING,,20.00
+POPO0513,"Leg for Stagedeck/stagedex KIT 80x 0,60 m",RIGGING,,32.00
+POPO0515,"Leg for Stagedeck/stagedex KIT 80x 0,80 m",RIGGING,,32.00
+POPO0517,"Leg for Stagedeck/stagedex KIT 80x 1,00 m",RIGGING,,40.00
+POPO0523,"Leg for Stagedeck/stagedex KIT 80x 1,20 m",RIGGING,,40.00
+POPO0524,"Leg for Stagedeck/stagedex KIT 48x variable 0,60 -0,90 m",RIGGING,,48.00
+POPO0526,"Leg for Stagedeck/stagedex KIT 24x variable 1,00 -1,60 m",RIGGING,,48.00
+POPO0528,"Leg for Stagedeck/stagedex KIT 24x variable 1,20 -1,90 m",RIGGING,,48.00
+POPO0210,Eurotruss - Adjustable Stairs 40-60cm [black],RIGGING,,10.00
+POPO0212,Eurotruss - Adjustable Stairs 60-100cm + Railing kit [black],RIGGING,,20.00
+POPO0214,Eurotruss - Adjustable Stairs 80-140cm + Railing kit [black],RIGGING,,20.00
+POPO0532,Eurotruss - Stagedeck hand railing 100cm [Black],RIGGING,,3.00
+POPO0530,Eurotruss - Stagedeck hand railing 200cm [Black],RIGGING,,4.00
+POPO0550,Eurotruss - Stagedeck deck to deck clamp,RIGGING,,0.50
+POPO0611,Rent-All - Riser wheel for Stagedeck/stagedex leg,RIGGING,,2.50
+POSD0100,Prolyte Stagedex - riser 2m x 1m,RIGGING,,12.50
+POSD0125,Prolyte Stagedex - riser 2m x 0.5m,RIGGING,,8.50
+POSD0130,Prolyte Stagedex - riser 1m x 1m,RIGGING,,8.00
+POSD0140,Prolyte Stagedex - riser 1m x 0.5m,RIGGING,,8.00
+POSD0400,Prolyte Stagedex - railing black - 1m,RIGGING,,4.50
+POSD0410,Prolyte Stagedex - railing black - 2m,RIGGING,,5.50
+POSD0430,Prolyte Stagedex Stairset 0.8m (0.2+0.4+0.6+0.8+ 2x railing),RIGGING,,30.00
+RIST0455,"Chainclutch 10kN 2,00m",RIGGING,,5.00
+RIST0457,"Chainclutch 20kN 2,00m 2",RIGGING,,5.00
+RIST0470,"Deck Chain Type HLC16 32,2kN 1,5 m (link length = 100mm)",RIGGING,,7.50
+RIST0481,"Cable glider 60kg +endstop + steel 0,8kN, 4mm 5,00m [black]",RIGGING,,5.00
+RIST0482,"Cable glider 60kg +endstop + steel 0,8kN, 4mm 7,50m [black] 2-3",RIGGING,,8.00
+RIST0483,"Cable glider 240kg +endstop + steel 3,3kN, 8mm 5,00m [black]",RIGGING,,5.00
+RIST0485,"Cable glider 240kg +endstop + steel 3,3kN, 8mm 7,50m [black]",RIGGING,,10.00
+RIST0487,Cable glider + M12 eyenut without cable [black] 50SVII,RIGGING,,2.50
+RIST0495,"Shackle 20,0kN",RIGGING,,0.50
+RIST0500,"Shackle 32,5kN",RIGGING,,0.50
+RIST0502,"Shackle 47,5kN",RIGGING,,1.25
+RIST0510,"Masterlink 20kN oval ""topring""",RIGGING,,1.00
+RIST0513,"Masterlink 31kN oval ""topring""",RIGGING,,1.10
+STPE0715,Sicherungsseile - Wire rope ladder 4mm 5.04m 16steps (black),RIGGING,,10.00
+RIST0517,"FALLSAFE - FS804-20 Safewalk Lifeline, 20m [KIT]",RIGGING,,15.00
+RIST0550,Fallsafe - FS804B Lifeline 20m,RIGGING,,7.50
+RIST0551,Fallsafe - FS801B Anchor 1m,RIGGING,,7.50
+RIST0520,Beam Clamp 20kN 75/220 mm [black],RIGGING,,10.00
+RIST0521,Beam Clamp 30kN 80/320 mm [yellow/blue/black],RIGGING,,10.00
+RIST0528,Beam Clamp for tent with scaf clamp WLL = 150kg,RIGGING,,2.50
+RIST0529,Beam Clamp for tent with hanging M14 eye bolt WLL = 150kg,RIGGING,,2.50
+RIST0530,Beam Clamp for tent WLL = 150kg (no attachments),RIGGING,,2.50
+RIST0531,Beam Clamp for tent WLL = 500kg,RIGGING,,5.00
+RIST0621,"Roundsling Nylon 20kN 1,0m [black]",RIGGING,,1.00
+RIST0623,"Roundsling Nylon 20kN 1,5m [black]",RIGGING,,1.00
+RIST0624,"Roundsling Nylon 20kN 2,0m [black]",RIGGING,,1.00
+RIST0639,"Roundsling Steel 20kN 1,0m [Black] KIT [60 Pieces]",RIGGING,,60.00
+RIST0649,"Roundsling Steel 20kN 1,5m [Black] KIT [50 Pieces]",RIGGING,,50.00
+RIST0651,"Roundsling Steel 20kN 2,0m [Black] KIT [40 Pieces]",RIGGING,,40.00
+RIST0701,"Roundsling Steel 20kN 3,0m [Black] KIT [25 Pieces]",RIGGING,,25.00
+RIST0702,Ratchet strap endless Rent-All 20kN - 35mm / 2 m [black] AW,RIGGING,,2.50
+RIST0704,Ratchet strap endless Rent-All 20kN - 35mm / 4 m [black] AW,RIGGING,,3.00
+RIST0706,Ratchet strap endless Rent-All 20kN - 35mm / 6 m [black] AW,RIGGING,,3.75
+RIST0750,Burlap,RIGGING,,0.15
+RIST1005,"Steel 10kN 10mm 0,50m",RIGGING,,1.00
+RIST1007,"Steel 10kN 10mm 0,75m",RIGGING,,1.00
+RIST1010,"Steel 10kN 10mm 1,00m",RIGGING,,1.00
+RIST1012,"Steel 10kN 10mm 1,25m",RIGGING,,1.00
+RIST1015,"Steel 10kN 10mm 1,50m",RIGGING,,2.00
+RIST1020,"Steel 10kN 10mm 2,00m",RIGGING,,2.00
+RIST1025,"Steel 10kN 10mm 2,50m",RIGGING,,2.00
+RIST1030,"Steel 10kN 10mm 3,00m",RIGGING,,2.00
+RIST1040,"Steel 10kN 10mm 4,00m",RIGGING,,2.50
+RIST1050,"Steel 10kN 10mm 5,00m",RIGGING,,2.50
+RIST1060,"Steel 10kN 10mm 6,00m",RIGGING,,2.50
+RIST1070,"Steel 10kN 10mm 7,00m",RIGGING,,2.50
+RIST1075,"Steel 10kN 10mm 7,50m",RIGGING,,2.50
+RIST1080,"Steel 10kN 10mm 8,00m",RIGGING,,2.50
+RIST1090,"Steel 10kN 10mm 9,00m",RIGGING,,2.50
+RIST1100,"Steel 10kN 10mm 10,00m",RIGGING,,2.50
+RIST2005,"Steel 20kN 14mm 0,68m grey",RIGGING,,1.50
+RIST2007,"Steel 20kN 14mm 0,75m orange",RIGGING,,1.00
+RIST2010,"Steel 20kN 14mm 1,00m",RIGGING,,1.00
+RIST2015,"Steel 20kN 14mm 1,50m",RIGGING,,2.00
+RIST2020,"Steel 20kN 14mm 2,00m",RIGGING,,2.00
+RIST2025,"Steel 20kN 14mm 2,50m",RIGGING,,2.00
+RIST2030,"Steel 20kN 14mm 3,00m",RIGGING,,2.00
+RIST2040,"Steel 20kN 14mm 4,00m",RIGGING,,2.00
+RIST2050,"Steel 20kN 14mm 5,00m",RIGGING,,2.50
+RIST2060,"Steel 20kN 14mm 6,00m",RIGGING,,2.50
+RIST2075,"Steel 20kN 14mm 7,50m",RIGGING,,2.50
+RIST2080,"Steel 20kN 14mm 8,00m",RIGGING,,2.50
+RIST2090,"Steel 20kN 14mm 9,00m",RIGGING,,2.50
+RIST2100,"Steel 20kN 14mm 10,00m",RIGGING,,2.50
+RIST2120,"Steel 20kN 14mm 20,00m",RIGGING,,4.50
+KADI0012,"PSU 63A CEE red > 12x C16 > 2x H16/6ch (0,03A),PIN 1-9",CABLES,,35.00
+KADI0010,"PSU 63A CEE red > 16x C16 > 2x H16/8ch (0,03A),PIN 1-9",CABLES,,35.00
+KADI0060,"PSU 125A CEE red > 48x C16 > 6x H16/8ch 3x RCD, PIN 1-9",CABLES,,135.00
+KADI0061,"PSU 125A CEE red > 48x C16 > 6x H16/8ch 6x RCD, PIN 1-9",CABLES,,125.00
+KADI0063,"PSU 125A CEE red > 48x C16 > 6x H16/8ch 49x RCBO, PIN 1-9",CABLES,,175.00
+KADI0020,"PSU Powerlock in/out > 64x C16 > 16x H16 4x RCD, PIN 1-9",CABLES,,225.00
+KADI0022,"PSU Powerlock in/out > 64x C16 > 16x H16 8x RCD, PIN 1-9",CABLES,,225.00
+KADI0025,"PSU Powerlock in/out > 64x C16 > 16x H16 65x RCBO, PIN 1-9",CABLES,,300.00
+KADI0450,PSU 32A CEE red > 6x 16A Schuko (breaker),CABLES,,15.00
+KADI0457,PSU 32A CEE red in/out >6x 16A Schuko (breaker),CABLES,,20.00
+KADI0475,PSU 32A CEE red > 2x 16A CEE red / 6x Schuko / 1x Aux 16A,CABLES,,25.00
+KADI0455,PSU 32A CEE red >6x 16A CEE blue/black (differential),CABLES,,20.00
+KADI0601,"PSU 63A CEE red > 16x C16 > 2x H16/8ch (0,03A) PIN 1-2",CABLES,,30.00
+KADI0602,"PSU 63A CEE red > 12x C16 > 2x H16/6ch (0,3A) [video]",CABLES,,30.00
+KADI0440,PSU 63A CEE red > 2x 32A red [audio],CABLES,,30.00
+KADI0665,PSU 63A CEE red > 2x 32A CEE red / 1x 16A Schuko,CABLES,,40.00
+KADI0660,PSU 63A CEE red > 2x 32A CEE red + 2x 16A CEE red + 4xSchuko,CABLES,,40.00
+KADI0680,PSU 63A CEE red > 3x 32A CEE red / 6x 16A CEE blue,CABLES,,35.00
+KADI0666,PSU 63A CEE red > 2x 32A CEE red/6x 16A Schuko,CABLES,,40.00
+KADI0700,"PSU 125A CEE red > 36x C16 > 6x H16/6ch, PIN 1-2",CABLES,,110.00
+KADI0705,PSU 125A CEE red > 48x C16 > 8x H16/6ch PIN 1-2,CABLES,,135.00
+KADI0707,"PSU 125A CEE red > 48x C16, 3x RCD > 6x H16/8ch, PIN 1-2",CABLES,,135.00
+KADI0725,PSU 125A CEE red > 2x 63A CEE red (Connex),CABLES,,60.00
+KADI0710,PSU 125A CEE red >1x 63A red/2x 32A red/2x 16A red/6x schuko,CABLES,,75.00
+KADI0715,PSU 125A CEE red > 6x 32A red / 7x 16A schuko (Connex),CABLES,,75.00
+KADI0832,PSU Powerlock in/out > 4x 125A CEE red (connex),CABLES,,135.00
+KADI0840,"PSU Powerlock in/out > 64x C16, 4x RCD > 16x H16, pin 1-2",CABLES,,225.00
+KADI0850,Rent-All - Transformer 110V-400A / sec. 230V-200A / 60Hz,CABLES,,175.00
+KASH0234,"Schuko Cable 16A, Mixed KIT 10x (2.5m-5m-10m) 5x (15m-25m) 12x 4way",CABLES,,125.00
+KASH0106,"Schuko cable KIT 16A 2,5 m [50 pieces]",CABLES,,100.00
+KASH0111,"Schuko cable KIT 16A 5,0 m [50 pieces]",CABLES,,75.00
+KASH0121,"Schuko cable KIT 16A 10,0 m [40 pieces]",CABLES,,100.00
+KASH0126,"Schuko cable KIT 16A 15,0 m [30 pieces]",CABLES,,90.00
+KASH0136,"Schuko cable KIT 16A 25,0 m [20 pieces]",CABLES,,100.00
+KASH0218,"Schuko adaptor KIT 16A 4-way 2,5 m [50 pieces]",CABLES,,112.50
+KASH0305,"Schuko adapter 16A > Powercon 2,5m",CABLES,,1.50
+KASH0310,"Schuko adapter 16A > Powercon TRUE1 IP65 1,5/2,5 m",CABLES,,0.50
+KASF0180,"Single phase 16A CEE, Mixed KIT 4x (2.5m-5m-10m-15m-25m) + adaptors",CABLES,,110.00
+KASF0151,"Single phase cable 16A CEE 2,5m [20 Pieces]",CABLES,,40.00
+KASF0153,"Single phase cable 16A CEE 5,0m [20 Pieces]",CABLES,,50.00
+KASF0155,"Single phase cable 16A CEE 10,0m [30 Pieces]",CABLES,,105.00
+KASF0157,"Single phase cable 16A CEE 15,0m [20 Pieces]",CABLES,,80.00
+KASF0159,"Single phase cable 16A CEE 25,0m [10 Pieces]",CABLES,,60.00
+KASF0163,"Single phase cable 16A CEE 50,0m [10 Pieces]",CABLES,,100.00
+KASF0103,"Single phase adaptor 16A CEE blue > 3x 16A CEE blue 2,5 m",CABLES,,2.50
+KASF0108,Single phase adaptor 16A CEE blue > Schuko 16A [f],CABLES,,2.00
+KASF0110,Single phase adaptor 16A CEE blue > Schuko 16A 4-way,CABLES,,1.25
+KAKR0305,"Single phase cable 32A CEE blue (3x6mm²) 5,0 m",CABLES,,1.00
+KAKR0310,"Single phase cable 32A CEE blue (3x6mm²) 10,0 m",CABLES,,1.25
+KAKR0323,"Single phase cable 32A CEE blue (3x6mm²) 25,0 m",CABLES,,2.50
+KAKR0334,Single phase adaptor 32A CEE blue > 16A CEE blue,CABLES,,2.50
+KAKR0343,Single phase adaptor 32A CEE blue > 2x 32A CEE blue,CABLES,,2.50
+KAKR0350,PSU 32A CEE singlephase > 6x 16A Schuko (breaker),CABLES,,7.50
+KAKR0400,"Three phase cable 32A CEE red - 2,5 m [5x 6mm²]",CABLES,,2.00
+KAKR0405,"Three phase cable 32A CEE red - 5,0 m [5x 6mm²]",CABLES,,2.00
+KAKR0410,"Three phase cable 32A CEE red - 10,0 m [5x 6mm²]",CABLES,,3.50
+KAKR0415,"Three phase cable 32A CEE red - 15,0 m [5x 6mm²]",CABLES,,5.00
+KAKR0420,"Three phase cable 32A CEE red - 20,0 m [5x 6mm²]",CABLES,,6.50
+KAKR0425,"Three phase cable 32A CEE red - 25,0 m [5x 6mm²]",CABLES,,8.00
+KAKR0430,"Three phase cable 32A CEE red - 50,0 m [5x 6mm²]",CABLES,,15.00
+KAKR0600,"Three phase cable 63A CEE red 2,5 m [5x 16mm²]",CABLES,,4.00
+KAKR0605,"Three phase cable 63A CEE red 5,0 m [5x 16mm²]",CABLES,,5.00
+KAKR0610,"Three phase cable 63A CEE red 10,0 m [5x 16mm²]",CABLES,,7.50
+KAKR0615,"Three phase cable 63A CEE red 15,0 m [5x 16mm²]",CABLES,,10.00
+KAKR0620,"Three phase cable 63A CEE red 20,0 m [5x 16mm²]",CABLES,,12.50
+KAKR0625,"Three phase cable 63A CEE red 25,0 m [5x 16mm²]",CABLES,,15.00
+KAKR0630,"Three phase cable 63A CEE red 50,0 m [5x 16mm²]",CABLES,,25.00
+KAKR0700,"Three phase cable 125A CEE red 2,5 m [5x 35mm²]",CABLES,,7.50
+KAKR0705,"Three phase cable 125A CEE red 5,0 m [5x 35mm²]",CABLES,,10.00
+KAKR0710,"Three phase cable 125A CEE red 10,0 m [5x 35mm²]",CABLES,,15.00
+KAKR0715,"Three phase cable 125A CEE red 15,0 m [5x 35mm²]",CABLES,,17.50
+KAKR0720,"Three phase cable 125A CEE red 20,0 m [5x 35mm²]",CABLES,,20.00
+KAKR0725,"Three phase cable 125A CEE red 25,0 m [5x 35mm²]",CABLES,,22.50
+KAKR0735,"Three phase cable 125A CEE red 50,0 m [5x 35mm²]",CABLES,,60.00
+KAKR0765,"Three phase adaptor 125A CEE red > 5x Powerlock 1,0 m",CABLES,,15.00
+KAKR8201,"Three phase cable Powerlock 400A - 1,25 m [5x 150mm²]",CABLES,,40.00
+KAKR8205,"Three phase cable Powerlock 400A - 5,00 m [5x 150mm²]",CABLES,,55.00
+KAKR8210,"Three phase cable Powerlock 400A - 10,00 m [5x 150mm²]",CABLES,,75.00
+KAKR8215,"Three phase cable Powerlock 400A - 15,00 m [5x 150mm²]",CABLES,,90.00
+KAHA0203,"Harting cable KIT 16 pins (2,5mm²) 2,5 m [20 pieces]",CABLES,,100.00
+KAHA0206,"Harting cable KIT 16 pins (2,5mm²) 5,0 m [20 pieces]",CABLES,,100.00
+KAHA0211,"Harting cable KIT 16 pins (2,5mm²) 10,0 m [10 pieces]",CABLES,,70.00
+KAHA0216,"Harting cable KIT 16 pins (2,5mm²) 15,0 m [10 pieces]",CABLES,,80.00
+KAHA0226,"Harting cable KIT 16 pins (2,5mm²) 25,0 m [10 pieces]",CABLES,,150.00
+KAHA0229,"Harting cable KIT 16 pins (2,5mm²) 30,0 m [ 5 pieces]",CABLES,,95.00
+KAHA0232,"Harting cable KIT 16 pins (2,5mm²) 50,0 m [ 5 pieces]",CABLES,,150.00
+KAHA0455,"Harting 16 pins loom (2,5mm²) 10,0 m 5-way [1 Piece]",CABLES,,35.00
+KAHA0456,"Harting 16 pins loom (2,5mm²) 15,0 m 5-way [1 Piece]",CABLES,,40.00
+KAHA0457,"Harting 16 pins loom (2,5mm²) 25,0 m 5-way [1 Piece]",CABLES,,60.00
+KAHA0460,"Harting 16 pins loom (2,5mm²) 50,0 m 5-way [1 Piece]",CABLES,,150.00
+KAHA0300,Harting adaptor 16 pins > 8x schuko (MUV8-1) [1-2 pin],CABLES,,7.50
+KAHA0302,Harting adaptor 16 pins in/out> 8x schuko (MUV8-2) [1-2 pin],CABLES,,8.00
+KAHA0340,Harting 16 pins connection block,CABLES,,4.50
+KAHA0342,Harting adaptor 16 pins > 2x 16 pins (parallel),CABLES,,4.50
+KASH0325,Schuko adaptor 16A (8x) > Harting 16 pins [break-in] PIN 1-2,CABLES,,3.50
+KAHA0344,"Harting adaptor 16 pins = pin 1,2 > 1,9",CABLES,,2.50
+KAHA0345,"Harting adaptor 16 pins = pin 1,9 > 1,2",CABLES,,2.50
+KAHA5100,"* 1,9 Harting adaptor 16 pins > 8x schuko (MUV8-1)",CABLES,,7.50
+KAHA5102,"* 1,9 Harting adaptor 16 pins in/out > 8x schuko (MUV8-2)",CABLES,,8.00
+KASH0327,* Schuko adaptor 16A (8x)> Harting 16 pins [break-in] PIN1-9,CABLES,,3.50
+KAXL0265,XLR cable 3 pins proplex AES/EBU KIT 25x (1m-2.5m-5m-10m) 10x 25m+adap.,CABLES,,110.00
+KAXL0250,"XLR cable 3 pins 50,0 m proplex AES/EBU reel",CABLES,,8.00
+KAXL0260,"XLR cable 3 pins 100,0 m proplex AES/EBU reel",CABLES,,10.00
+KAXL0364,XLR adaptor 3 pins [m] > 5 pins [f],CABLES,,1.00
+KAXL0560,XLR cable 5 pins proplex KIT 25x (1m-2.5m-5m-10m) 10x 25m+adap.,CABLES,,110.00
+KAXL0535,"XLR cable 5 pins 50,0 m proplex reel",CABLES,,7.50
+KAXL0539,"XLR cable 5 pins 100,0 m proplex reel",CABLES,,10.00
+KAXL0550,XLR adaptor 5 pins [m] > 3 pins [f],CABLES,,1.00
+KAXL0874,"Loom 1x Schuko, 4x DMX cable 5 p. M/F, proplex 50,0m [1Pc]",CABLES,,12.50
+KAXL0876,"Loom 1x Schuko, 4x DMX cable 5 p. M/F, proplex 100,0m [1Pc]",CABLES,,25.00
+KAPC0103,"PowerCON cable + XLR 3 pins 2,5 m",CABLES,,1.75
+KAPC0105,"PowerCON cable + XLR 3 pins 5,0 m",CABLES,,2.50
+KAPC0114,"PowerCON cable + XLR 3 pins 10,0 m",CABLES,,3.00
+KAPC0115,"PowerCON cable + XLR 3 pins 15,0 m",CABLES,,3.50
+KAPC0125,"PowerCON cable + XLR 3 pins 25,0 m",CABLES,,4.50
+KAPC0230,PowerCON + XLR 5 cable KIT 10x (2.5m-5m-10m) 5x20m+PCB,CABLES,,85.00
+KAPC0232,"PowerCON cable + XLR 5 cable KIT 2,5 m [50 Pieces]",CABLES,,87.50
+KAPC0234,"PowerCON cable + XLR 5 cable KIT 5,0 m [50 Pieces]",CABLES,,100.00
+KAPC0236,"PowerCON cable + XLR 5 cable KIT 10,0 m [40 Pieces]",CABLES,,100.00
+KAPC0237,"PowerCON cable + XLR 5 cable KIT 15,0 m [30 Pieces]",CABLES,,75.00
+KAPC0238,"PowerCON cable + XLR 5 cable KIT 25,0 m [20 Pieces]",CABLES,,70.00
+KAPC0050,PowerCON True1 + XLR 5 cable KIT 10x (0.75m-2.5m-5m-10m) 5x25m,CABLES,,105.00
+KAPC0056,"PowerCON True1 + XLR 5 cable KIT 2,5 m [50 pieces]",CABLES,,75.00
+KAPC0058,"PowerCON True1 + XLR 5 cable KIT 5,0 m [50 pieces]",CABLES,,100.00
+KAPC0060,"PowerCON True1 + XLR 5 cable KIT 10,0 m [40 pieces]",CABLES,,120.00
+KAPC0064,"PowerCON True1 + XLR 5 cable KIT 15,0 m [30 pieces]",CABLES,,120.00
+KAPC0066,"PowerCON True1 + XLR 5 cable KIT 25,0 m [20 pieces]",CABLES,,100.00
+KAET0570,RJ45 / SFTP / Cat5E cable KIT 10x (2.5m-5m-10m) 5x25m+NE8FF,CABLES,,60.00
+KAET0567,"RJ45 / SFTP / Cat5E 50,00m Reel [4 Pieces]",CABLES,,20.00
+KAET0568,"RJ45 / SFTP / Cat5E 75,00m Reel [4 Pieces]",CABLES,,24.00
+KAET0569,"RJ45 / SFTP / Cat5E 100,00m Reel [4 Pieces]",CABLES,,30.00
+KAET0352,"Ethercon / SFTP / Cat5E Eurocable 50,00m Reel [4 Pieces]",CABLES,,24.00
+KAET0354,"Ethercon / SFTP / Cat5E Eurocable 75,00m Reel [4 Pieces]",CABLES,,40.00
+KAET0356,"Ethercon / SFTP / Cat5E Eurocable 100,00m Reel [4 Pieces]",CABLES,,50.00
+KAET0462,Ethercon / SFTP / 2x Cat5E Eurocable 50m+ schuko [1pc],CABLES,,15.00
+KAET0464,Ethercon / SFTP / 2x Cat5E Eurocable 75m+ schuko [1pc],CABLES,,20.00
+KAET0735,Ethercon / SFTP / Cat7 cable KIT 5x 1.0m 10x (2.5m-5m-10m) 5x25m + NE8FFX6-W,CABLES,,95.00
+KAET0810,"Ethercon / SFTP / Cat7 pur cable 50,0 m reel [4 pieces]",CABLES,,35.00
+KAET0812,"Ethercon / SFTP / Cat7 pur cable 75,0 m reel [4 pieces]",CABLES,,50.00
+KAET0814,"Ethercon / SFTP / Cat7 pur cable 100,0 m reel [4 pieces]",CABLES,,60.00
+KALK0040,"LK cable 13 pins AES/EBU 5,0 m",CABLES,,4.25
+KALK0042,"LK cable 13 pins AES/EBU 10,0 m",CABLES,,6.50
+KALK0044,"LK cable 13 pins AES/EBU 15,0 m",CABLES,,7.50
+KALK0046,"LK cable 13 pins AES/EBU 25,0 m",CABLES,,8.50
+KALK0050,"LK cable 13 pins AES/EBU 50,0 m",CABLES,,12.50
+KALK0054,"LK cable 13 pins AES/EBU 100,0 m",CABLES,,25.00
+KALK0031,"LK Spin 13 pins [m] > 4x XLR5 [f] spin 0,5 m",CABLES,,5.00
+KALK0029,"LK Spin 13 pins [f] > 4x XLR5 [m] spin 0,5 m",CABLES,,5.00
+KALK0022,LK adaptor 13 pins box [in/out] > 4x XLR3 [f] + 4x XLR5 [f],CABLES,,11.00
+KALK0452,"LK cable 37 pins AES/EBU 5,0 m",CABLES,,8.00
+KALK0455,"LK cable 37 pins AES/EBU 10,0 m",CABLES,,12.50
+KALK0457,"LK cable 37 pins AES/EBU 15,0 m",CABLES,,15.00
+KALK0462,"LK cable 37 pins AES/EBU 25,0 m",CABLES,,20.00
+KALK0466,"LK cable 37 pins AES/EBU 50,0 m",CABLES,,27.50
+KALK0472,"LK cable 37 pins AES/EBU 100,0 m",CABLES,,40.00
+KALK0473,"LK cable 37 pins AES/EBU 150,0 m",CABLES,,60.00
+KALK0165,LK adaptor 37 pins [m] > 12x XLR3 [m/f],CABLES,,20.00
+KALK0166,LK adaptor 37 pins [in/out] > 12x XLR3 [m/f],CABLES,,25.00
+KALK0172,"LK Spin 37 pins [m] > 12x XLR3 [f] IN-spin 0,5m",CABLES,,8.00
+KALK0170,"LK Spin 37 pins [f] > 12x XLR3 [m] OUT-spin 0,5 m",CABLES,,8.00
+KALK0300,LK adaptor 37 pins [m] > 12x XLR3 [f] + 12x XLR5 [f],CABLES,,20.00
+KALK0302,LK adaptor 37 pins [in/out] > 12x XLR3 [f] + 12x XLR5 [f],CABLES,,25.00
+KALK0326,"LK Spin 37 pins [f] > 12x XLR5 [m] IN-spin 0,5 m",CABLES,,10.00
+KANL4180,"Speakon Cable NL4, Mixed KIT (4x4mm²)",CABLES,,90.00
+GEKA0263,MADI Multi 50m (5xMadi+LK37+16A CEE Blue+ 2x Ethercon),CABLES,,75.00
+GEKA0265,MADI Multi 100m (5xMadi+Soca+16A CEE Blue+ 2x Ethercon),CABLES,,75.00
+KALK0474,Rent-All Loom - LK37 AES/EBU+ 2x Ethercon CAT6 + CEE16A 100m,CABLES,,85.00
+GEKA0505,"SC32-5 (LK speaker cable 32x1.5mm² [m/f] 5,0m)",CABLES,,5.00
+GEKA0510,"SC32-10 (LK speaker cable 32x1.5mm² [m/f] 10,0m)",CABLES,,7.50
+GEKA0525,"SC32-25 (LK speaker cable 32x1.5mm² [m/f] 25,0m)",CABLES,,15.00
+GEKA0535,"SC32-35 (LK speaker cable 32x1.5mm² [m/f] 35,0m)",CABLES,,17.50
+GEKA0550,"SC32-50 (LK speaker cable 32x1.5mm² [m/f] 50,0m)",CABLES,,25.00
+GEKA0596,"SC32-4DO (LK speaker cable SC32 to 4x Ca-Com DO 2,5m)",CABLES,,7.50
+GEKA0620,"DO.7 (Cacom speaker cable 8p [m/f] 0,75 m)",CABLES,,3.50
+GEKA0624,"DO5 (Cacom speaker cable 8p [m/f] 5,0 m)",CABLES,,4.00
+GEKA0625,"DO7 (Cacom speaker cable 8p [m/f] 7,5 m)",CABLES,,5.00
+GEKA0627,"DO10 (Cacom speaker cable 8p [m/f] 10,0 m)",CABLES,,6.50
+GEKA0628,"DO15 (Cacom speaker cable 8p [m/f] 15,0 m)",CABLES,,7.50
+GEKA0630,"DO20 (Cacom speaker cable 8p [m/f] 20,0 m)",CABLES,,7.50
+GEKA0640,"DO25 (Cacom speaker cable 8p [m/f] 25,0 m)",CABLES,,12.00
+GEKA0670,"DOSUB3 (Cacom 8p Subsplit cable [m] with ring 2,5 m)",CABLES,,3.00
+GEKA0665,"DOSUB10 (Cacom 8P Subsplit Cable [m] with ring 10,0m",CABLES,,5.00
+GEKA0674,"DOFILL/KIVA (Cacom speaker cable [m] no ring > 4*NL4 2,5 m)",CABLES,,1.25
+GEKA0676,"DOFILL-LA8 (Cacom speaker cable [m] no ring > 2*NL4 1,5m)",CABLES,,5.00
+GEKA0677,DOFILL- in LA4X (2*NL4 > Cacom 8p [f] No ring),CABLES,,5.00
+GEKA0679,DO3WFILL-LA8 (cacom 8p [m] No ring > 1*NL4TOP+2*NL4 sub),CABLES,,5.00
+GEKA0807,DOP (Cacom Coupler 8 Pins [M] > [F] No Ring),CABLES,,5.00
+GEKA0832,"Cacom DOM AES/EBU Cable Set [2,5- 10- 25 m] 10x 2.5m 6x(10m-25M)+ 4x DOMP",CABLES,,125.00
+GEKA0838,"Cacom DOM 25 AES/EBU, 19p f/f, Cable Set [10 Pieces]",CABLES,,80.00
+GEKA0840,"Cacom DOM 50 AES/EBU, 19p f/f, Cable Set [2 Pieces]",CABLES,,25.00
+GEKA0842,"Cacom DOM 100 AES/EBU, 19p f/f, Cable Set [1 Piece]",CABLES,,25.00
+GEKA0790,DOMP (Cacom signal cable 19p [m/m] coupler),CABLES,,5.00
+GEKA0810,DOMPbox (Cacom signal adapter 19p XLR box 6x[m] / 6x[f]),CABLES,,5.00
+GEKA0795,DOMM (Cacom signal adapter 19p [m] NR > 6x XLR [m]) fan,CABLES,,5.00
+GEKA0800,DOMF (Cacom signal adapter 19p [m] NR > 6x XLR [f]) fan,CABLES,,5.00
+GEKA0680,Cacom 8p in/out > 4xNL2 break-out box,CABLES,,4.00
+KADV0003,"Kramer - C-HM/HM/PRO-6, HDMI cable 1.8 m 4k60 (4:4:4)",CABLES,,2.50
+KADV0004,"kramer - C-HM/HM/PRO-10, HDMI cable 3.0 m 4k60 (4:4:4)",CABLES,,2.50
+KADV0005,"Kramer - C-HM/HM/PRO-15, HDMI cable 4,6 m 4k60 (4:4:4)",CABLES,,5.00
+KADV0007,"Kramer - C-HM/HM/PRO-35, HDMI cable 10,7 m 4k60 (4:2:0)",CABLES,,4.50
+KADV0008,"Kramer - CA-HM-50, Active HDMI cable 15,2 m 4k60 (4:4:4)",CABLES,,10.00
+KADV0042,"Rent-All - Armored HDMI 2.1 AOC, 8K@60Hz Cable 10,0 m",CABLES,,5.00
+KADV0044,"Rent-All - Armored HDMI 2.1 AOC, 8K@60Hz Cable 15,0 m",CABLES,,6.00
+KADV0048,"Rent-All - Armored HDMI 2.1 AOC, 8K@60Hz Cable 30,0 m",CABLES,,8.00
+KADV0054,"Rent-All - Armored HDMI 2.1 AOC, 8K@60Hz 50,0m REEL [1 Pc]",CABLES,,11.00
+KADV0060,"Rent-All - Armored HDMI 2.1 AOC, 8K@60Hz 100 m REEL [1 Pc]",CABLES,,25.00
+PCDI0969,"Club 3D - DP 1.4[M] > HDMI 2.0[M] HDR10 4K@144/8K@60Hz, 3m",CABLES,,11.00
+KADV0010,USB-C 3.1 [m] > HDMI [F] 4K/60hz [Kramer ADC-U31C/HF),CABLES,,2.50
+KADV0403,"DVI-D dual link cable 1,8 m [Kramer]",CABLES,,2.50
+KADV0405,"DVI-D dual link cable 4,6 m [Kramer]",CABLES,,3.50
+KADV0407,"DVI-D dual link cable 7,5 m [Kramer]",CABLES,,5.00
+KADV0410,"DVI-D dual link cable 10,0 m [Kramer]",CABLES,,6.00
+KADV0415,"DVI-D dual link cable 15,0 m [Kramer]",CABLES,,8.00
+KADV0420,"DVI-D dual link cable 20,0 m [Kramer]",CABLES,,10.00
+KADV0650,"Displayport [m] adapter > DVI [m] 1,80m",CABLES,,0.50
+VIKA0149,"Draka / Belden - 3G SDI highflex cable 1,0m BNC",CABLES,,1.50
+VIKA0151,"Draka / Belden - 3G SDI highflex cable 2,5m BNC",CABLES,,2.00
+VIKA0153,"Draka / Belden - 3G SDI highflex cable 5,0m BNC",CABLES,,2.50
+VIKA0155,"Draka / Belden - 3G SDI highflex cable 10,0m BNC",CABLES,,3.00
+VIKA0157,"Draka / Belden - 3G SDI highflex cable 15,0m BNC",CABLES,,3.50
+VIKA0160,"Draka / Belden - 3G SDI highflex cable 25,0m BNC",CABLES,,5.00
+VIKA0162,"Belden - 3G SDI 1694A highflex cable 50,0m BNC REEL",CABLES,,10.00
+VIKA0164,"Belden - 3G SDI 1694A highflex cable 75,0m BNC REEL",CABLES,,15.00
+VIKA0132,Draka - 1.0/4.8Dz 5G SDI highflex cable 75m BNC REEL,CABLES,,15.00
+VIKA0137,Draka - 1.0/4.8Dz 5G SDI highflex cable 100m BNC REEL,CABLES,,18.00
+VIKA0166,"Sommer - 3G SDI highflex cable 2,5m 5-way BNC",CABLES,,6.75
+VIKA0168,"Sommer - 3G SDI highflex cable 5,0m 5-way BNC",CABLES,,8.00
+VIKA0172,"Loom Draka - 2x 3G SDI cable BNC + RJ45 Cat5E 20,0 m",CABLES,,20.00
+VIKA0174,"Loom Draka - 2x 3G SDI cable BNC + RJ45 Cat5E 40,0 m",CABLES,,30.00
+VIKA0176,"Loom Draka - 2x 3G SDI cable BNC + RJ45 Cat5E 60,0 m",CABLES,,45.00
+VIKA0178,"Loom Draka - 2x 3G SDI cable BNC + RJ45 Cat5E 80,0 m",CABLES,,60.00
+VEDI0102,"Gaffa tape 25mm, 50 mtr [white]",CABLES,,6.50
+VEDI0103,"Gaffa tape 50mm, 50 mtr [black]",CABLES,,12.75
+VEDI0104,"Gaffa tape 50mm, 50 mtr [grey]",CABLES,,12.75
+VEDI0105,"Gaffa tape 50mm, 50 mtr [white]",CABLES,,12.75
+VEDI0106,"Gaffa tape 50mm, 50 mtr [yellow]",CABLES,,12.75
+VEDI0107,"Gaffa tape 50mm, 50 mtr [red]",CABLES,,12.75
+VEDI0108,"Gaffa tape 50mm, 50 mtr [green]",CABLES,,12.75
+VEDI0110,"Gaffa tape 50mm, 50 mtr [pink]",CABLES,,12.75
+VEDI0113,"Gaffa tape 50mm, 50 mtr [blue]",CABLES,,12.75
+VEDI0115,"Gaffa tape 100mm, 50 mtr [black]",CABLES,,26.00
+VEDI0128,"Gaffa tape 100mm, 50 mtr [Grey]",CABLES,,26.00
+VEDI0127,"Gaffa tape 100mm, 50 mtr [White]",CABLES,,26.00
+VEDI0117,"Gaffa tape 150mm, 50 mtr [black]",CABLES,,46.00
+VEDI0182,"PVC Tape 19mm, 20mtr [Black]",CABLES,,1.75
+VEDI0160,"Flanel 1,30H x 1 m [black] (sales)",CABLES,,5.50
+VEDI0200,"Sheet LEE colorfilter 0,55 x 1,22m",CABLES,,7.25
+VEDI0201,"Rol LEE colorfilter 7,62 x 1,22m",CABLES,,87.75
+VLRO0241,"CLF - CAN ""Steam"" Fluid 5.0 liter (sale)",CABLES,,22.40
+VLRO0210,JEM - C-Plus haze Fluid CAN Smoke Fluid 2.5 liter (sale),CABLES,,35.00
+VLRO0293,JEM - Pro extra quick dissipating fluid 5 liter (sale),CABLES,,42.50
+VLRO0295,JEM - Pro Smoke Super ZR mix Can Smoke fluid 5 liter (sale),CABLES,,25.00
+VLRO0300,JEM - Pro Smoke Super ZR mix Can Smoke Fuid 10 liter (sale),CABLES,,35.00
+VLRO0305,JEM - Pro Smoke Super ZR mix drum 220 liter (sale),CABLES,,800.00
+VLRO0227,"JEM - Low Fog , Glaciator, CAN Smoke Fluid 5 liter",CABLES,,42.50
+VLRO0220,MDG - Neutral Fluid CAN Smoke Fluid 2.5 liter (sale),CABLES,,37.50
+VLRO0221,MDG - Neutral Fluid CAN Smoke Fluid 5 liter (sale),CABLES,,75.00
+VLRO0702,Rent-All - CO2 Bottle incl. 10Kilogram,CABLES,,43.50
+VLRO0256,LOOK - Tiny Fluid 250ml (sale),CABLES,,15.00
+VLRO0250,LOOK - Quick Fog CAN Smoke Fluid 5.0 liter (sale),CABLES,,37.50
+VLRO0252,LOOK - Regular Fog CAN Smoke Fluid 5.0 liter (sale),CABLES,,27.50
+VLRO0254,LOOK - Unique Hazer Fluid 2.0 liter (sale),CABLES,,27.50
+VLRO0224,Concept - S/Oil135 ViCount CAN Smoke Fluid 5 liter (sale),CABLES,,80.00
+VLRO0226,White Oils - liquid Paraffin EFXDF50 CAN Smoke Fluid 5 liter,CABLES,,95.00

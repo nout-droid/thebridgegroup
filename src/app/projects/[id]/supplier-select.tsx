@@ -1,0 +1,35 @@
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import type { Supplier } from "@/lib/types";
+
+export function SupplierSelect({
+  id,
+  name = "supplier_id",
+  defaultValue,
+  suppliers,
+}: {
+  id: string;
+  name?: string;
+  defaultValue?: string;
+  suppliers: Supplier[];
+}) {
+  return (
+    <Select name={name} defaultValue={defaultValue}>
+      <SelectTrigger id={id} className="h-8 text-xs">
+        <SelectValue placeholder="Kies leverancier" />
+      </SelectTrigger>
+      <SelectContent>
+        {suppliers.map((supplier) => (
+          <SelectItem key={supplier.id} value={supplier.id}>
+            {supplier.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
