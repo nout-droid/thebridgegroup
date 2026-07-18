@@ -39,6 +39,9 @@ yarn-error.log*
 # local tooling config
 .claude/
 
+# database backup dumps (uploaded to Google Drive, not committed)
+/backups/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
