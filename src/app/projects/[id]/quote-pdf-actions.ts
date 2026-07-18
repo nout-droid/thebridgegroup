@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { parseQuotePdfFile } from "@/lib/parse-quote-pdf";
 import { findOrCreateCategory, findOrCreateQuote } from "@/lib/server/category-helpers";
+import { getTeamOwnerId } from "@/lib/server/team";
 import { catalogCategoryLabel } from "@/lib/types";
 
 export interface ParsedQuoteReviewLine {
@@ -106,10 +107,11 @@ export async function confirmQuotePdfImportGroup(
   } = await supabase.auth.getUser();
 
   if (user) {
+    const ownerId = await getTeamOwnerId(supabase, user.id);
     const aliasRows = lines
       .filter((line) => line.matched_article_id)
       .map((line) => ({
-        user_id: user.id,
+        user_id: ownerId,
         raw_text: normalizeAliasText(line.raw_text),
         article_id: line.matched_article_id as string,
       }));

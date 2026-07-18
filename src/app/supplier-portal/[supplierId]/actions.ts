@@ -17,7 +17,6 @@ export async function isAuthorizedSupplier(supplierId: string) {
       .from("suppliers")
       .select("id")
       .eq("id", supplierId)
-      .eq("user_id", user.id)
       .maybeSingle();
     if (ownedSupplier) return true;
   }

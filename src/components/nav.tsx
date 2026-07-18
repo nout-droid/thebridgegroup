@@ -18,6 +18,9 @@ export function Nav() {
           <Link href="/suppliers" className="text-white/70 transition-colors hover:text-white">
             Leveranciers
           </Link>
+          <Link href="/team" className="text-white/70 transition-colors hover:text-white">
+            Team
+          </Link>
         </nav>
         <form action={signOut}>
           <Button

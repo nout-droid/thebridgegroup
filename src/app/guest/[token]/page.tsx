@@ -29,7 +29,6 @@ export default async function GuestPage({
       .from("projects")
       .select("id")
       .eq("share_token", token)
-      .eq("user_id", user.id)
       .maybeSingle();
     isOwner = Boolean(ownedProject);
   }

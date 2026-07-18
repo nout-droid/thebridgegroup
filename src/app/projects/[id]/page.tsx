@@ -2,6 +2,7 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
+import { checkCanViewBudget } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +28,7 @@ export default async function ProjectPage({
   const supabase = await createClient();
 
   const project = await getProjectOrNotFound(supabase, id);
+  const canViewBudget = await checkCanViewBudget(supabase, id);
 
   const { data: categories } = await supabase
     .from("categories")
@@ -210,9 +212,11 @@ export default async function ProjectPage({
               </details>
             </div>
 
-            <p className="text-lg">
-              Totaalbudget (klant): <span className="font-semibold">&euro; {totalBudget.toFixed(2)}</span>
-            </p>
+            {canViewBudget && (
+              <p className="text-lg">
+                Totaalbudget (klant): <span className="font-semibold">&euro; {totalBudget.toFixed(2)}</span>
+              </p>
+            )}
           </CardContent>
         </Card>
 
@@ -258,9 +262,11 @@ export default async function ProjectPage({
                     <Card className="h-full transition-colors hover:border-foreground/30">
                       <CardContent className="pt-6">
                         <p className="font-medium">{stage.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          &euro; {(stageSubtotals.get(stage.id) ?? 0).toFixed(2)}
-                        </p>
+                        {canViewBudget && (
+                          <p className="text-sm text-muted-foreground">
+                            &euro; {(stageSubtotals.get(stage.id) ?? 0).toFixed(2)}
+                          </p>
+                        )}
                       </CardContent>
                     </Card>
                   </Link>

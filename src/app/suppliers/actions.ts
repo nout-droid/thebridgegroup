@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import Papa from "papaparse";
 import { createClient } from "@/lib/supabase/server";
+import { getTeamOwnerId } from "@/lib/server/team";
 
 export async function createSupplier(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -20,8 +21,10 @@ export async function createSupplier(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  const ownerId = await getTeamOwnerId(supabase, user.id);
+
   await supabase.from("suppliers").insert({
-    user_id: user!.id,
+    user_id: ownerId,
     name,
     contact_email: contactEmail,
     contact_phone: contactPhone,

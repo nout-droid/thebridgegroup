@@ -26,7 +26,6 @@ export default async function SharePage({
       .from("projects")
       .select("id")
       .eq("share_token", token)
-      .eq("user_id", user.id)
       .maybeSingle();
     isOwner = Boolean(ownedProject);
   }

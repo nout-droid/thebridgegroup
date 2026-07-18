@@ -12,6 +12,7 @@ import {
 } from "@/lib/server/category-helpers";
 import { catalogCategoryLabel } from "@/lib/types";
 import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
+import { getTeamOwnerId } from "@/lib/server/team";
 
 export async function createCategory(
   projectId: string,
@@ -203,8 +204,10 @@ async function rememberAlias(
   } = await supabase.auth.getUser();
   if (!user) return;
 
+  const ownerId = await getTeamOwnerId(supabase, user.id);
+
   await supabase.from("article_aliases").upsert(
-    { user_id: user.id, raw_text: normalizeAliasText(rawText), article_id: articleId },
+    { user_id: ownerId, raw_text: normalizeAliasText(rawText), article_id: articleId },
     { onConflict: "user_id,raw_text" }
   );
 }

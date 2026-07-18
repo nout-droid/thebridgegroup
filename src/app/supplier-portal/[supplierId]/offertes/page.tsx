@@ -37,7 +37,6 @@ export default async function SupplierPortalDashboard({
       .from("suppliers")
       .select("id")
       .eq("id", supplierId)
-      .eq("user_id", user.id)
       .maybeSingle();
     isOwner = Boolean(ownedSupplier);
   }

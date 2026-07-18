@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
+import { checkCanViewBudget } from "@/lib/server/team";
 
 const TABS = [
   { key: "overview", label: "Overzicht" },
@@ -19,7 +21,7 @@ function tabHref(projectId: string, key: ProjectTabKey) {
   return `/projects/${projectId}/${key}`;
 }
 
-export function ProjectSubNav({
+export async function ProjectSubNav({
   projectId,
   projectName,
   active,
@@ -28,12 +30,16 @@ export function ProjectSubNav({
   projectName: string;
   active: ProjectTabKey;
 }) {
+  const supabase = await createClient();
+  const canViewBudget = await checkCanViewBudget(supabase, projectId);
+  const tabs = TABS.filter((tab) => tab.key !== "budget" || canViewBudget);
+
   return (
     <div className="border-b bg-muted/30">
       <div className="mx-auto max-w-5xl px-6 pt-4">
         <h1 className="text-lg font-semibold">{projectName}</h1>
         <nav className="mt-3 flex gap-1 overflow-x-auto">
-          {TABS.map((tab) => (
+          {tabs.map((tab) => (
             <Link
               key={tab.key}
               href={tabHref(projectId, tab.key)}

@@ -1,5 +1,7 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
+import { checkCanViewBudget } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +21,7 @@ export default async function ProjectBudgetPage({
   const supabase = await createClient();
 
   const project = await getProjectOrNotFound(supabase, id);
+  if (!(await checkCanViewBudget(supabase, id))) notFound();
 
   const { data: categories } = await supabase
     .from("categories")

@@ -133,6 +133,7 @@ export interface Stage {
   project_id: string;
   name: string;
   sort_order: number;
+  showcaller_password_hash: string | null;
   created_at: string;
 }
 
@@ -338,10 +339,19 @@ export interface SharedRundownScope {
   }[];
 }
 
+export interface RundownChatMessage {
+  id: string;
+  stage_id: string | null;
+  sender: string;
+  message: string;
+  created_at: string;
+}
+
 export interface SharedRundowns {
   project: { name: string; event_date: string | null };
   scopes: SharedRundownScope[];
   notes: CrewNote[];
+  chat: RundownChatMessage[];
 }
 
 export function computeClientPrice(category: Category, costPrice: number) {
@@ -464,3 +474,27 @@ export const CATALOG_CATEGORY_LABELS: Record<string, string> = {
 export function catalogCategoryLabel(category: string): string {
   return CATALOG_CATEGORY_LABELS[category.toUpperCase()] ?? (category || "Overig");
 }
+
+export type TeamRole = "admin" | "member";
+
+export interface TeamMember {
+  id: string;
+  owner_user_id: string;
+  member_user_id: string;
+  role: TeamRole;
+  invited_email: string;
+  can_view_budget: boolean;
+  created_at: string;
+}
+
+export interface TeamMemberProjectAccess {
+  id: string;
+  team_member_id: string;
+  project_id: string;
+  created_at: string;
+}
+
+export const TEAM_ROLE_LABELS: Record<TeamRole, string> = {
+  admin: "Beheerder",
+  member: "Lid",
+};

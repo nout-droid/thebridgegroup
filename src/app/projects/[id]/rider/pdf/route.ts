@@ -20,7 +20,6 @@ export async function GET(
     .from("projects")
     .select("id, name")
     .eq("id", id)
-    .eq("user_id", user.id)
     .maybeSingle();
 
   if (!project) {
