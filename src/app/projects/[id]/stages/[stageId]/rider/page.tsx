@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound, getStageOrNotFound } from "@/lib/server/get-project";
 import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { RiderSection, RiderSectionItem } from "@/lib/types";
 import { RiderReadOnly } from "../../../rider-readonly";
 import { StageSubNav } from "../stage-sub-nav";
@@ -57,6 +58,7 @@ export default async function StageRiderPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <RiderReadOnly sections={riderSectionsWithItems} />
       </main>
+      <Footer />
     </div>
   );
 }

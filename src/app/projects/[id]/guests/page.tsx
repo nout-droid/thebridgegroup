@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { GuestDocument } from "@/lib/types";
 import { GuestDocumentsCard } from "../guest-documents-card";
 import { ProjectSubNav } from "../project-sub-nav";
@@ -29,6 +30,7 @@ export default async function ProjectGuestsPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <GuestDocumentsCard project={project} documents={guestDocuments ?? []} />
       </main>
+      <Footer />
     </div>
   );
 }

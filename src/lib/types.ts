@@ -172,6 +172,7 @@ export interface CrewMember {
   access_level: string;
   id_number: string;
   accredited: boolean;
+  access_dates: string[];
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
@@ -203,8 +204,10 @@ export interface CommsAssignment {
   user_name: string;
   device_type: string;
   channels: string;
+  supplier_id: string | null;
   sort_order: number;
   created_at: string;
+  supplier?: Supplier;
 }
 
 export interface CateringOrder {
@@ -218,8 +221,10 @@ export interface CateringOrder {
   veggie_dinner: number;
   night_snacks: number;
   notes: string;
+  supplier_id: string | null;
   sort_order: number;
   created_at: string;
+  supplier?: Supplier;
 }
 
 export interface ArtistRider {

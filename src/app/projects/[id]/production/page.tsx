@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { CrewMember, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../project-sub-nav";
 import { ProductionSubNav } from "./production-sub-nav";
@@ -37,6 +38,7 @@ export default async function ProductionCrewPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <CrewCard projectId={project.id} members={members ?? []} suppliers={suppliers ?? []} />
       </main>
+      <Footer />
     </div>
   );
 }

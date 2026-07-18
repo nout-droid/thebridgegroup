@@ -23,6 +23,7 @@ import {
   type SharedRider,
 } from "@/lib/types";
 import { toEmbedUrl } from "@/lib/video-embed";
+import { Footer } from "@/components/footer";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -570,6 +571,7 @@ export function ShareView({ token }: { token: string }) {
           </>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

@@ -17,6 +17,7 @@ function parseFormFields(formData: FormData) {
     veggie_dinner: Math.max(0, Number(formData.get("veggie_dinner") ?? 0)),
     night_snacks: Math.max(0, Number(formData.get("night_snacks") ?? 0)),
     notes: String(formData.get("notes") ?? "").trim(),
+    supplier_id: String(formData.get("supplier_id") ?? "") || null,
   };
 }
 

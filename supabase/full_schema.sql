@@ -1213,6 +1213,7 @@ create table if not exists public.crew_members (
   access_level text not null default '',
   id_number text not null default '',
   accredited boolean not null default false,
+  access_dates date[] not null default '{}',
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
@@ -1264,11 +1265,13 @@ create table if not exists public.comms_assignments (
   user_name text not null default '',
   device_type text not null default '',
   channels text not null default '',
+  supplier_id uuid references public.suppliers(id) on delete set null,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
 
 create index if not exists comms_assignments_project_id_idx on public.comms_assignments(project_id);
+create index if not exists comms_assignments_supplier_id_idx on public.comms_assignments(supplier_id);
 
 alter table public.comms_assignments enable row level security;
 
@@ -1291,11 +1294,13 @@ create table if not exists public.catering_orders (
   veggie_dinner int not null default 0,
   night_snacks int not null default 0,
   notes text not null default '',
+  supplier_id uuid references public.suppliers(id) on delete set null,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
 
 create index if not exists catering_orders_project_id_idx on public.catering_orders(project_id);
+create index if not exists catering_orders_supplier_id_idx on public.catering_orders(supplier_id);
 
 alter table public.catering_orders enable row level security;
 

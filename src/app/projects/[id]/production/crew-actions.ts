@@ -16,6 +16,7 @@ export async function addCrewMember(projectId: string, formData: FormData) {
   const accessLevel = String(formData.get("access_level") ?? "").trim();
   const idNumber = String(formData.get("id_number") ?? "").trim();
   const accredited = formData.get("accredited") === "on";
+  const accessDates = formData.getAll("access_dates").map(String);
 
   const supabase = await createClient();
   const { count } = await supabase
@@ -31,6 +32,7 @@ export async function addCrewMember(projectId: string, formData: FormData) {
     access_level: accessLevel,
     id_number: idNumber,
     accredited,
+    access_dates: accessDates,
     sort_order: count ?? 0,
   });
 
@@ -46,6 +48,7 @@ export async function updateCrewMember(projectId: string, memberId: string, form
   const accessLevel = String(formData.get("access_level") ?? "").trim();
   const idNumber = String(formData.get("id_number") ?? "").trim();
   const accredited = formData.get("accredited") === "on";
+  const accessDates = formData.getAll("access_dates").map(String);
 
   const supabase = await createClient();
   await supabase
@@ -57,6 +60,7 @@ export async function updateCrewMember(projectId: string, memberId: string, form
       access_level: accessLevel,
       id_number: idNumber,
       accredited,
+      access_dates: accessDates,
     })
     .eq("id", memberId);
 

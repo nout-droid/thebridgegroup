@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadPortalDocument } from "@/lib/server/portal-storage";
 
-async function isAuthorizedSupplier(supplierId: string) {
+export async function isAuthorizedSupplier(supplierId: string) {
   const supabase = await createClient();
   const {
     data: { user },

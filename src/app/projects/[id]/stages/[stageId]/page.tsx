@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound, getStageOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -122,6 +123,7 @@ export default async function StagePage({
 
         <QuotePdfImport projectId={project.id} stageId={stage.id} suppliers={suppliers ?? []} />
       </main>
+      <Footer />
     </div>
   );
 }

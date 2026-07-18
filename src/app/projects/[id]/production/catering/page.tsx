@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
-import type { CateringOrder } from "@/lib/types";
+import { Footer } from "@/components/footer";
+import type { CateringOrder, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
 import { CateringCard } from "../catering-card";
@@ -23,14 +24,21 @@ export default async function ProductionCateringPage({
     .order("sort_order", { ascending: true })
     .returns<CateringOrder[]>();
 
+  const { data: suppliers } = await supabase
+    .from("suppliers")
+    .select("*")
+    .order("name", { ascending: true })
+    .returns<Supplier[]>();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="production" />
       <ProductionSubNav projectId={project.id} active="catering" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <CateringCard projectId={project.id} orders={orders ?? []} />
+        <CateringCard projectId={project.id} orders={orders ?? []} suppliers={suppliers ?? []} />
       </main>
+      <Footer />
     </div>
   );
 }

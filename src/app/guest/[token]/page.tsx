@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
+import { Footer } from "@/components/footer";
 
 export default async function GuestPage({
   params,
@@ -96,6 +97,7 @@ export default async function GuestPage({
           </ul>
         )}
       </div>
+      <Footer />
     </div>
   );
 }

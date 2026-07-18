@@ -2,92 +2,34 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CateringOrder, Supplier } from "@/lib/types";
-import { SupplierSelect } from "../supplier-select";
-import { addCateringOrder, deleteCateringOrder, updateCateringOrder } from "./catering-actions";
+import type { CateringOrder } from "@/lib/types";
+import {
+  addSupplierCatering,
+  deleteSupplierCatering,
+  updateSupplierCatering,
+} from "../requests-actions";
 
-function sortOrders(orders: CateringOrder[]): CateringOrder[] {
-  return [...orders].sort((a, b) => {
-    if (a.order_date !== b.order_date) return a.order_date < b.order_date ? -1 : 1;
-    return a.sort_order - b.sort_order;
-  });
-}
-
-interface DailyTotal {
-  date: string;
-  lunch: number;
-  dinner: number;
-  nightSnacks: number;
-}
-
-function totalsPerDate(orders: CateringOrder[]): DailyTotal[] {
-  const byDate = new Map<string, DailyTotal>();
-  for (const order of orders) {
-    const entry = byDate.get(order.order_date) ?? {
-      date: order.order_date,
-      lunch: 0,
-      dinner: 0,
-      nightSnacks: 0,
-    };
-    entry.lunch += order.crew_lunch + order.veggie_lunch;
-    entry.dinner += order.crew_dinner + order.veggie_dinner;
-    entry.nightSnacks += order.night_snacks;
-    byDate.set(order.order_date, entry);
-  }
-  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
-}
-
-export function CateringCard({
+export function SupplierCateringSection({
+  supplierId,
   projectId,
   orders,
-  suppliers,
 }: {
+  supplierId: string;
   projectId: string;
   orders: CateringOrder[];
-  suppliers: Supplier[];
 }) {
-  const sorted = sortOrders(orders);
-  const dailyTotals = totalsPerDate(orders);
-
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">Catering</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Aantallen per dag en afnemer, voor lunch, diner en night snacks.
-        </p>
+        <p className="text-sm text-muted-foreground">Aantallen per dag voor jouw crew op dit project.</p>
       </CardHeader>
       <CardContent className="space-y-3">
-        {dailyTotals.length > 0 && (
-          <div className="overflow-x-auto rounded-md border">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b bg-muted/50">
-                  <th className="p-2 text-left font-medium">Datum</th>
-                  <th className="p-2 text-left font-medium">Totaal lunch</th>
-                  <th className="p-2 text-left font-medium">Totaal diner</th>
-                  <th className="p-2 text-left font-medium">Totaal night snacks</th>
-                </tr>
-              </thead>
-              <tbody>
-                {dailyTotals.map((day) => (
-                  <tr key={day.date} className="border-b last:border-0">
-                    <td className="p-2">{day.date}</td>
-                    <td className="p-2">{day.lunch}</td>
-                    <td className="p-2">{day.dinner}</td>
-                    <td className="p-2">{day.nightSnacks}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {sorted.map((order) => (
+        {orders.map((order) => (
           <form
             key={order.id}
-            action={updateCateringOrder.bind(null, projectId, order.id)}
-            className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-8"
+            action={updateSupplierCatering.bind(null, supplierId, projectId, order.id)}
+            className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-7"
           >
             <div className="space-y-1">
               <Label htmlFor={`date-${order.id}`} className="text-xs">Datum</Label>
@@ -108,14 +50,6 @@ export function CateringCard({
                 defaultValue={order.party}
                 className="h-8 text-xs"
                 required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor={`supplier-${order.id}`} className="text-xs">Leverancier</Label>
-              <SupplierSelect
-                id={`supplier-${order.id}`}
-                defaultValue={order.supplier_id ?? undefined}
-                suppliers={suppliers}
               />
             </div>
             <div className="space-y-1">
@@ -173,7 +107,7 @@ export function CateringCard({
                 className="h-8 text-xs"
               />
             </div>
-            <div className="space-y-1 sm:col-span-2">
+            <div className="space-y-1 sm:col-span-3">
               <Label htmlFor={`notes-${order.id}`} className="text-xs">Opmerkingen</Label>
               <Input
                 id={`notes-${order.id}`}
@@ -182,13 +116,13 @@ export function CateringCard({
                 className="h-8 text-xs"
               />
             </div>
-            <div className="flex items-end gap-2 sm:col-span-8">
+            <div className="flex items-end gap-2 sm:col-span-4">
               <Button type="submit" size="sm" className="h-8 text-xs">
                 Opslaan
               </Button>
               <Button
                 type="submit"
-                formAction={deleteCateringOrder.bind(null, projectId, order.id)}
+                formAction={deleteSupplierCatering.bind(null, supplierId, projectId, order.id)}
                 size="sm"
                 variant="ghost"
                 className="h-8 text-xs"
@@ -200,8 +134,8 @@ export function CateringCard({
         ))}
 
         <form
-          action={addCateringOrder.bind(null, projectId)}
-          className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-8"
+          action={addSupplierCatering.bind(null, supplierId, projectId)}
+          className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-7"
         >
           <div className="space-y-1">
             <Label htmlFor="new-date" className="text-xs">Datum</Label>
@@ -209,11 +143,7 @@ export function CateringCard({
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-party" className="text-xs">Afnemer</Label>
-            <Input id="new-party" name="party" placeholder="bv. Think" className="h-8 text-xs" required />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-supplier" className="text-xs">Leverancier</Label>
-            <SupplierSelect id="new-supplier" suppliers={suppliers} />
+            <Input id="new-party" name="party" placeholder="bv. Eigen crew" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-cl" className="text-xs">Crew lunch</Label>
@@ -235,11 +165,11 @@ export function CateringCard({
             <Label htmlFor="new-ns" className="text-xs">Night snacks</Label>
             <Input id="new-ns" name="night_snacks" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
-          <div className="space-y-1 sm:col-span-2">
+          <div className="space-y-1 sm:col-span-3">
             <Label htmlFor="new-notes" className="text-xs">Opmerkingen</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
-          <div className="sm:col-span-8">
+          <div className="flex items-end">
             <Button type="submit" size="sm" className="h-8 text-xs">
               Order toevoegen
             </Button>

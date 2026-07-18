@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { CrewMember, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { AccessDatesInput } from "@/components/access-dates-input";
 import { addCrewMember, deleteCrewMember, updateCrewMember } from "./crew-actions";
 
 export function CrewCard({
@@ -86,6 +87,10 @@ export function CrewCard({
                 Geaccrediteerd
               </label>
             </div>
+            <div className="space-y-1 sm:col-span-6">
+              <Label className="text-xs">Toegangsdagen</Label>
+              <AccessDatesInput defaultValues={member.access_dates} />
+            </div>
             <div className="flex items-end gap-2 sm:col-span-6">
               <Button type="submit" size="sm" className="h-8 text-xs">
                 Opslaan
@@ -132,6 +137,10 @@ export function CrewCard({
               <input type="checkbox" name="accredited" className="h-4 w-4" />
               Geaccrediteerd
             </label>
+          </div>
+          <div className="space-y-1 sm:col-span-6">
+            <Label className="text-xs">Toegangsdagen</Label>
+            <AccessDatesInput />
           </div>
           <div className="sm:col-span-6">
             <Button type="submit" size="sm" className="h-8 text-xs">

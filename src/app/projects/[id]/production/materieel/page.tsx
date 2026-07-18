@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { EquipmentReservation, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
@@ -41,6 +42,7 @@ export default async function ProductionEquipmentPage({
           suppliers={suppliers ?? []}
         />
       </main>
+      <Footer />
     </div>
   );
 }

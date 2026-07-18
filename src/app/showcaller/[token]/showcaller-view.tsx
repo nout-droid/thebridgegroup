@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
+import { Footer } from "@/components/footer";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
 import {
@@ -456,6 +457,7 @@ export function ShowcallerView({ token }: { token: string }) {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }

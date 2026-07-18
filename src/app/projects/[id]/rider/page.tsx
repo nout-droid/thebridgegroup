@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { RiderSection, RiderSectionItem } from "@/lib/types";
 import { RiderCard } from "../rider-card";
 import { ProjectSubNav } from "../project-sub-nav";
@@ -55,6 +56,7 @@ export default async function ProjectRiderPage({
           sections={riderSectionsWithItems}
         />
       </main>
+      <Footer />
     </div>
   );
 }

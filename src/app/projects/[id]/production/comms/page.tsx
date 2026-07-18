@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
-import type { CommsAssignment } from "@/lib/types";
+import { Footer } from "@/components/footer";
+import type { CommsAssignment, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
 import { CommsCard } from "../comms-card";
@@ -23,6 +24,12 @@ export default async function ProductionCommsPage({
     .order("sort_order", { ascending: true })
     .returns<CommsAssignment[]>();
 
+  const { data: suppliers } = await supabase
+    .from("suppliers")
+    .select("*")
+    .order("name", { ascending: true })
+    .returns<Supplier[]>();
+
   const intercomAssignments = (assignments ?? []).filter((a) => a.kind === "intercom");
   const portofoonAssignments = (assignments ?? []).filter((a) => a.kind === "portofoon");
 
@@ -36,8 +43,10 @@ export default async function ProductionCommsPage({
           projectId={project.id}
           intercomAssignments={intercomAssignments}
           portofoonAssignments={portofoonAssignments}
+          suppliers={suppliers ?? []}
         />
       </main>
+      <Footer />
     </div>
   );
 }

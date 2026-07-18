@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { ProjectMedia } from "@/lib/types";
 import { ProjectMediaCard } from "../project-media";
 import { ProjectSubNav } from "../project-sub-nav";
@@ -33,6 +34,7 @@ export default async function ProjectMediaPage({
           media={media ?? []}
         />
       </main>
+      <Footer />
     </div>
   );
 }

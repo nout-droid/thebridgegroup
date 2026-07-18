@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CommsAssignment, CommsKind } from "@/lib/types";
+import type { CommsAssignment, CommsKind, Supplier } from "@/lib/types";
+import { SupplierSelect } from "../supplier-select";
 import { addCommsAssignment, deleteCommsAssignment, updateCommsAssignment } from "./comms-actions";
 
 function CommsList({
@@ -15,6 +16,7 @@ function CommsList({
   channelsLabel,
   channelsPlaceholder,
   items,
+  suppliers,
 }: {
   projectId: string;
   kind: CommsKind;
@@ -25,6 +27,7 @@ function CommsList({
   channelsLabel: string;
   channelsPlaceholder: string;
   items: CommsAssignment[];
+  suppliers: Supplier[];
 }) {
   return (
     <div className="space-y-3">
@@ -67,6 +70,14 @@ function CommsList({
               defaultValue={item.channels}
               placeholder={channelsPlaceholder}
               className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`supplier-${item.id}`} className="text-xs">Leverancier</Label>
+            <SupplierSelect
+              id={`supplier-${item.id}`}
+              defaultValue={item.supplier_id ?? undefined}
+              suppliers={suppliers}
             />
           </div>
           <div className="flex items-end gap-2">
@@ -112,6 +123,10 @@ function CommsList({
             className="h-8 text-xs"
           />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor={`new-supplier-${kind}`} className="text-xs">Leverancier</Label>
+          <SupplierSelect id={`new-supplier-${kind}`} suppliers={suppliers} />
+        </div>
         <div className="flex items-end">
           <Button type="submit" size="sm" className="h-8 text-xs">
             Toevoegen
@@ -126,10 +141,12 @@ export function CommsCard({
   projectId,
   intercomAssignments,
   portofoonAssignments,
+  suppliers,
 }: {
   projectId: string;
   intercomAssignments: CommsAssignment[];
   portofoonAssignments: CommsAssignment[];
+  suppliers: Supplier[];
 }) {
   return (
     <Card>
@@ -150,6 +167,7 @@ export function CommsCard({
           channelsLabel="Kanalen"
           channelsPlaceholder="bv. Show, Stage"
           items={intercomAssignments}
+          suppliers={suppliers}
         />
         <CommsList
           projectId={projectId}
@@ -161,6 +179,7 @@ export function CommsCard({
           channelsLabel="Groepen"
           channelsPlaceholder="bv. 1: Productie, 4: Beveiliging"
           items={portofoonAssignments}
+          suppliers={suppliers}
         />
       </CardContent>
     </Card>

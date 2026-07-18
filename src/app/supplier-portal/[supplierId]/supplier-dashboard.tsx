@@ -1,4 +1,5 @@
 import { Nav } from "./supplier-nav";
+import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -45,7 +46,7 @@ export async function SupplierDashboard({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
-      <Nav supplierName={supplierName} />
+      <Nav supplierId={supplierId} supplierName={supplierName} active="offertes" />
       <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
         <h1 className="text-2xl font-semibold">Jouw offertes</h1>
 
@@ -95,6 +96,7 @@ export async function SupplierDashboard({
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

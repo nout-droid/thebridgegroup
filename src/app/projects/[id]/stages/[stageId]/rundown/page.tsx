@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound, getStageOrNotFound } from "@/lib/server/get-project";
 import { getOrCreateRundown } from "@/lib/server/ensure-rundown";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { Rundown, RundownItem } from "@/lib/types";
 import { StageSubNav } from "../stage-sub-nav";
 import { RundownLive } from "../../../rundown-live";
@@ -54,6 +55,7 @@ export default async function StageRundownPage({
           />
         )}
       </main>
+      <Footer />
     </div>
   );
 }

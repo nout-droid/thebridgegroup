@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
+import { Footer } from "@/components/footer";
 
 export function PortalLogin({
   description,
@@ -66,6 +67,7 @@ export function PortalLogin({
           </SubmitButton>
         </form>
       </div>
+      <Footer variant="dark" />
     </div>
   );
 }

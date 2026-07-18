@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { NewProjectDialog } from "./new-project-dialog";
@@ -48,6 +49,7 @@ export default async function ProjectsPage() {
           </div>
         )}
       </main>
+      <Footer />
     </div>
   );
 }

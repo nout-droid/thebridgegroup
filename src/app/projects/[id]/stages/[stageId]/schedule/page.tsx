@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound, getStageOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
+import { Footer } from "@/components/footer";
 import type { ScheduleItem, Supplier } from "@/lib/types";
 import { ScheduleCard } from "../../../schedule-card";
 import { StageSubNav } from "../stage-sub-nav";
@@ -45,6 +46,7 @@ export default async function StageSchedulePage({
           suppliers={suppliers ?? []}
         />
       </main>
+      <Footer />
     </div>
   );
 }

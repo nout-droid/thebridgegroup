@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
 import { DIVISIONS } from "@/lib/divisions";
+import { Footer } from "@/components/footer";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -345,6 +346,7 @@ export function CrewRundownView({ token }: { token: string }) {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   );
 }
