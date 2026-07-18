@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const TABS = [
+  { key: "rider", label: "Rider" },
   { key: "offertes", label: "Offertes" },
   { key: "aanvragen", label: "Aanvragen" },
 ] as const;
@@ -11,7 +12,7 @@ export type SupplierTabKey = (typeof TABS)[number]["key"];
 
 function tabHref(supplierId: string, key: SupplierTabKey) {
   const base = `/supplier-portal/${supplierId}`;
-  return key === "offertes" ? base : `${base}/${key}`;
+  return key === "rider" ? base : `${base}/${key}`;
 }
 
 export function Nav({

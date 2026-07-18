@@ -17,24 +17,6 @@ export async function signIn(formData: FormData) {
   redirect("/projects");
 }
 
-export async function signUp(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
-  const password = String(formData.get("password") ?? "");
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({ email, password });
-
-  if (error) {
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
-  }
-
-  redirect(
-    `/login?message=${encodeURIComponent(
-      "Account aangemaakt. Check je mail als bevestiging vereist is, of log direct in."
-    )}`
-  );
-}
-
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();

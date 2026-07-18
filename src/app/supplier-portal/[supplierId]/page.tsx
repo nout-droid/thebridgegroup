@@ -1,26 +1,25 @@
 import { cookies } from "next/headers";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
-import type { QuoteDocument } from "@/lib/types";
-import { SupplierDashboard, type SupplierQuoteRow } from "./supplier-dashboard";
+import { cn } from "@/lib/utils";
+import type { RiderSection, RiderSectionItem } from "@/lib/types";
+import { RiderReadOnly } from "@/app/projects/[id]/rider-readonly";
+import { Nav } from "./supplier-nav";
+import { Footer } from "@/components/footer";
+import { getSupplierProjects } from "./data";
 
-interface RawQuoteRow {
-  id: string;
-  cost_price: number;
-  status: string;
-  created_at: string;
-  category: { name: string; project: { name: string } | null } | null;
-  documents: QuoteDocument[];
-}
-
-export default async function SupplierPortalDashboard({
+export default async function SupplierRiderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ supplierId: string }>;
+  searchParams: Promise<{ project?: string }>;
 }) {
   const { supplierId } = await params;
+  const { project: projectParam } = await searchParams;
 
   if (!isSupabaseConfigured) {
     return <p className="p-6 text-sm text-muted-foreground">Deze pagina is nog niet beschikbaar.</p>;
@@ -58,25 +57,88 @@ export default async function SupplierPortalDashboard({
 
   if (!supplier) notFound();
 
-  const { data: quotes } = await admin
-    .from("quotes")
-    .select(
-      "id, cost_price, status, created_at, category:categories(name, project:projects(name)), documents:quote_documents(*)"
-    )
-    .eq("supplier_id", supplierId)
-    .order("created_at", { ascending: false })
-    .returns<RawQuoteRow[]>();
+  const projects = await getSupplierProjects(supplierId);
+  const selectedProject = projects.find((p) => p.id === projectParam) ?? projects[0] ?? null;
 
-  const rows: SupplierQuoteRow[] = (quotes ?? []).map((q) => ({
-    id: q.id,
-    costPrice: q.cost_price,
-    status: q.status,
-    categoryName: q.category?.name ?? "—",
-    projectName: q.category?.project?.name ?? "—",
-    documents: (q.documents ?? []).sort(
-      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-    ),
-  }));
+  let sections: RiderSection[] = [];
 
-  return <SupplierDashboard supplierId={supplierId} supplierName={supplier.name} quotes={rows} />;
+  if (selectedProject) {
+    const { data: rider } = await admin
+      .from("riders")
+      .select("id")
+      .eq("project_id", selectedProject.id)
+      .maybeSingle();
+
+    if (rider) {
+      const { data: riderSections } = await admin
+        .from("rider_sections")
+        .select("*")
+        .eq("rider_id", rider.id)
+        .order("sort_order", { ascending: true })
+        .returns<RiderSection[]>();
+
+      const { data: riderSectionItems } = riderSections?.length
+        ? await admin
+            .from("rider_section_items")
+            .select("*")
+            .in(
+              "section_id",
+              riderSections.map((s) => s.id)
+            )
+            .order("sort_order", { ascending: true })
+            .returns<RiderSectionItem[]>()
+        : { data: [] as RiderSectionItem[] };
+
+      sections = (riderSections ?? []).map((section) => ({
+        ...section,
+        items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
+      }));
+    }
+  }
+
+  return (
+    <div className="flex min-h-screen flex-col">
+      <Nav supplierId={supplierId} supplierName={supplier.name} active="rider" />
+      <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
+        <h1 className="text-2xl font-semibold">Rider</h1>
+
+        {!projects.length ? (
+          <p className="text-sm text-muted-foreground">
+            Er staat nog geen project voor je klaar. Zodra er een offerteverzoek voor je is aangemaakt
+            verschijnt het project hier.
+          </p>
+        ) : (
+          <>
+            {projects.length > 1 && (
+              <div className="flex flex-wrap gap-2">
+                {projects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/supplier-portal/${supplierId}?project=${project.id}`}
+                    className={cn(
+                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                      selectedProject?.id === project.id
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground hover:bg-muted/70"
+                    )}
+                  >
+                    {project.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {sections.length > 0 ? (
+              <RiderReadOnly sections={sections} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Er is nog geen rider beschikbaar voor dit project.
+              </p>
+            )}
+          </>
+        )}
+      </main>
+      <Footer />
+    </div>
+  );
 }
