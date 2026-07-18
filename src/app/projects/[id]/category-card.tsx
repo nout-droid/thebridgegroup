@@ -189,8 +189,14 @@ export function CategoryCard({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`cost_price-${category.id}`}>Inkoopprijs</Label>
-            <Input id={`cost_price-${category.id}`} name="cost_price" type="number" step="0.01" required />
+            <Label htmlFor={`cost_price-${category.id}`}>Inkoopprijs (optioneel)</Label>
+            <Input
+              id={`cost_price-${category.id}`}
+              name="cost_price"
+              type="number"
+              step="0.01"
+              placeholder="Nog onbekend? Laat leeg"
+            />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor={`quote_status-${category.id}`}>Status</Label>

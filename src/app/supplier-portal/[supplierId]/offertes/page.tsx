@@ -77,5 +77,12 @@ export default async function SupplierPortalDashboard({
     ),
   }));
 
-  return <SupplierDashboard supplierId={supplierId} supplierName={supplier.name} quotes={rows} />;
+  return (
+    <SupplierDashboard
+      supplierId={supplierId}
+      supplierName={supplier.name}
+      quotes={rows}
+      isOwner={isOwner}
+    />
+  );
 }

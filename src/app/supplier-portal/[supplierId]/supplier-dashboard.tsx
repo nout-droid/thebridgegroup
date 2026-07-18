@@ -39,10 +39,12 @@ export async function SupplierDashboard({
   supplierId,
   supplierName,
   quotes,
+  isOwner = false,
 }: {
   supplierId: string;
   supplierName: string;
   quotes: SupplierQuoteRow[];
+  isOwner?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col">
@@ -69,9 +71,14 @@ export async function SupplierDashboard({
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <p className="text-sm">
-                    Jouw prijs: <span className="font-semibold">&euro; {quote.costPrice.toFixed(2)}</span>
-                  </p>
+                  {isOwner && (
+                    <p className="text-sm text-muted-foreground">
+                      Inkoopprijs (alleen voor jou zichtbaar):{" "}
+                      <span className="font-semibold text-foreground">
+                        &euro; {quote.costPrice.toFixed(2)}
+                      </span>
+                    </p>
+                  )}
 
                   {quote.documents.length > 0 && (
                     <ul className="space-y-1">
