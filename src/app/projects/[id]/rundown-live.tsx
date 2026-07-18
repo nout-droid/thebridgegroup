@@ -53,7 +53,7 @@ const COLOR_BORDER_CLASSES: Record<string, string> = {
 
 function ColorSelect({ id, defaultValue }: { id: string; defaultValue?: string }) {
   return (
-    <Select name="color" defaultValue={defaultValue || "none"}>
+    <Select name="color" defaultValue={defaultValue || "none"} items={COLOR_OPTIONS}>
       <SelectTrigger id={id} className="h-8 text-xs">
         <SelectValue placeholder="Geen" />
       </SelectTrigger>
