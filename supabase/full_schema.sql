@@ -66,20 +66,219 @@ alter table public.suppliers enable row level security;
 alter table public.categories enable row level security;
 alter table public.quotes enable row level security;
 
+-- ========== TEAM ACCOUNTS ==========
+-- Een eigenaar (producent) kan teamleden uitnodigen die met dezelfde data werken
+-- als hijzelf. role='admin' mag daarnaast teambeheer doen en verwijderen
+-- (projecten/leveranciers); role='member' mag alles bekijken/bewerken behalve
+-- verwijderen en teambeheer.
+
+create table if not exists public.team_members (
+  id uuid primary key default gen_random_uuid(),
+  owner_user_id uuid not null references auth.users(id) on delete cascade,
+  member_user_id uuid not null references auth.users(id) on delete cascade,
+  role text not null default 'member' check (role in ('admin', 'member')),
+  invited_email text not null,
+  created_at timestamptz not null default now(),
+  unique (owner_user_id, member_user_id)
+);
+
+create index if not exists team_members_owner_user_id_idx on public.team_members(owner_user_id);
+create index if not exists team_members_member_user_id_idx on public.team_members(member_user_id);
+
+alter table public.team_members enable row level security;
+
+-- security definer zodat de policies hieronder (die deze functies aanroepen) geen
+-- recursieve RLS-lookup op team_members zelf hoeven te doen.
+create or replace function public.is_team_member(p_owner_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select auth.uid() = p_owner_id
+    or exists (
+      select 1 from public.team_members tm
+      where tm.owner_user_id = p_owner_id and tm.member_user_id = auth.uid()
+    );
+$$;
+
+create or replace function public.is_team_admin(p_owner_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select auth.uid() = p_owner_id
+    or exists (
+      select 1 from public.team_members tm
+      where tm.owner_user_id = p_owner_id and tm.member_user_id = auth.uid() and tm.role = 'admin'
+    );
+$$;
+
+-- ========== TOEGANG PER PROJECT + BEGROTING AAN/UIT ==========
+-- Een teamlid ziet standaard NIETS totdat de eigenaar (of een admin-lid) ze
+-- expliciet toegang geeft tot een project. De eigenaar zelf heeft altijd
+-- volledige toegang tot al zijn projecten, ongeacht deze tabel.
+
+alter table public.team_members add column if not exists can_view_budget boolean not null default true;
+
+create table if not exists public.team_member_project_access (
+  id uuid primary key default gen_random_uuid(),
+  team_member_id uuid not null references public.team_members(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  unique (team_member_id, project_id)
+);
+
+create index if not exists team_member_project_access_team_member_id_idx
+  on public.team_member_project_access(team_member_id);
+create index if not exists team_member_project_access_project_id_idx
+  on public.team_member_project_access(project_id);
+
+alter table public.team_member_project_access enable row level security;
+
+drop policy if exists "team admins manage project access" on public.team_member_project_access;
+create policy "team admins manage project access" on public.team_member_project_access
+  for all using (
+    exists (
+      select 1 from public.team_members tm
+      join public.projects p on p.id = project_id
+      where tm.id = team_member_id and p.user_id = tm.owner_user_id and public.is_team_admin(tm.owner_user_id)
+    )
+  ) with check (
+    exists (
+      select 1 from public.team_members tm
+      join public.projects p on p.id = project_id
+      where tm.id = team_member_id and p.user_id = tm.owner_user_id and public.is_team_admin(tm.owner_user_id)
+    )
+  );
+
+create or replace function public.has_project_access(p_project_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.projects p
+    where p.id = p_project_id
+      and (
+        p.user_id = auth.uid()
+        or exists (
+          select 1
+          from public.team_members tm
+          join public.team_member_project_access tmpa on tmpa.team_member_id = tm.id
+          where tm.owner_user_id = p.user_id
+            and tm.member_user_id = auth.uid()
+            and tmpa.project_id = p.id
+        )
+      )
+  );
+$$;
+
+create or replace function public.can_view_budget(p_project_id uuid)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (
+    select 1 from public.projects p
+    where p.id = p_project_id
+      and (
+        p.user_id = auth.uid()
+        or exists (
+          select 1
+          from public.team_members tm
+          join public.team_member_project_access tmpa on tmpa.team_member_id = tm.id
+          where tm.owner_user_id = p.user_id
+            and tm.member_user_id = auth.uid()
+            and tmpa.project_id = p.id
+            and tm.can_view_budget
+        )
+      )
+  );
+$$;
+
+-- Een teamlid die zelf een nieuw project aanmaakt, krijgt daar automatisch
+-- toegang toe — anders zou hij zijn eigen net-aangemaakte project niet zien.
+create or replace function public.grant_creator_project_access()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.team_member_project_access (team_member_id, project_id)
+  select tm.id, new.id
+  from public.team_members tm
+  where tm.owner_user_id = new.user_id and tm.member_user_id = auth.uid()
+  on conflict do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists grant_creator_project_access_trigger on public.projects;
+create trigger grant_creator_project_access_trigger
+after insert on public.projects
+for each row execute function public.grant_creator_project_access();
+
+-- teamleden zien hun hele team (zichzelf, de eigenaar, en elkaar); alleen de
+-- eigenaar zelf of een admin-lid mag uitnodigen/wijzigen/verwijderen.
+drop policy if exists "team members can view their team" on public.team_members;
+create policy "team members can view their team" on public.team_members
+  for select using (public.is_team_member(owner_user_id));
+
+drop policy if exists "team admins can invite team members" on public.team_members;
+create policy "team admins can invite team members" on public.team_members
+  for insert with check (public.is_team_admin(owner_user_id));
+
+drop policy if exists "team admins can update team members" on public.team_members;
+create policy "team admins can update team members" on public.team_members
+  for update using (public.is_team_admin(owner_user_id)) with check (public.is_team_admin(owner_user_id));
+
+drop policy if exists "team admins can remove team members" on public.team_members;
+create policy "team admins can remove team members" on public.team_members
+  for delete using (public.is_team_admin(owner_user_id));
+
 drop policy if exists "owner full access on projects" on public.projects;
-create policy "owner full access on projects" on public.projects
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "team members can view/edit projects" on public.projects;
+create policy "team members can view/edit projects" on public.projects
+  for select using (public.has_project_access(id));
+drop policy if exists "team members can insert projects" on public.projects;
+create policy "team members can insert projects" on public.projects
+  for insert with check (public.is_team_member(user_id));
+drop policy if exists "team members can update projects" on public.projects;
+create policy "team members can update projects" on public.projects
+  for update using (public.has_project_access(id)) with check (public.has_project_access(id));
+drop policy if exists "team admins can delete projects" on public.projects;
+create policy "team admins can delete projects" on public.projects
+  for delete using (public.is_team_admin(user_id) and public.has_project_access(id));
 
 drop policy if exists "owner full access on suppliers" on public.suppliers;
-create policy "owner full access on suppliers" on public.suppliers
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "team members can view/edit suppliers" on public.suppliers;
+create policy "team members can view/edit suppliers" on public.suppliers
+  for select using (public.is_team_member(user_id));
+drop policy if exists "team members can insert suppliers" on public.suppliers;
+create policy "team members can insert suppliers" on public.suppliers
+  for insert with check (public.is_team_member(user_id));
+drop policy if exists "team members can update suppliers" on public.suppliers;
+create policy "team members can update suppliers" on public.suppliers
+  for update using (public.is_team_member(user_id)) with check (public.is_team_member(user_id));
+drop policy if exists "team admins can delete suppliers" on public.suppliers;
+create policy "team admins can delete suppliers" on public.suppliers
+  for delete using (public.is_team_admin(user_id));
 
 drop policy if exists "owner full access on categories" on public.categories;
 create policy "owner full access on categories" on public.categories
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.can_view_budget(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.can_view_budget(p.id))
   );
 
 drop policy if exists "owner full access on quotes" on public.quotes;
@@ -88,13 +287,13 @@ create policy "owner full access on quotes" on public.quotes
     exists (
       select 1 from public.categories c
       join public.projects p on p.id = c.project_id
-      where c.id = category_id and p.user_id = auth.uid()
+      where c.id = category_id and public.can_view_budget(p.id)
     )
   ) with check (
     exists (
       select 1 from public.categories c
       join public.projects p on p.id = c.project_id
-      where c.id = category_id and p.user_id = auth.uid()
+      where c.id = category_id and public.can_view_budget(p.id)
     )
   );
 
@@ -202,9 +401,9 @@ alter table public.catalog_articles enable row level security;
 drop policy if exists "owner full access on catalog_articles" on public.catalog_articles;
 create policy "owner full access on catalog_articles" on public.catalog_articles
   for all using (
-    exists (select 1 from public.suppliers s where s.id = supplier_id and s.user_id = auth.uid())
+    exists (select 1 from public.suppliers s where s.id = supplier_id and public.is_team_member(s.user_id))
   ) with check (
-    exists (select 1 from public.suppliers s where s.id = supplier_id and s.user_id = auth.uid())
+    exists (select 1 from public.suppliers s where s.id = supplier_id and public.is_team_member(s.user_id))
   );
 
 -- ========== MATERIAALLIJST REGELS (per project) ==========
@@ -227,9 +426,9 @@ alter table public.material_list_items enable row level security;
 drop policy if exists "owner full access on material_list_items" on public.material_list_items;
 create policy "owner full access on material_list_items" on public.material_list_items
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.can_view_budget(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.can_view_budget(p.id))
   );
 
 -- ========== HUURPERIODE-STAFFEL ==========
@@ -342,14 +541,14 @@ create policy "owner full access on quote_line_items" on public.quote_line_items
       select 1 from public.quotes q
       join public.categories c on c.id = q.category_id
       join public.projects p on p.id = c.project_id
-      where q.id = quote_id and p.user_id = auth.uid()
+      where q.id = quote_id and public.can_view_budget(p.id)
     )
   ) with check (
     exists (
       select 1 from public.quotes q
       join public.categories c on c.id = q.category_id
       join public.projects p on p.id = c.project_id
-      where q.id = quote_id and p.user_id = auth.uid()
+      where q.id = quote_id and public.can_view_budget(p.id)
     )
   );
 
@@ -468,9 +667,9 @@ alter table public.stages enable row level security;
 drop policy if exists "owner full access on stages" on public.stages;
 create policy "owner full access on stages" on public.stages
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 -- null = projectbrede categorie (bv. Transport, Crew, Hotel), anders hoort de categorie bij die stage.
@@ -495,8 +694,18 @@ create index if not exists article_aliases_user_id_idx on public.article_aliases
 alter table public.article_aliases enable row level security;
 
 drop policy if exists "owner full access on article_aliases" on public.article_aliases;
-create policy "owner full access on article_aliases" on public.article_aliases
-  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "team members can view/edit article_aliases" on public.article_aliases;
+create policy "team members can view/edit article_aliases" on public.article_aliases
+  for select using (public.is_team_member(user_id));
+drop policy if exists "team members can insert article_aliases" on public.article_aliases;
+create policy "team members can insert article_aliases" on public.article_aliases
+  for insert with check (public.is_team_member(user_id));
+drop policy if exists "team members can update article_aliases" on public.article_aliases;
+create policy "team members can update article_aliases" on public.article_aliases
+  for update using (public.is_team_member(user_id)) with check (public.is_team_member(user_id));
+drop policy if exists "team admins can delete article_aliases" on public.article_aliases;
+create policy "team admins can delete article_aliases" on public.article_aliases
+  for delete using (public.is_team_admin(user_id));
 -- Leveranciers-korting: prijslijsten zijn bruto, Nout krijgt een vast kortingspercentage.
 -- Voer dit één keer uit in de Supabase SQL Editor, ná de eerdere migraties.
 
@@ -562,7 +771,7 @@ create policy "owner insert project-media" on storage.objects
     and exists (
       select 1 from public.projects p
       where p.id::text = (storage.foldername(storage.objects.name))[2]
-      and p.user_id = auth.uid()
+      and public.has_project_access(p.id)
     )
   );
 
@@ -574,7 +783,7 @@ create policy "owner update project-media" on storage.objects
     and exists (
       select 1 from public.projects p
       where p.id::text = (storage.foldername(storage.objects.name))[2]
-      and p.user_id = auth.uid()
+      and public.has_project_access(p.id)
     )
   );
 
@@ -586,7 +795,7 @@ create policy "owner delete project-media" on storage.objects
     and exists (
       select 1 from public.projects p
       where p.id::text = (storage.foldername(storage.objects.name))[2]
-      and p.user_id = auth.uid()
+      and public.has_project_access(p.id)
     )
   );
 
@@ -609,9 +818,9 @@ alter table public.project_media enable row level security;
 drop policy if exists "owner full access on project_media" on public.project_media;
 create policy "owner full access on project_media" on public.project_media
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 -- Klantweergave: achtergrond + media (foto's/video-links) meenemen.
 -- Voer dit één keer uit in de Supabase SQL Editor, ná migrations_media.sql en migrations_stages_share.sql.
@@ -837,14 +1046,14 @@ create policy "owner full access on quote_documents" on public.quote_documents
       select 1 from public.quotes q
       join public.categories c on c.id = q.category_id
       join public.projects p on p.id = c.project_id
-      where q.id = quote_id and p.user_id = auth.uid()
+      where q.id = quote_id and public.has_project_access(p.id)
     )
   ) with check (
     exists (
       select 1 from public.quotes q
       join public.categories c on c.id = q.category_id
       join public.projects p on p.id = c.project_id
-      where q.id = quote_id and p.user_id = auth.uid()
+      where q.id = quote_id and public.has_project_access(p.id)
     )
   );
 
@@ -901,9 +1110,9 @@ alter table public.guest_documents enable row level security;
 drop policy if exists "owner full access on guest_documents" on public.guest_documents;
 create policy "owner full access on guest_documents" on public.guest_documents
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 -- ========== PRIVATE STORAGE BUCKET ==========
@@ -924,11 +1133,11 @@ create policy "owner access portal-documents" on storage.objects
         select 1 from public.quotes q
         join public.categories c on c.id = q.category_id
         join public.projects p on p.id = c.project_id
-        where q.id::text = (storage.foldername(storage.objects.name))[2] and p.user_id = auth.uid()
+        where q.id::text = (storage.foldername(storage.objects.name))[2] and public.has_project_access(p.id)
       )
       or exists (
         select 1 from public.projects p
-        where p.id::text = (storage.foldername(storage.objects.name))[2] and p.user_id = auth.uid()
+        where p.id::text = (storage.foldername(storage.objects.name))[2] and public.has_project_access(p.id)
       )
     )
   );
@@ -963,9 +1172,9 @@ alter table public.rider_sections enable row level security;
 drop policy if exists "owner full access on riders" on public.riders;
 create policy "owner full access on riders" on public.riders
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 drop policy if exists "owner full access on rider_sections" on public.rider_sections;
@@ -974,13 +1183,13 @@ create policy "owner full access on rider_sections" on public.rider_sections
     exists (
       select 1 from public.riders r
       join public.projects p on p.id = r.project_id
-      where r.id = rider_id and p.user_id = auth.uid()
+      where r.id = rider_id and public.has_project_access(p.id)
     )
   ) with check (
     exists (
       select 1 from public.riders r
       join public.projects p on p.id = r.project_id
-      where r.id = rider_id and p.user_id = auth.uid()
+      where r.id = rider_id and public.has_project_access(p.id)
     )
   );
 
@@ -1093,14 +1302,14 @@ create policy "owner full access on rider_section_items" on public.rider_section
       select 1 from public.rider_sections rs
       join public.riders r on r.id = rs.rider_id
       join public.projects p on p.id = r.project_id
-      where rs.id = section_id and p.user_id = auth.uid()
+      where rs.id = section_id and public.has_project_access(p.id)
     )
   ) with check (
     exists (
       select 1 from public.rider_sections rs
       join public.riders r on r.id = rs.rider_id
       join public.projects p on p.id = r.project_id
-      where rs.id = section_id and p.user_id = auth.uid()
+      where rs.id = section_id and public.has_project_access(p.id)
     )
   );
 
@@ -1196,9 +1405,9 @@ alter table public.schedule_items enable row level security;
 drop policy if exists "owner full access on schedule_items" on public.schedule_items;
 create policy "owner full access on schedule_items" on public.schedule_items
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 -- Productieplanning: crew & accreditatie, materieel, comms/portofoons, catering,
 -- artiestenriders, open vragen en notulen. Allemaal projectbreed (geen stage-koppeling).
@@ -1225,9 +1434,9 @@ alter table public.crew_members enable row level security;
 drop policy if exists "owner full access on crew_members" on public.crew_members;
 create policy "owner full access on crew_members" on public.crew_members
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.equipment_reservations (
@@ -1253,9 +1462,9 @@ alter table public.equipment_reservations enable row level security;
 drop policy if exists "owner full access on equipment_reservations" on public.equipment_reservations;
 create policy "owner full access on equipment_reservations" on public.equipment_reservations
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.comms_assignments (
@@ -1278,9 +1487,9 @@ alter table public.comms_assignments enable row level security;
 drop policy if exists "owner full access on comms_assignments" on public.comms_assignments;
 create policy "owner full access on comms_assignments" on public.comms_assignments
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.catering_orders (
@@ -1307,9 +1516,9 @@ alter table public.catering_orders enable row level security;
 drop policy if exists "owner full access on catering_orders" on public.catering_orders;
 create policy "owner full access on catering_orders" on public.catering_orders
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.artist_riders (
@@ -1332,9 +1541,9 @@ alter table public.artist_riders enable row level security;
 drop policy if exists "owner full access on artist_riders" on public.artist_riders;
 create policy "owner full access on artist_riders" on public.artist_riders
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.open_questions (
@@ -1354,9 +1563,9 @@ alter table public.open_questions enable row level security;
 drop policy if exists "owner full access on open_questions" on public.open_questions;
 create policy "owner full access on open_questions" on public.open_questions
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.meeting_notes (
@@ -1374,9 +1583,9 @@ alter table public.meeting_notes enable row level security;
 drop policy if exists "owner full access on meeting_notes" on public.meeting_notes;
 create policy "owner full access on meeting_notes" on public.meeting_notes
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 -- Stroomaanvragen per stage, inclusief gewenste positie.
@@ -1403,9 +1612,9 @@ alter table public.power_requests enable row level security;
 drop policy if exists "owner full access on power_requests" on public.power_requests;
 create policy "owner full access on power_requests" on public.power_requests
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 -- Show rundown: cue-by-cue uitvoering van de show zelf, met automatisch
 -- doorschuivende tijden en live tracking die real-time meesynct via Supabase
@@ -1431,9 +1640,9 @@ alter table public.rundowns enable row level security;
 drop policy if exists "owner full access on rundowns" on public.rundowns;
 create policy "owner full access on rundowns" on public.rundowns
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 create table if not exists public.rundown_items (
@@ -1459,13 +1668,13 @@ create policy "owner full access on rundown_items" on public.rundown_items
     exists (
       select 1 from public.rundowns r
       join public.projects p on p.id = r.project_id
-      where r.id = rundown_id and p.user_id = auth.uid()
+      where r.id = rundown_id and public.has_project_access(p.id)
     )
   ) with check (
     exists (
       select 1 from public.rundowns r
       join public.projects p on p.id = r.project_id
-      where r.id = rundown_id and p.user_id = auth.uid()
+      where r.id = rundown_id and public.has_project_access(p.id)
     )
   );
 
@@ -1529,18 +1738,48 @@ grant execute on function public.set_crew_password(uuid, text) to authenticated;
 
 alter table public.projects add column if not exists showcaller_password_hash text;
 
+-- Per-podium showcaller-wachtwoord (optioneel, aanvullend op het project-brede
+-- wachtwoord hierboven). Een showcaller die inlogt met een podium-wachtwoord
+-- ziet en bedient alleen dat ene podium; het project-brede wachtwoord blijft
+-- volledige toegang geven tot alle podia (bv. voor een hoofd-showcaller).
+alter table public.stages add column if not exists showcaller_password_hash text;
+
 create or replace function public.verify_showcaller_login(p_event_code text, p_password text)
-returns uuid
-language sql
+returns json
+language plpgsql
 security definer
 set search_path = public, extensions
 stable
 as $$
-  select share_token from public.projects
+declare
+  v_share_token uuid;
+  v_stage_id uuid;
+begin
+  select share_token into v_share_token
+  from public.projects
   where upper(event_code) = upper(p_event_code)
     and showcaller_password_hash is not null
     and showcaller_password_hash = crypt(p_password, showcaller_password_hash)
   limit 1;
+
+  if v_share_token is not null then
+    return json_build_object('share_token', v_share_token, 'stage_id', null);
+  end if;
+
+  select p.share_token, s.id into v_share_token, v_stage_id
+  from public.stages s
+  join public.projects p on p.id = s.project_id
+  where upper(p.event_code) = upper(p_event_code)
+    and s.showcaller_password_hash is not null
+    and s.showcaller_password_hash = crypt(p_password, s.showcaller_password_hash)
+  limit 1;
+
+  if v_share_token is not null then
+    return json_build_object('share_token', v_share_token, 'stage_id', v_stage_id);
+  end if;
+
+  return null;
+end;
 $$;
 
 grant execute on function public.verify_showcaller_login(text, text) to anon;
@@ -1557,6 +1796,19 @@ as $$
 $$;
 
 grant execute on function public.set_showcaller_password(uuid, text) to authenticated;
+
+create or replace function public.set_stage_showcaller_password(p_stage_id uuid, p_password text)
+returns void
+language sql
+security invoker
+set search_path = public, extensions
+as $$
+  update public.stages
+  set showcaller_password_hash = crypt(p_password, gen_salt('bf'))
+  where id = p_stage_id;
+$$;
+
+grant execute on function public.set_stage_showcaller_password(uuid, text) to authenticated;
 
 -- ========== NOTES PER DEVISIE ==========
 
@@ -1576,9 +1828,9 @@ alter table public.crew_notes enable row level security;
 drop policy if exists "owner full access on crew_notes" on public.crew_notes;
 create policy "owner full access on crew_notes" on public.crew_notes
   for all using (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
-    exists (select 1 from public.projects p where p.id = project_id and p.user_id = auth.uid())
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
 -- Crew heeft geen Supabase-sessie (eigen cookie-login), dus notes toevoegen
@@ -1750,7 +2002,7 @@ create policy "owner full access on rundown_item_instructions" on public.rundown
       from public.rundown_items ri
       join public.rundowns r on r.id = ri.rundown_id
       join public.projects p on p.id = r.project_id
-      where ri.id = item_id and p.user_id = auth.uid()
+      where ri.id = item_id and public.has_project_access(p.id)
     )
   ) with check (
     exists (
@@ -1758,7 +2010,7 @@ create policy "owner full access on rundown_item_instructions" on public.rundown
       from public.rundown_items ri
       join public.rundowns r on r.id = ri.rundown_id
       join public.projects p on p.id = r.project_id
-      where ri.id = item_id and p.user_id = auth.uid()
+      where ri.id = item_id and public.has_project_access(p.id)
     )
   );
 
@@ -1977,6 +2229,181 @@ as $$
         order by cn.created_at desc
         limit 200
       ) n
+    ), '[]'::json)
+  )
+  from proj;
+$$;
+
+grant execute on function public.get_shared_rundowns(uuid) to anon;
+
+-- ========== RUNDOWN-CHAT ==========
+-- Live chatkanaal tussen crew en showcaller tijdens de show. Zelfde opzet als
+-- crew_notes (geen sessie voor crew/showcaller, dus schrijven via een
+-- security definer-RPC, lezen via get_shared_rundowns). Projectbreed, niet
+-- per podium — audio/showcaller moeten elkaar altijd kunnen bereiken.
+-- Bewust geen Supabase Realtime: crew/showcaller draaien op de anon-key
+-- zonder auth.uid(), dus RLS zou realtime-updates alsnog blokkeren. De
+-- bestaande polling (get_shared_rundowns, elke 3-5s) is snel genoeg voor een
+-- "duidelijk signaal dat er een nieuw bericht is".
+
+create table if not exists public.rundown_chat_messages (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  stage_id uuid references public.stages(id) on delete cascade,
+  sender text not null default '',
+  message text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists rundown_chat_messages_project_id_idx on public.rundown_chat_messages(project_id);
+
+alter table public.rundown_chat_messages enable row level security;
+
+drop policy if exists "owner full access on rundown_chat_messages" on public.rundown_chat_messages;
+create policy "owner full access on rundown_chat_messages" on public.rundown_chat_messages
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+create or replace function public.add_rundown_chat_message(
+  p_token uuid,
+  p_stage_id uuid,
+  p_sender text,
+  p_message text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+
+  if v_project_id is null or coalesce(trim(p_message), '') = '' then
+    return false;
+  end if;
+
+  insert into public.rundown_chat_messages (project_id, stage_id, sender, message)
+  values (v_project_id, p_stage_id, coalesce(nullif(trim(p_sender), ''), 'Onbekend'), trim(p_message));
+
+  return true;
+end;
+$$;
+
+grant execute on function public.add_rundown_chat_message(uuid, uuid, text, text) to anon;
+
+-- Update van get_shared_rundowns: geeft nu ook de rundown-chat mee, zelfde
+-- opzet als de bestaande 'notes'-key hierboven.
+create or replace function public.get_shared_rundowns(p_token uuid)
+returns json
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with proj as (
+    select id, name, event_date from public.projects where share_token = p_token
+  ),
+  scopes as (
+    select null::uuid as stage_id, null::text as stage_name, 0 as sort_order
+    from proj
+    union all
+    select s.id, s.name, s.sort_order + 1
+    from public.stages s
+    join proj on proj.id = s.project_id
+  )
+  select json_build_object(
+    'project', (select json_build_object('name', name, 'event_date', event_date) from proj),
+    'scopes', coalesce((
+      select json_agg(
+        json_build_object(
+          'stage_id', sc.stage_id,
+          'stage_name', sc.stage_name,
+          'rundown', rd.rundown,
+          'items', coalesce(it.items, '[]'::json)
+        ) order by sc.sort_order
+      )
+      from scopes sc
+      left join lateral (
+        select
+          json_build_object(
+            'id', r.id,
+            'start_time', r.start_time,
+            'is_live', r.is_live,
+            'current_item_id', r.current_item_id,
+            'current_item_started_at', r.current_item_started_at,
+            'actual_start_at', r.actual_start_at
+          ) as rundown,
+          r.id as rundown_id
+        from public.rundowns r, proj
+        where r.project_id = proj.id
+          and r.stage_id is not distinct from sc.stage_id
+        limit 1
+      ) rd on true
+      left join lateral (
+        select json_agg(
+          json_build_object(
+            'id', ri.id,
+            'cue_number', ri.cue_number,
+            'name', ri.name,
+            'duration_seconds', ri.duration_seconds,
+            'notes', ri.notes,
+            'color', ri.color,
+            'sort_order', ri.sort_order,
+            'instructions', coalesce((
+              select json_agg(
+                json_build_object(
+                  'id', rii.id,
+                  'division', rii.division,
+                  'instruction', rii.instruction
+                ) order by rii.sort_order
+              )
+              from public.rundown_item_instructions rii
+              where rii.item_id = ri.id
+            ), '[]'::json)
+          ) order by ri.sort_order
+        ) as items
+        from public.rundown_items ri
+        where ri.rundown_id = rd.rundown_id
+      ) it on true
+    ), '[]'::json),
+    'notes', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', n.id,
+          'stage_id', n.stage_id,
+          'division', n.division,
+          'note', n.note,
+          'created_at', n.created_at
+        ) order by n.created_at desc
+      )
+      from (
+        select cn.* from public.crew_notes cn, proj
+        where cn.project_id = proj.id
+        order by cn.created_at desc
+        limit 200
+      ) n
+    ), '[]'::json),
+    'chat', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', m.id,
+          'stage_id', m.stage_id,
+          'sender', m.sender,
+          'message', m.message,
+          'created_at', m.created_at
+        ) order by m.created_at desc
+      )
+      from (
+        select rcm.* from public.rundown_chat_messages rcm, proj
+        where rcm.project_id = proj.id
+        order by rcm.created_at desc
+        limit 200
+      ) m
     ), '[]'::json)
   )
   from proj;
