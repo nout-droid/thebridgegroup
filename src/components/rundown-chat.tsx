@@ -102,7 +102,7 @@ export function RundownChat({
         <button
           type="button"
           onClick={markAllSeen}
-          className="flex w-full animate-pulse items-center justify-center gap-2 rounded-md bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
+          className="fixed inset-x-0 top-0 z-50 flex animate-pulse items-center justify-center gap-2 bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
         >
           Nieuw bericht in de chat — tik om te bekijken
         </button>

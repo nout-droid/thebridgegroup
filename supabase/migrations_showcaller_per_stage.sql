@@ -9,6 +9,11 @@
 
 alter table public.stages add column if not exists showcaller_password_hash text;
 
+-- Bestaande functie gaf een kale uuid terug; deze versie geeft json terug
+-- (share_token + stage_id). Postgres staat geen return-type-wijziging toe
+-- via create or replace, dus eerst droppen.
+drop function if exists public.verify_showcaller_login(text, text);
+
 create or replace function public.verify_showcaller_login(p_event_code text, p_password text)
 returns json
 language plpgsql
