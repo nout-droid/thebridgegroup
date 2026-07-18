@@ -5,6 +5,7 @@ const TABS = [
   { key: "crew", label: "Crew & Accreditatie" },
   { key: "materieel", label: "Materieel" },
   { key: "comms", label: "Comms & Portofoons" },
+  { key: "power", label: "Stroom" },
   { key: "catering", label: "Catering" },
   { key: "artiesten", label: "Artiestenriders" },
   { key: "vragen", label: "Open vragen" },

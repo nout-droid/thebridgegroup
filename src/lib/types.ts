@@ -227,6 +227,21 @@ export interface CateringOrder {
   supplier?: Supplier;
 }
 
+export interface PowerRequest {
+  id: string;
+  project_id: string;
+  stage_id: string | null;
+  supplier_id: string | null;
+  description: string;
+  quantity: number;
+  position: string;
+  notes: string;
+  sort_order: number;
+  created_at: string;
+  supplier?: Supplier;
+  stage?: Stage;
+}
+
 export interface ArtistRider {
   id: string;
   project_id: string;

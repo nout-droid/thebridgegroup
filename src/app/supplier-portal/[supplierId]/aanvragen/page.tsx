@@ -5,7 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import { cn } from "@/lib/utils";
-import type { CrewMember, EquipmentReservation, CommsAssignment, CateringOrder } from "@/lib/types";
+import type {
+  CrewMember,
+  EquipmentReservation,
+  CommsAssignment,
+  CateringOrder,
+  PowerRequest,
+  Stage,
+} from "@/lib/types";
 import { Nav } from "../supplier-nav";
 import { Footer } from "@/components/footer";
 import { getSupplierProjects } from "../data";
@@ -13,6 +20,7 @@ import { SupplierCrewSection } from "./crew-section";
 import { SupplierEquipmentSection } from "./equipment-section";
 import { SupplierCommsSection } from "./comms-section";
 import { SupplierCateringSection } from "./catering-section";
+import { SupplierPowerSection } from "./power-section";
 
 export default async function SupplierRequestsPage({
   params,
@@ -67,9 +75,11 @@ export default async function SupplierRequestsPage({
   let equipment: EquipmentReservation[] = [];
   let comms: CommsAssignment[] = [];
   let catering: CateringOrder[] = [];
+  let power: PowerRequest[] = [];
+  let stages: Stage[] = [];
 
   if (selectedProject) {
-    const [crewRes, equipmentRes, commsRes, cateringRes] = await Promise.all([
+    const [crewRes, equipmentRes, commsRes, cateringRes, powerRes, stagesRes] = await Promise.all([
       admin
         .from("crew_members")
         .select("*")
@@ -98,11 +108,26 @@ export default async function SupplierRequestsPage({
         .eq("supplier_id", supplierId)
         .order("sort_order", { ascending: true })
         .returns<CateringOrder[]>(),
+      admin
+        .from("power_requests")
+        .select("*")
+        .eq("project_id", selectedProject.id)
+        .eq("supplier_id", supplierId)
+        .order("sort_order", { ascending: true })
+        .returns<PowerRequest[]>(),
+      admin
+        .from("stages")
+        .select("*")
+        .eq("project_id", selectedProject.id)
+        .order("sort_order", { ascending: true })
+        .returns<Stage[]>(),
     ]);
     crewMembers = crewRes.data ?? [];
     equipment = equipmentRes.data ?? [];
     comms = commsRes.data ?? [];
     catering = cateringRes.data ?? [];
+    power = powerRes.data ?? [];
+    stages = stagesRes.data ?? [];
   }
 
   return (
@@ -153,6 +178,12 @@ export default async function SupplierRequestsPage({
                   supplierId={supplierId}
                   projectId={selectedProject.id}
                   assignments={comms}
+                />
+                <SupplierPowerSection
+                  supplierId={supplierId}
+                  projectId={selectedProject.id}
+                  stages={stages}
+                  requests={power}
                 />
                 <SupplierCateringSection
                   supplierId={supplierId}

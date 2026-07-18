@@ -324,3 +324,74 @@ export async function deleteSupplierCatering(supplierId: string, projectId: stri
   await admin.from("catering_orders").delete().eq("id", orderId);
   revalidate(supplierId, projectId, "catering");
 }
+
+// ========== Stroom (power_requests) ==========
+
+export async function addSupplierPower(supplierId: string, projectId: string, formData: FormData) {
+  if (!(await isAuthorizedSupplier(supplierId))) return;
+  if (!(await isSupplierLinkedToProject(supplierId, projectId))) return;
+
+  const description = String(formData.get("description") ?? "").trim();
+  if (!description) return;
+
+  const stageId = String(formData.get("stage_id") ?? "") || null;
+  const quantity = Math.max(1, Number(formData.get("quantity") ?? 1));
+  const position = String(formData.get("position") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("power_requests")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", projectId);
+
+  await admin.from("power_requests").insert({
+    project_id: projectId,
+    supplier_id: supplierId,
+    stage_id: stageId,
+    description,
+    quantity,
+    position,
+    notes,
+    sort_order: count ?? 0,
+  });
+
+  revalidate(supplierId, projectId, "power");
+}
+
+export async function updateSupplierPower(
+  supplierId: string,
+  projectId: string,
+  requestId: string,
+  formData: FormData
+) {
+  if (!(await isAuthorizedSupplier(supplierId))) return;
+
+  const admin = createAdminClient();
+  if (!(await ownsRow(admin, "power_requests", requestId, supplierId))) return;
+
+  const description = String(formData.get("description") ?? "").trim();
+  if (!description) return;
+
+  const stageId = String(formData.get("stage_id") ?? "") || null;
+  const quantity = Math.max(1, Number(formData.get("quantity") ?? 1));
+  const position = String(formData.get("position") ?? "").trim();
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  await admin
+    .from("power_requests")
+    .update({ stage_id: stageId, description, quantity, position, notes })
+    .eq("id", requestId);
+
+  revalidate(supplierId, projectId, "power");
+}
+
+export async function deleteSupplierPower(supplierId: string, projectId: string, requestId: string) {
+  if (!(await isAuthorizedSupplier(supplierId))) return;
+
+  const admin = createAdminClient();
+  if (!(await ownsRow(admin, "power_requests", requestId, supplierId))) return;
+
+  await admin.from("power_requests").delete().eq("id", requestId);
+  revalidate(supplierId, projectId, "power");
+}
