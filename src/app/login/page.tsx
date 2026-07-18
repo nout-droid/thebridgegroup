@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,13 +13,13 @@ export default async function LoginPage({
   const { error, message } = await searchParams;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-white">
-      <div className="flex w-full max-w-sm flex-col items-center">
-        <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
-        <h1 className="text-center text-lg font-semibold uppercase tracking-wide text-primary">
-          The Bridge — Productie
-        </h1>
-        <p className="mb-8 text-center text-sm text-white/60">Log in om je projecten te beheren.</p>
+    <div
+      className="flex min-h-screen flex-col items-center bg-black bg-cover bg-center px-6 text-white"
+      style={{ backgroundImage: "url(/login-background.jpg)" }}
+    >
+      <div className="h-[72vh] shrink-0" />
+      <div className="w-full max-w-sm rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
+        <p className="mb-6 text-center text-sm text-white/70">Log in om je projecten te beheren.</p>
 
         {error && (
           <p className="mb-4 w-full rounded-md bg-destructive/20 p-3 text-center text-sm text-destructive">
