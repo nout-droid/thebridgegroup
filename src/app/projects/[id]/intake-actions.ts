@@ -3,9 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ensureIntakeChecklist } from "@/lib/server/ensure-intake-checklist";
-import { removeFromStorage, uploadToStorage } from "@/lib/supabase/storage-rest";
-
-const BUCKET = "portal-documents";
+import { deletePortalDocument, uploadPortalDocument } from "@/lib/server/portal-storage";
 
 export async function saveIntakeChecklistAnswer(
   projectId: string,
@@ -45,8 +43,8 @@ export async function uploadIntakeChecklistPhoto(
   if (!checklistId) return;
 
   const path = `intake/${projectId}/${sectionKey}/${Date.now()}-${file.name}`;
-  const ok = await uploadToStorage(supabase, BUCKET, path, file);
-  if (!ok) return;
+  const { error } = await uploadPortalDocument(path, file);
+  if (error) return;
 
   await supabase.from("intake_checklist_photos").insert({
     checklist_id: checklistId,
@@ -71,7 +69,7 @@ export async function deleteIntakeChecklistPhoto(projectId: string, photoId: str
   await supabase.from("intake_checklist_photos").delete().eq("id", photoId);
 
   if (photo?.storage_path) {
-    await removeFromStorage(supabase, BUCKET, [photo.storage_path]);
+    await deletePortalDocument(photo.storage_path);
   }
 
   revalidatePath(`/projects/${projectId}/intake`);
