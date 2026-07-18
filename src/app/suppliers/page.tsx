@@ -165,12 +165,12 @@ export default async function SuppliersPage({
                       </TableCell>
                       <TableCell className="text-sm">
                         <details>
-                          <summary className="cursor-pointer text-muted-foreground">
+                          <summary className="inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted">
                             {supplier.portal_code
                               ? supplier.portal_password_hash
-                                ? "ingesteld"
-                                : "code, geen wachtwoord"
-                              : "nog niet ingesteld"}
+                                ? "Portaal: ingesteld"
+                                : "Portaal: wachtwoord ontbreekt"
+                              : "Portaal instellen"}
                           </summary>
                           <div className="mt-2 space-y-2">
                             <form
