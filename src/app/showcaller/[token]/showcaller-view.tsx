@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Select,
   SelectContent,
@@ -79,7 +80,7 @@ export function ShowcallerView({ token }: { token: string }) {
   const [data, setData] = useState<SharedRundowns | null>(null);
   const [selectedScope, setSelectedScope] = useState<string>("project");
   const [, setTick] = useState(0);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
 
   const refetch = useCallback(async () => {
     const supabase = createClient();
@@ -192,9 +193,9 @@ export function ShowcallerView({ token }: { token: string }) {
                     <Button
                       size="sm"
                       onClick={() => runAction(() => showcallerStartShow(token, rundown.id))}
-                      disabled={!rows.length}
+                      disabled={!rows.length || isPending}
                     >
-                      Start show
+                      {isPending ? "Bezig…" : "Start show"}
                     </Button>
                   ) : (
                     <>
@@ -210,16 +211,22 @@ export function ShowcallerView({ token }: { token: string }) {
                       <Button
                         size="sm"
                         variant="outline"
+                        disabled={isPending}
                         onClick={() => runAction(() => showcallerPreviousCue(token, rundown.id))}
                       >
                         &larr; Vorige
                       </Button>
-                      <Button size="sm" onClick={() => runAction(() => showcallerNextCue(token, rundown.id))}>
+                      <Button
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => runAction(() => showcallerNextCue(token, rundown.id))}
+                      >
                         Volgende &rarr;
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
+                        disabled={isPending}
                         onClick={() => runAction(() => showcallerStopShow(token, rundown.id))}
                       >
                         Stop show
@@ -247,9 +254,9 @@ export function ShowcallerView({ token }: { token: string }) {
                     className="h-8 w-32 text-xs"
                   />
                 </div>
-                <Button type="submit" size="sm" variant="outline" className="h-8 text-xs">
+                <SubmitButton size="sm" variant="outline" className="h-8 text-xs">
                   Opslaan
-                </Button>
+                </SubmitButton>
               </form>
 
               {rows.map(({ item, start, end }) => {
@@ -311,6 +318,7 @@ export function ShowcallerView({ token }: { token: string }) {
                           size="sm"
                           variant="ghost"
                           className="h-8 text-xs"
+                          disabled={isPending}
                           onClick={() => runAction(() => showcallerMoveItem(token, rundown.id, item.id, "up"))}
                         >
                           &uarr;
@@ -320,20 +328,22 @@ export function ShowcallerView({ token }: { token: string }) {
                           size="sm"
                           variant="ghost"
                           className="h-8 text-xs"
+                          disabled={isPending}
                           onClick={() => runAction(() => showcallerMoveItem(token, rundown.id, item.id, "down"))}
                         >
                           &darr;
                         </Button>
                       </div>
                       <div className="flex items-end gap-2 sm:col-span-6">
-                        <Button type="submit" size="sm" className="h-8 text-xs">
+                        <SubmitButton size="sm" className="h-8 text-xs">
                           Opslaan
-                        </Button>
+                        </SubmitButton>
                         <Button
                           type="button"
                           size="sm"
                           variant="ghost"
                           className="h-8 text-xs"
+                          disabled={isPending}
                           onClick={() => runAction(() => showcallerDeleteItem(token, rundown.id, item.id))}
                         >
                           Verwijderen
@@ -360,6 +370,7 @@ export function ShowcallerView({ token }: { token: string }) {
                                 variant="ghost"
                                 size="sm"
                                 className="h-6 px-2 text-xs"
+                                disabled={isPending}
                                 onClick={() => runAction(() => showcallerDeleteInstruction(token, instr.id))}
                               >
                                 Verwijderen
@@ -388,9 +399,9 @@ export function ShowcallerView({ token }: { token: string }) {
                             required
                           />
                         </div>
-                        <Button type="submit" size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
+                        <SubmitButton size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
                           Toevoegen
-                        </Button>
+                        </SubmitButton>
                       </form>
                     </div>
                   </div>
@@ -422,9 +433,9 @@ export function ShowcallerView({ token }: { token: string }) {
                   <Input id="new-notes" name="notes" className="h-8 text-xs" />
                 </div>
                 <div className="flex items-end">
-                  <Button type="submit" size="sm" className="h-8 text-xs">
+                  <SubmitButton size="sm" className="h-8 text-xs">
                     Cue toevoegen
-                  </Button>
+                  </SubmitButton>
                 </div>
               </form>
             </CardContent>

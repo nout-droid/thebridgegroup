@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 
 export function PortalLogin({
   description,
@@ -61,9 +61,9 @@ export function PortalLogin({
               className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
             />
           </div>
-          <Button type="submit" className="w-full">
+          <SubmitButton className="w-full" pendingText="Bezig met inloggen…">
             Inloggen
-          </Button>
+          </SubmitButton>
         </form>
       </div>
     </div>

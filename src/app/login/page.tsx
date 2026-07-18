@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import { signIn, signUp } from "./actions";
 
 export default async function LoginPage({
@@ -51,9 +51,9 @@ export default async function LoginPage({
                     autoComplete="current-password"
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <SubmitButton className="w-full" pendingText="Bezig met inloggen…">
                   Inloggen
-                </Button>
+                </SubmitButton>
               </form>
             </TabsContent>
             <TabsContent value="signup">
@@ -73,9 +73,9 @@ export default async function LoginPage({
                     autoComplete="new-password"
                   />
                 </div>
-                <Button type="submit" className="w-full">
+                <SubmitButton className="w-full" pendingText="Bezig…">
                   Account aanmaken
-                </Button>
+                </SubmitButton>
               </form>
             </TabsContent>
           </Tabs>

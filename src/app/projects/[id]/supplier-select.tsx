@@ -20,8 +20,8 @@ export function SupplierSelect({
 }) {
   return (
     <Select name={name} defaultValue={defaultValue}>
-      <SelectTrigger id={id} className="h-8 text-xs">
-        <SelectValue placeholder="Kies leverancier" />
+      <SelectTrigger id={id} className="h-8 w-full min-w-0 text-xs">
+        <SelectValue className="min-w-0 truncate" placeholder="Kies leverancier" />
       </SelectTrigger>
       <SelectContent>
         {suppliers.map((supplier) => (

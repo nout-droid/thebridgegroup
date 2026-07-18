@@ -40,12 +40,26 @@ export function QuotePdfImport({
   const [supplierId, setSupplierId] = useState("");
   const [lines, setLines] = useState<ParsedQuoteReviewLine[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [confirmingCategory, setConfirmingCategory] = useState<string | null>(null);
+  const [confirmError, setConfirmError] = useState<string | null>(null);
 
   async function handleUpload(formData: FormData) {
     setLoading(true);
-    const parsed = await parseQuotePdf(formData);
-    setLines(parsed);
-    setLoading(false);
+    setUploadError(null);
+    try {
+      const parsed = await parseQuotePdf(formData);
+      setLines(parsed);
+      if (parsed.length === 0) {
+        setUploadError(
+          "Geen regels met bedragen gevonden in dit PDF-bestand. Mogelijk bevat het een gescande afbeelding zonder tekstlaag, of staan bedragen in een formaat dat niet herkend wordt."
+        );
+      }
+    } catch {
+      setUploadError("Uploaden mislukt. Controleer of het bestand een geldig PDF-bestand is en probeer het opnieuw.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function updateLine(index: number, patch: Partial<ParsedQuoteReviewLine>) {
@@ -74,9 +88,17 @@ export function QuotePdfImport({
     const group = groups.get(category);
     if (!group) return;
 
-    await confirmQuotePdfImportGroup(projectId, stageId, category, supplierId, group.lines);
-    setLines((prev) => prev.filter((line) => line.category.trim() !== category));
-    router.refresh();
+    setConfirmError(null);
+    setConfirmingCategory(category);
+    try {
+      await confirmQuotePdfImportGroup(projectId, stageId, category, supplierId, group.lines);
+      setLines((prev) => prev.filter((line) => line.category.trim() !== category));
+      router.refresh();
+    } catch {
+      setConfirmError("Overnemen als offerte is mislukt. Probeer het opnieuw.");
+    } finally {
+      setConfirmingCategory(null);
+    }
   }
 
   return (
@@ -112,6 +134,12 @@ export function QuotePdfImport({
             </Button>
           </form>
         </div>
+
+        {uploadError && (
+          <p className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
+            {uploadError}
+          </p>
+        )}
 
         {lines.length > 0 && (
           <Table>
@@ -180,15 +208,20 @@ export function QuotePdfImport({
                   type="button"
                   size="sm"
                   variant="secondary"
-                  disabled={!supplierId}
+                  disabled={!supplierId || confirmingCategory === category}
                   onClick={() => confirmGroup(category)}
                 >
-                  Overnemen als offerte
+                  {confirmingCategory === category ? "Bezig..." : "Overnemen als offerte"}
                 </Button>
               </div>
             ))}
             {!supplierId && (
               <p className="text-xs text-muted-foreground">Kies eerst een leverancier hierboven.</p>
+            )}
+            {confirmError && (
+              <p className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">
+                {confirmError}
+              </p>
             )}
           </div>
         )}

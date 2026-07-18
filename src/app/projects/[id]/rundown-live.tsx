@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { SubmitButton } from "@/components/submit-button";
 import {
   Select,
   SelectContent,
@@ -87,7 +88,7 @@ export function RundownLive({
   // null tijdens SSR/eerste render, zodat server en client identiek renderen;
   // pas ná mount vullen we 'm zodat Date.now() nooit in de SSR-output belandt.
   const [now, setNow] = useState<number | null>(null);
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const currentRowRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -197,9 +198,9 @@ export function RundownLive({
               <Button
                 size="sm"
                 onClick={() => startTransition(() => startShow(projectId, stageId, rundownId))}
-                disabled={items.length === 0}
+                disabled={items.length === 0 || isPending}
               >
-                Start show
+                {isPending ? "Bezig…" : "Start show"}
               </Button>
             ) : (
               <>
@@ -215,12 +216,14 @@ export function RundownLive({
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={isPending}
                   onClick={() => startTransition(() => previousCue(projectId, stageId, rundownId))}
                 >
                   &larr; Vorige
                 </Button>
                 <Button
                   size="sm"
+                  disabled={isPending}
                   onClick={() => startTransition(() => nextCue(projectId, stageId, rundownId))}
                 >
                   Volgende &rarr;
@@ -228,6 +231,7 @@ export function RundownLive({
                 <Button
                   size="sm"
                   variant="ghost"
+                  disabled={isPending}
                   onClick={() => startTransition(() => stopShow(projectId, stageId, rundownId))}
                 >
                   Stop show
@@ -253,9 +257,9 @@ export function RundownLive({
               className="h-8 w-32 text-xs"
             />
           </div>
-          <Button type="submit" size="sm" variant="outline" className="h-8 text-xs">
+          <SubmitButton size="sm" variant="outline" className="h-8 text-xs">
             Opslaan
-          </Button>
+          </SubmitButton>
         </form>
 
         {rows.map(({ item, start, end }) => {
@@ -327,38 +331,37 @@ export function RundownLive({
                   />
                 </div>
                 <div className="flex items-end gap-1">
-                  <Button
-                    type="submit"
+                  <SubmitButton
                     formAction={moveRundownItem.bind(null, projectId, stageId, rundownId, item.id, "up")}
                     size="sm"
                     variant="ghost"
                     className="h-8 text-xs"
+                    pendingText="…"
                   >
                     &uarr;
-                  </Button>
-                  <Button
-                    type="submit"
+                  </SubmitButton>
+                  <SubmitButton
                     formAction={moveRundownItem.bind(null, projectId, stageId, rundownId, item.id, "down")}
                     size="sm"
                     variant="ghost"
                     className="h-8 text-xs"
+                    pendingText="…"
                   >
                     &darr;
-                  </Button>
+                  </SubmitButton>
                 </div>
                 <div className="flex items-end gap-2 sm:col-span-6">
-                  <Button type="submit" size="sm" className="h-8 text-xs">
+                  <SubmitButton size="sm" className="h-8 text-xs">
                     Opslaan
-                  </Button>
-                  <Button
-                    type="submit"
+                  </SubmitButton>
+                  <SubmitButton
                     formAction={deleteRundownItem.bind(null, projectId, stageId, rundownId, item.id)}
                     size="sm"
                     variant="ghost"
                     className="h-8 text-xs"
                   >
                     Verwijderen
-                  </Button>
+                  </SubmitButton>
                 </div>
               </form>
 
@@ -377,9 +380,9 @@ export function RundownLive({
                           {instr.instruction}
                         </span>
                         <form action={deleteRundownInstruction.bind(null, projectId, stageId, instr.id)}>
-                          <Button type="submit" variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                          <SubmitButton variant="ghost" size="sm" className="h-6 px-2 text-xs">
                             Verwijderen
-                          </Button>
+                          </SubmitButton>
                         </form>
                       </li>
                     ))}
@@ -403,9 +406,9 @@ export function RundownLive({
                       required
                     />
                   </div>
-                  <Button type="submit" size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
+                  <SubmitButton size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
                     Toevoegen
-                  </Button>
+                  </SubmitButton>
                 </form>
               </div>
             </div>
@@ -437,9 +440,9 @@ export function RundownLive({
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
           <div className="flex items-end">
-            <Button type="submit" size="sm" className="h-8 text-xs">
+            <SubmitButton size="sm" className="h-8 text-xs">
               Cue toevoegen
-            </Button>
+            </SubmitButton>
           </div>
         </form>
       </CardContent>

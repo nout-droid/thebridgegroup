@@ -12,6 +12,30 @@ function sortOrders(orders: CateringOrder[]): CateringOrder[] {
   });
 }
 
+interface DailyTotal {
+  date: string;
+  lunch: number;
+  dinner: number;
+  nightSnacks: number;
+}
+
+function totalsPerDate(orders: CateringOrder[]): DailyTotal[] {
+  const byDate = new Map<string, DailyTotal>();
+  for (const order of orders) {
+    const entry = byDate.get(order.order_date) ?? {
+      date: order.order_date,
+      lunch: 0,
+      dinner: 0,
+      nightSnacks: 0,
+    };
+    entry.lunch += order.crew_lunch + order.veggie_lunch;
+    entry.dinner += order.crew_dinner + order.veggie_dinner;
+    entry.nightSnacks += order.night_snacks;
+    byDate.set(order.order_date, entry);
+  }
+  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
 export function CateringCard({
   projectId,
   orders,
@@ -20,6 +44,7 @@ export function CateringCard({
   orders: CateringOrder[];
 }) {
   const sorted = sortOrders(orders);
+  const dailyTotals = totalsPerDate(orders);
 
   return (
     <Card>
@@ -30,6 +55,31 @@ export function CateringCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        {dailyTotals.length > 0 && (
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="p-2 text-left font-medium">Datum</th>
+                  <th className="p-2 text-left font-medium">Totaal lunch</th>
+                  <th className="p-2 text-left font-medium">Totaal diner</th>
+                  <th className="p-2 text-left font-medium">Totaal night snacks</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dailyTotals.map((day) => (
+                  <tr key={day.date} className="border-b last:border-0">
+                    <td className="p-2">{day.date}</td>
+                    <td className="p-2">{day.lunch}</td>
+                    <td className="p-2">{day.dinner}</td>
+                    <td className="p-2">{day.nightSnacks}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
         {sorted.map((order) => (
           <form
             key={order.id}
