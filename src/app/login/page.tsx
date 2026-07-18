@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
@@ -58,6 +59,13 @@ export default async function LoginPage({
             Inloggen
           </SubmitButton>
         </form>
+
+        <Link
+          href="/login/reset-password"
+          className="mt-4 block text-center text-sm text-white/60 underline-offset-4 hover:text-white hover:underline"
+        >
+          Wachtwoord vergeten?
+        </Link>
       </div>
       <Footer variant="dark" />
     </div>
