@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -169,8 +169,8 @@ export function RundownLive({
       : 0;
 
   return (
-    <Card>
-      <CardHeader>
+    <div className="overflow-visible rounded-xl ring-1 ring-foreground/10">
+      <div className="sticky top-0 z-20 rounded-t-xl border-b bg-card px-(--card-spacing) py-(--card-spacing) [--card-spacing:--spacing(4)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <CardTitle className="text-base">Show rundown</CardTitle>
@@ -240,8 +240,8 @@ export function RundownLive({
             )}
           </div>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-3">
+      </div>
+      <div className="space-y-3 rounded-b-xl bg-card px-(--card-spacing) py-(--card-spacing) [--card-spacing:--spacing(4)]">
         <form
           action={setRundownStartTime.bind(null, projectId, stageId, rundownId)}
           className="flex items-end gap-2 border-b pb-4"
@@ -445,7 +445,7 @@ export function RundownLive({
             </SubmitButton>
           </div>
         </form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
