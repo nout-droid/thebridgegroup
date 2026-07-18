@@ -9,6 +9,7 @@ const TABS = [
   { key: "media", label: "Media" },
   { key: "guests", label: "Gastenportaal" },
   { key: "rider", label: "Rider" },
+  { key: "intake", label: "Checklist" },
   { key: "schedule", label: "Draaiboek" },
   { key: "rundown", label: "Rundown" },
   { key: "production", label: "Productie" },

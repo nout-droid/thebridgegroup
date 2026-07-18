@@ -18,12 +18,14 @@ import {
 import {
   CATEGORY_STATUS_LABELS,
   type SharedCategory,
+  type SharedIntakeChecklist,
   type SharedMedia,
   type SharedProject,
   type SharedRider,
 } from "@/lib/types";
 import { toEmbedUrl } from "@/lib/video-embed";
 import { Footer } from "@/components/footer";
+import { INTAKE_CHECKLIST_SECTIONS } from "@/lib/intake-checklist-sections";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -50,6 +52,7 @@ const STATIC_LABELS = [
   "Opslaan",
   "Opgeslagen",
   "Nog geen rider-onderdelen.",
+  "Aanvraag checklist",
   ...Object.values(CATEGORY_STATUS_LABELS),
 ];
 
@@ -343,14 +346,121 @@ function RiderPanel({
   );
 }
 
+function EditableChecklistSection({
+  token,
+  sectionKey,
+  titleText,
+  guidance,
+  content,
+  t,
+  onSaved,
+}: {
+  token: string;
+  sectionKey: string;
+  titleText: string;
+  guidance: string[];
+  content: string;
+  t: Translator;
+  onSaved: (sectionKey: string, content: string) => void;
+}) {
+  const [value, setValue] = useState(content);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  async function save() {
+    setSaving(true);
+    setSaved(false);
+    const supabase = createClient();
+    const { data: ok } = await supabase.rpc("upsert_intake_checklist_answer_by_client", {
+      p_share_token: token,
+      p_section_key: sectionKey,
+      p_content: value,
+    });
+    setSaving(false);
+    if (ok) {
+      setSaved(true);
+      onSaved(sectionKey, value);
+    }
+  }
+
+  return (
+    <div className="space-y-1 rounded-md border p-3">
+      <p className="font-medium">{titleText}</p>
+      {guidance.length > 0 && (
+        <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
+          {guidance.map((line) => (
+            <li key={line}>{line}</li>
+          ))}
+        </ul>
+      )}
+      <Textarea
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setSaved(false);
+        }}
+        rows={3}
+      />
+      <div className="flex items-center gap-2">
+        <Button type="button" size="sm" onClick={save} disabled={saving}>
+          {t("Opslaan")}
+        </Button>
+        {saved && <span className="text-xs text-muted-foreground">{t("Opgeslagen")}</span>}
+      </div>
+    </div>
+  );
+}
+
+function ChecklistPanel({
+  token,
+  checklist,
+  lang,
+  t,
+  onSectionSaved,
+}: {
+  token: string;
+  checklist: SharedIntakeChecklist;
+  lang: "nl" | "en";
+  t: Translator;
+  onSectionSaved: (sectionKey: string, content: string) => void;
+}) {
+  const answerByKey = new Map(checklist.answers.map((a) => [a.section_key, a]));
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{t("Aanvraag checklist")}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {INTAKE_CHECKLIST_SECTIONS.map((section) => {
+          const answer = answerByKey.get(section.key);
+          return (
+            <EditableChecklistSection
+              key={section.key}
+              token={token}
+              sectionKey={section.key}
+              titleText={lang === "en" ? section.title_en : section.title_nl}
+              guidance={lang === "en" ? section.guidance_en : section.guidance_nl}
+              content={answer?.content ?? ""}
+              t={t}
+              onSaved={onSectionSaved}
+            />
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ShareView({ token }: { token: string }) {
   const [data, setData] = useState<SharedProject | null>(null);
   const [rider, setRider] = useState<SharedRider | null>(null);
+  const [checklist, setChecklist] = useState<SharedIntakeChecklist | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<"nl" | "en">("nl");
   const [cache, setCache] = useState<Map<string, string>>(new Map());
   const [translationError, setTranslationError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"budget" | "rider">("budget");
+  const [activeTab, setActiveTab] = useState<"budget" | "rider" | "checklist">("budget");
 
   useEffect(() => {
     const supabase = createClient();
@@ -368,6 +478,10 @@ export function ShareView({ token }: { token: string }) {
         p_share_token: token,
       });
       if (!cancelled && riderData) setRider(riderData as SharedRider);
+      const { data: checklistData } = await supabase.rpc("get_shared_intake_checklist", {
+        p_share_token: token,
+      });
+      if (!cancelled && checklistData) setChecklist(checklistData as SharedIntakeChecklist);
       setData(data as SharedProject);
     }
 
@@ -493,19 +607,19 @@ export function ShareView({ token }: { token: string }) {
           </div>
         )}
 
-        {rider && rider.sections.length > 0 && (
-          <div className="flex gap-1 border-b">
-            <button
-              type="button"
-              onClick={() => setActiveTab("budget")}
-              className={`px-3 py-2 text-sm font-medium ${
-                activeTab === "budget"
-                  ? "border-b-2 border-primary text-foreground"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {t("Begroting")}
-            </button>
+        <div className="flex gap-1 border-b">
+          <button
+            type="button"
+            onClick={() => setActiveTab("budget")}
+            className={`px-3 py-2 text-sm font-medium ${
+              activeTab === "budget"
+                ? "border-b-2 border-primary text-foreground"
+                : "text-muted-foreground"
+            }`}
+          >
+            {t("Begroting")}
+          </button>
+          {rider && rider.sections.length > 0 && (
             <button
               type="button"
               onClick={() => setActiveTab("rider")}
@@ -517,8 +631,19 @@ export function ShareView({ token }: { token: string }) {
             >
               {t("Rider")}
             </button>
-          </div>
-        )}
+          )}
+          <button
+            type="button"
+            onClick={() => setActiveTab("checklist")}
+            className={`px-3 py-2 text-sm font-medium ${
+              activeTab === "checklist"
+                ? "border-b-2 border-primary text-foreground"
+                : "text-muted-foreground"
+            }`}
+          >
+            {t("Aanvraag checklist")}
+          </button>
+        </div>
 
         {activeTab === "rider" && rider && rider.sections.length > 0 ? (
           <RiderPanel
@@ -533,6 +658,29 @@ export function ShareView({ token }: { token: string }) {
                       sections: prev.sections.map((s) =>
                         s.id === sectionId ? { ...s, content } : s
                       ),
+                    }
+                  : prev
+              )
+            }
+          />
+        ) : activeTab === "checklist" && checklist ? (
+          <ChecklistPanel
+            token={token}
+            checklist={checklist}
+            lang={lang}
+            t={t}
+            onSectionSaved={(sectionKey, content) =>
+              setChecklist((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      answers: prev.answers.some((a) => a.section_key === sectionKey)
+                        ? prev.answers.map((a) =>
+                            a.section_key === sectionKey
+                              ? { ...a, content, updated_by: "client" as const }
+                              : a
+                          )
+                        : [...prev.answers, { section_key: sectionKey, content, updated_by: "client" as const }],
                     }
                   : prev
               )

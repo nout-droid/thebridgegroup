@@ -109,6 +109,17 @@ export interface SharedRider {
   sections: SharedRiderSection[];
 }
 
+export interface IntakeChecklistAnswer {
+  section_key: string;
+  content: string;
+  updated_by: "owner" | "client";
+}
+
+export interface SharedIntakeChecklist {
+  updated_at: string | null;
+  answers: IntakeChecklistAnswer[];
+}
+
 export interface QuoteDocument {
   id: string;
   quote_id: string;
