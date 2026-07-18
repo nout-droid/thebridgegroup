@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -30,6 +31,12 @@ export default async function SuppliersPage({
 }) {
   const { error } = await searchParams;
   const supabase = await createClient();
+
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = host?.startsWith("localhost") ? "http" : "https";
+  const supplierPortalUrl = `${protocol}://${host}/supplier-portal`;
+
   const { data: suppliers } = await supabase
     .from("suppliers")
     .select("*")
@@ -173,6 +180,9 @@ export default async function SuppliersPage({
                               : "Portaal instellen"}
                           </summary>
                           <div className="mt-2 space-y-2">
+                            <p className="text-xs text-muted-foreground">
+                              <span className="font-mono">{supplierPortalUrl}</span>
+                            </p>
                             <form
                               action={updateSupplierPortalCode.bind(null, supplier.id)}
                               className="flex items-center gap-1"
