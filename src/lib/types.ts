@@ -115,9 +115,18 @@ export interface IntakeChecklistAnswer {
   updated_by: "owner" | "client";
 }
 
+export interface IntakeChecklistPhoto {
+  id: string;
+  section_key: string;
+  original_filename: string;
+  uploaded_by: "owner" | "client";
+  created_at: string;
+}
+
 export interface SharedIntakeChecklist {
   updated_at: string | null;
   answers: IntakeChecklistAnswer[];
+  photos: IntakeChecklistPhoto[];
 }
 
 export interface QuoteDocument {

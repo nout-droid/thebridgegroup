@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import {
   CATEGORY_STATUS_LABELS,
+  type IntakeChecklistPhoto,
   type SharedCategory,
   type SharedIntakeChecklist,
   type SharedMedia,
@@ -26,6 +28,10 @@ import {
 import { toEmbedUrl } from "@/lib/video-embed";
 import { Footer } from "@/components/footer";
 import { INTAKE_CHECKLIST_SECTIONS } from "@/lib/intake-checklist-sections";
+import {
+  deleteIntakeChecklistPhotoByClient,
+  uploadIntakeChecklistPhotoByClient,
+} from "./intake-photo-actions";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -53,6 +59,9 @@ const STATIC_LABELS = [
   "Opgeslagen",
   "Nog geen rider-onderdelen.",
   "Aanvraag checklist",
+  "Bijlage toevoegen",
+  "Bekijken",
+  "Verwijderen",
   ...Object.values(CATEGORY_STATUS_LABELS),
 ];
 
@@ -352,20 +361,28 @@ function EditableChecklistSection({
   titleText,
   guidance,
   content,
+  photos,
   t,
   onSaved,
+  onPhotoUploaded,
+  onPhotoDeleted,
 }: {
   token: string;
   sectionKey: string;
   titleText: string;
   guidance: string[];
   content: string;
+  photos: IntakeChecklistPhoto[];
   t: Translator;
   onSaved: (sectionKey: string, content: string) => void;
+  onPhotoUploaded: (photo: IntakeChecklistPhoto) => void;
+  onPhotoDeleted: (photoId: string) => void;
 }) {
   const [value, setValue] = useState(content);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function save() {
     setSaving(true);
@@ -381,6 +398,25 @@ function EditableChecklistSection({
       setSaved(true);
       onSaved(sectionKey, value);
     }
+  }
+
+  async function uploadPhoto() {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.set("file", file);
+    const result = await uploadIntakeChecklistPhotoByClient(token, sectionKey, formData);
+    setUploading(false);
+    if (result.photo) {
+      onPhotoUploaded(result.photo);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function deletePhoto(photoId: string) {
+    await deleteIntakeChecklistPhotoByClient(token, photoId);
+    onPhotoDeleted(photoId);
   }
 
   return (
@@ -407,6 +443,52 @@ function EditableChecklistSection({
         </Button>
         {saved && <span className="text-xs text-muted-foreground">{t("Opgeslagen")}</span>}
       </div>
+
+      <div className="space-y-1.5 border-t pt-2">
+        {photos.length > 0 && (
+          <ul className="space-y-1">
+            {photos.map((photo) => (
+              <li key={photo.id} className="flex items-center justify-between gap-2 text-sm">
+                <a
+                  href={`/share/${token}/intake-photos/${photo.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  {photo.original_filename}
+                </a>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => deletePhoto(photo.id)}
+                >
+                  {t("Verwijderen")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf"
+            className="h-8 max-w-xs text-xs"
+          />
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className="h-8 text-xs"
+            onClick={uploadPhoto}
+            disabled={uploading}
+          >
+            {t("Bijlage toevoegen")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -417,12 +499,16 @@ function ChecklistPanel({
   lang,
   t,
   onSectionSaved,
+  onPhotoUploaded,
+  onPhotoDeleted,
 }: {
   token: string;
   checklist: SharedIntakeChecklist;
   lang: "nl" | "en";
   t: Translator;
   onSectionSaved: (sectionKey: string, content: string) => void;
+  onPhotoUploaded: (photo: IntakeChecklistPhoto) => void;
+  onPhotoDeleted: (photoId: string) => void;
 }) {
   const answerByKey = new Map(checklist.answers.map((a) => [a.section_key, a]));
 
@@ -434,6 +520,7 @@ function ChecklistPanel({
       <CardContent className="space-y-3">
         {INTAKE_CHECKLIST_SECTIONS.map((section) => {
           const answer = answerByKey.get(section.key);
+          const sectionPhotos = checklist.photos.filter((p) => p.section_key === section.key);
           return (
             <EditableChecklistSection
               key={section.key}
@@ -442,8 +529,11 @@ function ChecklistPanel({
               titleText={lang === "en" ? section.title_en : section.title_nl}
               guidance={lang === "en" ? section.guidance_en : section.guidance_nl}
               content={answer?.content ?? ""}
+              photos={sectionPhotos}
               t={t}
               onSaved={onSectionSaved}
+              onPhotoUploaded={onPhotoUploaded}
+              onPhotoDeleted={onPhotoDeleted}
             />
           );
         })}
@@ -682,6 +772,16 @@ export function ShareView({ token }: { token: string }) {
                           )
                         : [...prev.answers, { section_key: sectionKey, content, updated_by: "client" as const }],
                     }
+                  : prev
+              )
+            }
+            onPhotoUploaded={(photo) =>
+              setChecklist((prev) => (prev ? { ...prev, photos: [...prev.photos, photo] } : prev))
+            }
+            onPhotoDeleted={(photoId) =>
+              setChecklist((prev) =>
+                prev
+                  ? { ...prev, photos: prev.photos.filter((p) => p.id !== photoId) }
                   : prev
               )
             }
