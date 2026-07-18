@@ -182,6 +182,7 @@ export function RundownLive({
             <Button
               size="sm"
               variant="outline"
+              nativeButton={false}
               render={
                 <a
                   href={`/clock/${shareToken}${stageId ? `?stage=${stageId}` : ""}`}

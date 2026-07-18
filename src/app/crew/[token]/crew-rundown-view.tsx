@@ -215,6 +215,7 @@ export function CrewRundownView({ token }: { token: string }) {
                 <Button
                   size="sm"
                   variant="outline"
+                  nativeButton={false}
                   render={
                     <a
                       href={`/clock/${token}${scope?.stage_id ? `?stage=${scope.stage_id}` : ""}`}
