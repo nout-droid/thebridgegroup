@@ -4,7 +4,7 @@ import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { getOrCreateRundown } from "@/lib/server/ensure-rundown";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import type { Rundown, RundownItem } from "@/lib/types";
+import type { Rundown, RundownItem, Stage } from "@/lib/types";
 import { ProjectSubNav } from "../project-sub-nav";
 import { RundownLive } from "../rundown-live";
 import { RundownAccessCard } from "../rundown-access-card";
@@ -24,6 +24,13 @@ export default async function ProjectRundownPage({
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const crewPortalUrl = `${protocol}://${host}/crew-portal`;
   const showcallerPortalUrl = `${protocol}://${host}/showcaller-portal`;
+
+  const { data: stages } = await supabase
+    .from("stages")
+    .select("*")
+    .eq("project_id", id)
+    .order("sort_order", { ascending: true })
+    .returns<Stage[]>();
 
   const rundownId = await getOrCreateRundown(supabase, id, null);
 
@@ -48,6 +55,7 @@ export default async function ProjectRundownPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <RundownAccessCard
           project={project}
+          stages={stages ?? []}
           crewPortalUrl={crewPortalUrl}
           showcallerPortalUrl={showcallerPortalUrl}
         />

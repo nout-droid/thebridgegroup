@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
 import { DIVISIONS } from "@/lib/divisions";
+import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
 
 const POLL_INTERVAL_MS = 5000;
@@ -36,10 +37,20 @@ function scopeKey(stageId: string | null) {
   return stageId ?? "project";
 }
 
-export function CrewRundownView({ token }: { token: string }) {
+export function CrewRundownView({
+  token,
+  initialDivision,
+}: {
+  token: string;
+  initialDivision?: string;
+}) {
   const [data, setData] = useState<SharedRundowns | null>(null);
   const [selectedScope, setSelectedScope] = useState<string>("project");
-  const [division, setDivision] = useState<string>(DIVISIONS[0]);
+  const [division, setDivision] = useState<string>(
+    initialDivision && (DIVISIONS as readonly string[]).includes(initialDivision)
+      ? initialDivision
+      : DIVISIONS[0]
+  );
   const [noteText, setNoteText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [, setTick] = useState(0);
@@ -91,6 +102,12 @@ export function CrewRundownView({ token }: { token: string }) {
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, []);
+
+  async function refetchChat() {
+    const supabase = createClient();
+    const { data: result } = await supabase.rpc("get_shared_rundowns", { p_token: token });
+    if (result) setData(result as SharedRundowns);
+  }
 
   async function submitNote() {
     if (!noteText.trim()) return;
@@ -292,6 +309,15 @@ export function CrewRundownView({ token }: { token: string }) {
             })}
           </CardContent>
         </Card>
+
+        <RundownChat
+          token={token}
+          stageId={scope?.stage_id ?? null}
+          messages={data.chat}
+          senderLabel={division}
+          audioAlert={division === "Audio"}
+          onSent={refetchChat}
+        />
 
         <Card>
           <CardHeader>

@@ -6,10 +6,13 @@ import { CrewRundownView } from "./crew-rundown-view";
 
 export default async function CrewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ division?: string }>;
 }) {
   const { token } = await params;
+  const { division } = await searchParams;
 
   if (!isSupabaseConfigured) {
     return <p className="p-6 text-sm text-muted-foreground">Deze pagina is nog niet beschikbaar.</p>;
@@ -26,7 +29,6 @@ export default async function CrewPage({
       .from("projects")
       .select("id")
       .eq("share_token", token)
-      .eq("user_id", user.id)
       .maybeSingle();
     isOwner = Boolean(ownedProject);
   }
@@ -38,5 +40,5 @@ export default async function CrewPage({
     }
   }
 
-  return <CrewRundownView token={token} />;
+  return <CrewRundownView token={token} initialDivision={division} />;
 }

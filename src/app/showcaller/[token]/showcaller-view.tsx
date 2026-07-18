@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
+import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
@@ -79,9 +80,15 @@ function scopeKey(stageId: string | null) {
   return stageId ?? "project";
 }
 
-export function ShowcallerView({ token }: { token: string }) {
+export function ShowcallerView({
+  token,
+  restrictedStageId = null,
+}: {
+  token: string;
+  restrictedStageId?: string | null;
+}) {
   const [data, setData] = useState<SharedRundowns | null>(null);
-  const [selectedScope, setSelectedScope] = useState<string>("project");
+  const [selectedScope, setSelectedScope] = useState<string>(restrictedStageId ?? "project");
   const [, setTick] = useState(0);
   const [isPending, startTransition] = useTransition();
 
@@ -157,19 +164,21 @@ export function ShowcallerView({ token }: { token: string }) {
             <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
             {data.project.name} &mdash; Showcaller
           </div>
-          <div className="flex flex-wrap gap-2">
-            {data.scopes.map((s) => (
-              <Button
-                key={scopeKey(s.stage_id)}
-                size="sm"
-                variant={selectedScope === scopeKey(s.stage_id) ? "default" : "outline"}
-                className={selectedScope === scopeKey(s.stage_id) ? "" : OUTLINE_DARK}
-                onClick={() => setSelectedScope(scopeKey(s.stage_id))}
-              >
-                {s.stage_name ?? "Projectbreed"}
-              </Button>
-            ))}
-          </div>
+          {!restrictedStageId && (
+            <div className="flex flex-wrap gap-2">
+              {data.scopes.map((s) => (
+                <Button
+                  key={scopeKey(s.stage_id)}
+                  size="sm"
+                  variant={selectedScope === scopeKey(s.stage_id) ? "default" : "outline"}
+                  className={selectedScope === scopeKey(s.stage_id) ? "" : OUTLINE_DARK}
+                  onClick={() => setSelectedScope(scopeKey(s.stage_id))}
+                >
+                  {s.stage_name ?? "Projectbreed"}
+                </Button>
+              ))}
+            </div>
+          )}
         </div>
 
         {rundown && (
@@ -450,6 +459,16 @@ export function ShowcallerView({ token }: { token: string }) {
             </form>
           </div>
         )}
+
+        <RundownChat
+          token={token}
+          stageId={scope?.stage_id ?? null}
+          messages={data.chat}
+          senderLabel="Showcaller"
+          audioAlert={false}
+          onSent={refetch}
+          dark
+        />
 
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>

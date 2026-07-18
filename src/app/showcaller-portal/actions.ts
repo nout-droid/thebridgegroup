@@ -13,17 +13,18 @@ export async function showcallerLogin(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { data: token } = await supabase.rpc("verify_showcaller_login", {
+  const { data: result } = await supabase.rpc("verify_showcaller_login", {
     p_event_code: eventCode,
     p_password: password,
   });
+  const login = result as { share_token: string; stage_id: string | null } | null;
 
-  if (!token) {
+  if (!login?.share_token) {
     redirect(`/showcaller-portal?error=${encodeURIComponent("Ongeldig Event ID of wachtwoord.")}`);
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(`showcaller_token_${token}`, "1", {
+  cookieStore.set(`showcaller_token_${login.share_token}`, login.stage_id ?? "all", {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -31,5 +32,5 @@ export async function showcallerLogin(formData: FormData) {
     path: "/",
   });
 
-  redirect(`/showcaller/${token}`);
+  redirect(`/showcaller/${login.share_token}`);
 }

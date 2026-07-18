@@ -12,6 +12,7 @@ export function PortalLogin({
   passwordLabel = "Wachtwoord",
   error,
   action,
+  children,
 }: {
   description: string;
   idLabel: string;
@@ -20,6 +21,7 @@ export function PortalLogin({
   passwordLabel?: string;
   error?: string;
   action: (formData: FormData) => void | Promise<void>;
+  children?: React.ReactNode;
 }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-white">
@@ -62,6 +64,7 @@ export function PortalLogin({
               className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
             />
           </div>
+          {children}
           <SubmitButton className="w-full" pendingText="Bezig met inloggen…">
             Inloggen
           </SubmitButton>

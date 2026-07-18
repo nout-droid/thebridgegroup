@@ -22,3 +22,17 @@ export async function setShowcallerPassword(projectId: string, formData: FormDat
 
   revalidatePath(`/projects/${projectId}/rundown`);
 }
+
+export async function setStageShowcallerPassword(
+  projectId: string,
+  stageId: string,
+  formData: FormData
+) {
+  const password = String(formData.get("password") ?? "");
+  if (!password) return;
+
+  const supabase = await createClient();
+  await supabase.rpc("set_stage_showcaller_password", { p_stage_id: stageId, p_password: password });
+
+  revalidatePath(`/projects/${projectId}/rundown`);
+}

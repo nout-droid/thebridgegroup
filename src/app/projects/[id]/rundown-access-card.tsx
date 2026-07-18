@@ -2,15 +2,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { Project } from "@/lib/types";
-import { setCrewPassword, setShowcallerPassword } from "./rundown-access-actions";
+import type { Project, Stage } from "@/lib/types";
+import {
+  setCrewPassword,
+  setShowcallerPassword,
+  setStageShowcallerPassword,
+} from "./rundown-access-actions";
 
 export function RundownAccessCard({
   project,
+  stages,
   crewPortalUrl,
   showcallerPortalUrl,
 }: {
   project: Project;
+  stages: Stage[];
   crewPortalUrl: string;
   showcallerPortalUrl: string;
 }) {
@@ -87,6 +93,40 @@ export function RundownAccessCard({
             <p className="text-xs text-destructive">
               Nog geen wachtwoord ingesteld &mdash; de showcaller kan nog niet inloggen.
             </p>
+          )}
+
+          {stages.length > 0 && (
+            <div className="space-y-3 border-t pt-3">
+              <p className="text-xs text-muted-foreground">
+                Optioneel: geef een podium een eigen, beperkter wachtwoord &mdash; die showcaller
+                ziet en bedient dan alleen dat podium, in plaats van alle podia.
+              </p>
+              {stages.map((stage) => (
+                <form
+                  key={stage.id}
+                  action={setStageShowcallerPassword.bind(null, project.id, stage.id)}
+                  className="flex items-end gap-2"
+                >
+                  <div className="space-y-1.5">
+                    <Label htmlFor={`stage_showcaller_password_${stage.id}`}>
+                      {stage.showcaller_password_hash
+                        ? `Nieuw wachtwoord voor ${stage.name}`
+                        : `Wachtwoord voor ${stage.name} instellen`}
+                    </Label>
+                    <Input
+                      id={`stage_showcaller_password_${stage.id}`}
+                      name="password"
+                      type="password"
+                      className="w-40"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" size="sm" variant="secondary">
+                    Opslaan
+                  </Button>
+                </form>
+              ))}
+            </div>
           )}
         </div>
       </CardContent>

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 export async function crewLogin(formData: FormData) {
   const eventCode = String(formData.get("event_code") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const division = String(formData.get("division") ?? "").trim();
 
   if (!eventCode || !password) {
     redirect(`/crew-portal?error=${encodeURIComponent("Vul een Event ID en wachtwoord in.")}`);
@@ -31,5 +32,5 @@ export async function crewLogin(formData: FormData) {
     path: "/",
   });
 
-  redirect(`/crew/${token}`);
+  redirect(`/crew/${token}${division ? `?division=${encodeURIComponent(division)}` : ""}`);
 }

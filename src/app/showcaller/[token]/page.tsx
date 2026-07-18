@@ -26,17 +26,19 @@ export default async function ShowcallerPage({
       .from("projects")
       .select("id")
       .eq("share_token", token)
-      .eq("user_id", user.id)
       .maybeSingle();
     isOwner = Boolean(ownedProject);
   }
 
+  let restrictedStageId: string | null = null;
   if (!isOwner) {
     const cookieStore = await cookies();
-    if (!cookieStore.get(`showcaller_token_${token}`)) {
+    const cookieValue = cookieStore.get(`showcaller_token_${token}`)?.value;
+    if (!cookieValue) {
       redirect("/showcaller-portal");
     }
+    restrictedStageId = cookieValue !== "all" ? cookieValue : null;
   }
 
-  return <ShowcallerView token={token} />;
+  return <ShowcallerView token={token} restrictedStageId={restrictedStageId} />;
 }
