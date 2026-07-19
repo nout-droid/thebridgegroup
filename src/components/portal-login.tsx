@@ -24,8 +24,12 @@ export function PortalLogin({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-6 text-white">
-      <div className="flex w-full max-w-sm flex-col items-center">
+    <div
+      className="flex min-h-screen flex-col items-center bg-black bg-cover bg-center px-6 text-white"
+      style={{ backgroundImage: "url(/login-background.jpg)" }}
+    >
+      <div className="h-[72vh] shrink-0" />
+      <div className="flex w-full max-w-sm flex-col items-center rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
         <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
         <h1 className="text-center text-lg font-semibold uppercase tracking-wide text-primary">
           The Bridge AV Group
