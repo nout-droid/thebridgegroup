@@ -367,6 +367,7 @@ export interface Rundown {
   id: string;
   project_id: string;
   stage_id: string | null;
+  show_date: string;
   start_time: string;
   is_live: boolean;
   current_item_id: string | null;
@@ -405,17 +406,14 @@ export interface CrewNote {
   created_at: string;
 }
 
-export interface SharedRundownScope {
-  stage_id: string | null;
-  stage_name: string | null;
-  rundown: {
-    id: string;
-    start_time: string;
-    is_live: boolean;
-    current_item_id: string | null;
-    current_item_started_at: string | null;
-    actual_start_at: string | null;
-  } | null;
+export interface SharedRundownDate {
+  id: string;
+  show_date: string;
+  start_time: string;
+  is_live: boolean;
+  current_item_id: string | null;
+  current_item_started_at: string | null;
+  actual_start_at: string | null;
   items: {
     id: string;
     cue_number: string;
@@ -426,6 +424,12 @@ export interface SharedRundownScope {
     sort_order: number;
     instructions: { id: string; division: string; instruction: string }[];
   }[];
+}
+
+export interface SharedRundownScope {
+  stage_id: string | null;
+  stage_name: string | null;
+  rundowns: SharedRundownDate[];
 }
 
 export interface RundownChatMessage {

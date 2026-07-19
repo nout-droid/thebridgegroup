@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { SharedRundowns } from "@/lib/types";
 import { calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
+import { pickDefaultShowDate } from "@/lib/show-dates";
 
 const POLL_INTERVAL_MS = 2000;
 
@@ -12,7 +13,15 @@ function scopeKey(stageId: string | null) {
   return stageId ?? "project";
 }
 
-export function ClockView({ token, stageId }: { token: string; stageId: string | null }) {
+export function ClockView({
+  token,
+  stageId,
+  date,
+}: {
+  token: string;
+  stageId: string | null;
+  date: string | null;
+}) {
   const [data, setData] = useState<SharedRundowns | null>(null);
   const [now, setNow] = useState<number | null>(null);
 
@@ -43,8 +52,10 @@ export function ClockView({ token, stageId }: { token: string; stageId: string |
   }
 
   const scope = data.scopes.find((s) => scopeKey(s.stage_id) === scopeKey(stageId)) ?? null;
-  const rundown = scope?.rundown ?? null;
-  const currentItem = scope?.items.find((i) => i.id === rundown?.current_item_id) ?? null;
+  const availableDates = (scope?.rundowns ?? []).map((r) => r.show_date);
+  const activeDate = date && availableDates.includes(date) ? date : pickDefaultShowDate(availableDates);
+  const rundown = scope?.rundowns.find((r) => r.show_date === activeDate) ?? null;
+  const currentItem = rundown?.items.find((i) => i.id === rundown?.current_item_id) ?? null;
 
   if (!rundown?.is_live || !currentItem || now === null) {
     return (
@@ -61,7 +72,7 @@ export function ClockView({ token, stageId }: { token: string; stageId: string |
   const remainingSeconds = currentItem.duration_seconds - elapsedSeconds;
   const overtime = remainingSeconds < 0;
   const totalOvertimeSeconds = calcTotalOvertimeSeconds({
-    items: scope?.items ?? [],
+    items: rundown?.items ?? [],
     currentItemId: rundown.current_item_id,
     currentItemStartedAt: rundown.current_item_started_at,
     actualStartAt: rundown.actual_start_at,

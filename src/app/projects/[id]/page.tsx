@@ -145,6 +145,26 @@ export default async function ProjectPage({
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{pageError}</p>
         )}
 
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
+            <div>
+              <p className="font-medium">Productieboek</p>
+              <p className="text-sm text-muted-foreground">
+                Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en
+                catering in één PDF — voor de map on-site.
+              </p>
+            </div>
+            <a
+              href={`/projects/${project.id}/production-book`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Productieboek downloaden (PDF)
+            </a>
+          </CardContent>
+        </Card>
+
         {activity && activity.length > 0 && (
           <Card>
             <CardHeader>

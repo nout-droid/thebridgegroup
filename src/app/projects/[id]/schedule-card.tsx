@@ -36,6 +36,16 @@ export function ScheduleCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        {sorted.length > 0 && (
+          <a
+            href={`/projects/${projectId}/schedule/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Draaiboek downloaden (PDF)
+          </a>
+        )}
         {sorted.map((item) => (
           <form
             key={item.id}

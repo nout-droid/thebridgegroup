@@ -28,6 +28,16 @@ export function EquipmentCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        {reservations.length > 0 && (
+          <a
+            href={`/projects/${projectId}/production/materieel/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Materieellijst downloaden (PDF)
+          </a>
+        )}
         {reservations.map((item) => (
           <form
             key={item.id}

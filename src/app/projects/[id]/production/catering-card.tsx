@@ -58,6 +58,16 @@ export function CateringCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        {orders.length > 0 && (
+          <a
+            href={`/projects/${projectId}/production/catering/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Catering downloaden (PDF)
+          </a>
+        )}
         {dailyTotals.length > 0 && (
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-xs">

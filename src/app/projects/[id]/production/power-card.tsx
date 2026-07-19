@@ -27,6 +27,16 @@ export function PowerCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
+        {requests.length > 0 && (
+          <a
+            href={`/projects/${projectId}/production/power/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Stroomaanvraag downloaden (PDF)
+          </a>
+        )}
         {requests.map((request) => (
           <form
             key={request.id}

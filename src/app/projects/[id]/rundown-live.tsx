@@ -190,7 +190,7 @@ export function RundownLive({
               nativeButton={false}
               render={
                 <a
-                  href={`/clock/${shareToken}${stageId ? `?stage=${stageId}` : ""}`}
+                  href={`/clock/${shareToken}?date=${rundown.show_date}${stageId ? `&stage=${stageId}` : ""}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 />

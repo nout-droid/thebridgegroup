@@ -17,6 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
+import { pickDefaultShowDate } from "@/lib/show-dates";
 import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
@@ -46,6 +47,7 @@ export function CrewRundownView({
 }) {
   const [data, setData] = useState<SharedRundowns | null>(null);
   const [selectedScope, setSelectedScope] = useState<string>("project");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [division, setDivision] = useState<string>(
     initialDivision && (DIVISIONS as readonly string[]).includes(initialDivision)
       ? initialDivision
@@ -137,26 +139,33 @@ export function CrewRundownView({
   const scope =
     data.scopes.find((s) => scopeKey(s.stage_id) === selectedScope) ?? data.scopes[0] ?? null;
 
-  let cursor = scope?.rundown?.start_time ?? "00:00:00";
-  const rows = (scope?.items ?? []).map((item) => {
+  const availableDates = (scope?.rundowns ?? []).map((r) => r.show_date);
+  const activeDate =
+    selectedDate && availableDates.includes(selectedDate)
+      ? selectedDate
+      : pickDefaultShowDate(availableDates);
+  const rundown = scope?.rundowns.find((r) => r.show_date === activeDate) ?? null;
+
+  let cursor = rundown?.start_time ?? "00:00:00";
+  const rows = (rundown?.items ?? []).map((item) => {
     const start = cursor;
     const end = addSecondsToTime(cursor, item.duration_seconds);
     cursor = end;
     return { item, start, end };
   });
 
-  const currentItem = scope?.items.find((i) => i.id === scope.rundown?.current_item_id) ?? null;
+  const currentItem = rundown?.items.find((i) => i.id === rundown?.current_item_id) ?? null;
   const elapsedSeconds =
-    scope?.rundown?.is_live && scope.rundown.current_item_started_at
-      ? Math.floor((Date.now() - new Date(scope.rundown.current_item_started_at).getTime()) / 1000)
+    rundown?.is_live && rundown.current_item_started_at
+      ? Math.floor((Date.now() - new Date(rundown.current_item_started_at).getTime()) / 1000)
       : 0;
   const remainingSeconds = currentItem ? currentItem.duration_seconds - elapsedSeconds : 0;
-  const totalOvertimeSeconds = scope?.rundown?.is_live
+  const totalOvertimeSeconds = rundown?.is_live
     ? calcTotalOvertimeSeconds({
-        items: scope.items,
-        currentItemId: scope.rundown.current_item_id,
-        currentItemStartedAt: scope.rundown.current_item_started_at,
-        actualStartAt: scope.rundown.actual_start_at,
+        items: rundown.items,
+        currentItemId: rundown.current_item_id,
+        currentItemStartedAt: rundown.current_item_started_at,
+        actualStartAt: rundown.actual_start_at,
         now: Date.now(),
       })
     : 0;
@@ -182,6 +191,26 @@ export function CrewRundownView({
             </Button>
           ))}
         </div>
+
+        {availableDates.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {availableDates.map((d) => (
+              <Button
+                key={d}
+                size="sm"
+                variant={activeDate === d ? "default" : "outline"}
+                className="h-7 text-xs capitalize"
+                onClick={() => setSelectedDate(d)}
+              >
+                {new Date(`${d}T00:00:00`).toLocaleDateString("nl-NL", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                })}
+              </Button>
+            ))}
+          </div>
+        )}
 
         <Card>
           <CardHeader>
@@ -236,7 +265,7 @@ export function CrewRundownView({
                   nativeButton={false}
                   render={
                     <a
-                      href={`/clock/${token}${scope?.stage_id ? `?stage=${scope.stage_id}` : ""}`}
+                      href={`/clock/${token}?date=${activeDate}${scope?.stage_id ? `&stage=${scope.stage_id}` : ""}`}
                       target="_blank"
                       rel="noopener noreferrer"
                     />
@@ -244,7 +273,7 @@ export function CrewRundownView({
                 >
                   Open klok
                 </Button>
-                {scope?.rundown?.is_live && (
+                {rundown?.is_live && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
                     LIVE
@@ -263,7 +292,7 @@ export function CrewRundownView({
               <p className="text-sm text-muted-foreground">Nog geen cues voor deze rundown.</p>
             )}
             {rows.map(({ item, start, end }) => {
-              const isCurrent = item.id === scope?.rundown?.current_item_id;
+              const isCurrent = item.id === rundown?.current_item_id;
               const visibleInstructions = item.instructions.filter((instr) =>
                 visibleDivisions.includes(instr.division)
               );

@@ -60,13 +60,14 @@ function revalidate(token: string) {
 
 export async function showcallerEnsureRundown(
   token: string,
-  stageId: string | null
+  stageId: string | null,
+  showDate: string
 ): Promise<string | null> {
   const projectId = await authorizedProjectId(token);
   if (!projectId) return null;
 
   const admin = createAdminClient();
-  const rundownId = await getOrCreateRundown(admin, projectId, stageId);
+  const rundownId = await getOrCreateRundown(admin, projectId, stageId, showDate);
   return rundownId ?? null;
 }
 

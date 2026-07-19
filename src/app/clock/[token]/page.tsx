@@ -6,14 +6,14 @@ export default async function ClockPage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ stage?: string }>;
+  searchParams: Promise<{ stage?: string; date?: string }>;
 }) {
   const { token } = await params;
-  const { stage } = await searchParams;
+  const { stage, date } = await searchParams;
 
   if (!isSupabaseConfigured) {
     return <p className="p-6 text-sm text-muted-foreground">Deze pagina is nog niet beschikbaar.</p>;
   }
 
-  return <ClockView token={token} stageId={stage ?? null} />;
+  return <ClockView token={token} stageId={stage ?? null} date={date ?? null} />;
 }

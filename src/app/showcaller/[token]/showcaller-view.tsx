@@ -21,6 +21,7 @@ import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
 import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
+import { pickDefaultShowDate } from "@/lib/show-dates";
 import {
   showcallerAddInstruction,
   showcallerAddItem,
@@ -89,6 +90,7 @@ export function ShowcallerView({
 }) {
   const [data, setData] = useState<SharedRundowns | null>(null);
   const [selectedScope, setSelectedScope] = useState<string>(restrictedStageId ?? "project");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [, setTick] = useState(0);
   const [isPending, startTransition] = useTransition();
 
@@ -110,12 +112,18 @@ export function ShowcallerView({
   }, []);
 
   const scope = data?.scopes.find((s) => scopeKey(s.stage_id) === selectedScope) ?? null;
+  const availableDates = (scope?.rundowns ?? []).map((r) => r.show_date);
+  const activeDate =
+    selectedDate && availableDates.includes(selectedDate)
+      ? selectedDate
+      : pickDefaultShowDate(availableDates);
+  const rundown = scope?.rundowns.find((r) => r.show_date === activeDate) ?? null;
 
   useEffect(() => {
-    if (data && scope && !scope.rundown) {
-      showcallerEnsureRundown(token, scope.stage_id).then(() => refetch());
+    if (data && scope && !rundown) {
+      showcallerEnsureRundown(token, scope.stage_id, activeDate).then(() => refetch());
     }
-  }, [data, scope, token, refetch]);
+  }, [data, scope, rundown, activeDate, token, refetch]);
 
   function runAction(action: () => Promise<void>) {
     startTransition(() => {
@@ -131,16 +139,15 @@ export function ShowcallerView({
     );
   }
 
-  const rundown = scope?.rundown;
   let cursor = rundown?.start_time ?? "00:00:00";
-  const rows = (scope?.items ?? []).map((item) => {
+  const rows = (rundown?.items ?? []).map((item) => {
     const start = cursor;
     const end = addSecondsToTime(cursor, item.duration_seconds);
     cursor = end;
     return { item, start, end };
   });
 
-  const currentItem = scope?.items.find((i) => i.id === rundown?.current_item_id) ?? null;
+  const currentItem = rundown?.items.find((i) => i.id === rundown?.current_item_id) ?? null;
   const elapsedSeconds =
     rundown?.is_live && rundown.current_item_started_at
       ? Math.floor((Date.now() - new Date(rundown.current_item_started_at).getTime()) / 1000)
@@ -148,7 +155,7 @@ export function ShowcallerView({
   const remainingSeconds = currentItem ? currentItem.duration_seconds - elapsedSeconds : 0;
   const totalOvertimeSeconds = rundown?.is_live
     ? calcTotalOvertimeSeconds({
-        items: scope?.items ?? [],
+        items: rundown?.items ?? [],
         currentItemId: rundown.current_item_id,
         currentItemStartedAt: rundown.current_item_started_at,
         actualStartAt: rundown.actual_start_at,
@@ -181,6 +188,26 @@ export function ShowcallerView({
           )}
         </div>
 
+        {availableDates.length > 1 && (
+          <div className="mx-auto flex w-full max-w-5xl flex-wrap gap-1.5 border-t border-white/10 px-6 py-2">
+            {availableDates.map((d) => (
+              <Button
+                key={d}
+                size="sm"
+                variant={activeDate === d ? "default" : "outline"}
+                className={cn("h-7 text-xs capitalize", activeDate === d ? "" : OUTLINE_DARK)}
+                onClick={() => setSelectedDate(d)}
+              >
+                {new Date(`${d}T00:00:00`).toLocaleDateString("nl-NL", {
+                  weekday: "short",
+                  day: "numeric",
+                  month: "short",
+                })}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {rundown && (
           <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-6 py-3">
             <p className="text-sm font-medium text-white/70">Show rundown</p>
@@ -192,7 +219,7 @@ export function ShowcallerView({
                 nativeButton={false}
                 render={
                   <a
-                    href={`/clock/${token}${scope?.stage_id ? `?stage=${scope.stage_id}` : ""}`}
+                    href={`/clock/${token}?date=${activeDate}${scope?.stage_id ? `&stage=${scope.stage_id}` : ""}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   />

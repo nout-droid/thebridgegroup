@@ -174,6 +174,16 @@ export function CommsCard({
         </p>
       </CardHeader>
       <CardContent className="space-y-6">
+        {(intercomAssignments.length > 0 || portofoonAssignments.length > 0) && (
+          <a
+            href={`/projects/${projectId}/production/comms/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Comms & portofoons downloaden (PDF)
+          </a>
+        )}
         <CommsList
           projectId={projectId}
           kind="intercom"
