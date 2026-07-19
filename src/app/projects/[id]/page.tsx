@@ -21,6 +21,11 @@ import { SupplierDocumentReview } from "./supplier-document-review";
 import { SupplierProjectDocumentReview } from "./supplier-project-document-review";
 import { ProjectSubNav } from "./project-sub-nav";
 
+// Het doorlopen van een leveranciers-offerte-PDF matcht elke regel tegen de catalogus
+// (RPC-aanroepen) — bij een offerte met honderden regels kan dat de standaard 10-15s
+// functie-timeout overschrijden, ook al lopen die aanroepen parallel.
+export const maxDuration = 120;
+
 const BUDGET_APPROVAL_LABELS: Record<string, string> = {
   pending: "Nog geen reactie",
   approved: "Goedgekeurd",

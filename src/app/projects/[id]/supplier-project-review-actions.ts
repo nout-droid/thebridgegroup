@@ -62,18 +62,43 @@ export async function parseSupplierProjectDocument(
   const rawLines = await parseQuotePdfFile(file);
   if (!rawLines.length) return { lines: [], categories };
 
-  const lines: ParsedSupplierDocumentLine[] = [];
-  for (const line of rawLines) {
-    const normalized = normalizeAliasText(line.raw_text);
+  // Eén regel per keer opzoeken (alias-lookup + evt. RPC) duurt bij 200+ regels tientallen
+  // seconden serieel en loopt vast op de timeout — daarom aliassen in één query ophalen en
+  // de fuzzy-match RPC voor de rest parallel (met een limiet) i.p.v. na elkaar uitvoeren.
+  const normalizedTexts = [...new Set(rawLines.map((line) => normalizeAliasText(line.raw_text)))];
+  const { data: aliasRows } = normalizedTexts.length
+    ? await supabase
+        .from("article_aliases")
+        .select("raw_text, article_id, catalog_articles(name, category)")
+        .in("raw_text", normalizedTexts)
+        .returns<{
+          raw_text: string;
+          article_id: string;
+          catalog_articles: { name: string; category: string } | null;
+        }[]>()
+    : { data: [] };
 
-    const { data: alias } = await supabase
-      .from("article_aliases")
-      .select("article_id, catalog_articles(name, category)")
-      .eq("raw_text", normalized)
-      .maybeSingle<{
-        article_id: string;
-        catalog_articles: { name: string; category: string } | null;
-      }>();
+  const aliasByText = new Map((aliasRows ?? []).map((row) => [row.raw_text, row]));
+
+  const unmatchedLines = rawLines.filter((line) => !aliasByText.has(normalizeAliasText(line.raw_text)));
+
+  // Eén bulk-RPC i.p.v. één RPC-aanroep per regel — bij 200+ regels is dat het verschil tussen
+  // 200+ losse netwerk-roundtrips en 1.
+  type BulkMatch = { idx: number; article_id: string; name: string; category: string };
+  const bulkResult = unmatchedLines.length
+    ? await supabase.rpc("suggest_catalog_matches_bulk", {
+        p_descriptions: unmatchedLines.map((line) => line.raw_text),
+      })
+    : { data: [] as BulkMatch[] };
+  const bulkMatches = bulkResult.data as BulkMatch[] | null;
+
+  const bestByRawText = new Map(
+    (bulkMatches ?? []).map((row, i) => [unmatchedLines[i].raw_text, row])
+  );
+
+  const lines = rawLines.map((line): ParsedSupplierDocumentLine => {
+    const normalized = normalizeAliasText(line.raw_text);
+    const alias = aliasByText.get(normalized);
 
     let matchedArticleId: string | null = null;
     let matchedLabel: string | null = null;
@@ -84,28 +109,24 @@ export async function parseSupplierProjectDocument(
       matchedLabel = alias.catalog_articles.name;
       catalogLabel = catalogCategoryLabel(alias.catalog_articles.category);
     } else {
-      const { data: suggestions } = await supabase.rpc("suggest_catalog_matches", {
-        p_description: line.raw_text,
-        p_limit: 1,
-      });
-      const best = suggestions?.[0];
+      const best = bestByRawText.get(line.raw_text);
       matchedArticleId = best?.article_id ?? null;
       matchedLabel = best?.name ?? null;
-      catalogLabel = best ? catalogCategoryLabel(best.category) : "";
+      catalogLabel = best?.category ? catalogCategoryLabel(best.category) : "";
     }
 
     const suggestedCategory = catalogLabel
       ? categories.find((c) => c.name.toLowerCase() === catalogLabel.toLowerCase())
       : undefined;
 
-    lines.push({
+    return {
       raw_text: line.raw_text,
       price: line.price,
       matched_article_id: matchedArticleId,
       matched_label: matchedLabel,
       suggested_category_id: suggestedCategory?.id ?? null,
-    });
-  }
+    };
+  });
 
   return { lines, categories };
 }

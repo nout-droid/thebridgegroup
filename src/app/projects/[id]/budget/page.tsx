@@ -22,6 +22,11 @@ import { RequestQuotesCard } from "../request-quotes-card";
 import { ProjectSubNav } from "../project-sub-nav";
 import { computeRentalDays } from "@/lib/rental-days";
 
+// Het parsen van een offerte-PDF matcht elke regel tegen de catalogus (RPC-aanroepen) —
+// bij een offerte met honderden regels kan dat de standaard 10-15s functie-timeout
+// overschrijden, ook al lopen die aanroepen parallel.
+export const maxDuration = 120;
+
 interface Totals {
   cost: number;
   client: number;
