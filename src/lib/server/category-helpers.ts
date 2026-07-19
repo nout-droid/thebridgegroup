@@ -80,13 +80,20 @@ export async function findOrCreateQuote(
 
   if (existing?.id) return existing.id;
 
+  // Eerste (en enige) offerte voor een categorie telt meteen mee in de begroting —
+  // pas bij een tweede, concurrerende offerte is een expliciete keuze nodig.
+  const { count: existingQuoteCount } = await supabase
+    .from("quotes")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", categoryId);
+
   const { data: created } = await supabase
     .from("quotes")
     .insert({
       category_id: categoryId,
       supplier_id: supplierId,
       cost_price: 0,
-      status: "aangevraagd",
+      status: existingQuoteCount ? "aangevraagd" : "gekozen",
       notes,
     })
     .select("id")

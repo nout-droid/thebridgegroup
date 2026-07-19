@@ -74,12 +74,23 @@ export async function deleteCategory(projectId: string, categoryId: string) {
 export async function createQuote(projectId: string, categoryId: string, formData: FormData) {
   const supplierId = String(formData.get("supplier_id") ?? "");
   const costPrice = Number(formData.get("cost_price") ?? 0);
-  const status = String(formData.get("status") ?? "aangevraagd") as QuoteStatus;
+  let status = String(formData.get("status") ?? "aangevraagd") as QuoteStatus;
   const notes = String(formData.get("notes") ?? "").trim();
 
   if (!supplierId) return;
 
   const supabase = await createClient();
+
+  // Eerste (en enige) offerte voor een categorie telt meteen mee in de begroting —
+  // pas bij een tweede, concurrerende offerte is een expliciete keuze nodig.
+  const { count: existingQuoteCount } = await supabase
+    .from("quotes")
+    .select("id", { count: "exact", head: true })
+    .eq("category_id", categoryId);
+  if (!existingQuoteCount) {
+    status = "gekozen";
+  }
+
   const path = await categoryRevalidationPath(supabase, projectId, categoryId);
   await supabase.from("quotes").insert({
     category_id: categoryId,
