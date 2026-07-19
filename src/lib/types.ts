@@ -23,6 +23,8 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   gekozen: "Gekozen",
 };
 
+export type ShowType = "dag" | "nacht" | "beide";
+
 export interface Project {
   id: string;
   user_id: string;
@@ -31,7 +33,11 @@ export interface Project {
   event_date: string | null;
   status: string;
   share_token: string;
-  rental_days: number;
+  build_start_date: string | null;
+  strike_end_date: string | null;
+  show_start_date: string | null;
+  show_end_date: string | null;
+  show_type: ShowType;
   background_image_url: string | null;
   event_code: string;
   client_password_hash: string | null;
@@ -83,6 +89,7 @@ export interface RiderSection {
   title: string;
   content: string;
   editable_by_client: boolean;
+  include_in_callsheet: boolean;
   sort_order: number;
   updated_by: "owner" | "client";
   updated_at: string;
@@ -218,6 +225,38 @@ export interface CrewMember {
   id_number: string;
   accredited: boolean;
   access_dates: string[];
+  sort_order: number;
+  created_at: string;
+  crew_position_id: string | null;
+  artist_rider_id: string | null;
+  needs_catering: boolean;
+  needs_hotel: boolean;
+  badge_token: string;
+  needs_flight: boolean;
+  passport_number: string;
+  flight_departure_airport: string;
+  flight_destination: string;
+  flight_departure_at: string | null;
+  flight_return_at: string | null;
+  flight_booking_number: string;
+  flight_ticket_number: string;
+  supplier?: Supplier;
+}
+
+export type CrewProvidedBy = "wij" | "klant" | "leverancier";
+
+export interface CrewPosition {
+  id: string;
+  project_id: string;
+  work_date: string;
+  role: string;
+  quantity: number;
+  provided_by: CrewProvidedBy;
+  supplier_id: string | null;
+  needs_accreditation: boolean;
+  needs_catering: boolean;
+  needs_hotel: boolean;
+  notes: string;
   sort_order: number;
   created_at: string;
   supplier?: Supplier;

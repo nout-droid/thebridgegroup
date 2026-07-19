@@ -16,6 +16,9 @@ export async function addCrewMember(projectId: string, formData: FormData) {
   const accessLevel = String(formData.get("access_level") ?? "").trim();
   const idNumber = String(formData.get("id_number") ?? "").trim();
   const accredited = formData.get("accredited") === "on";
+  const needsCatering = formData.get("needs_catering") === "on";
+  const needsHotel = formData.get("needs_hotel") === "on";
+  const needsFlight = formData.get("needs_flight") === "on";
   const accessDates = formData.getAll("access_dates").map(String);
 
   const supabase = await createClient();
@@ -32,6 +35,9 @@ export async function addCrewMember(projectId: string, formData: FormData) {
     access_level: accessLevel,
     id_number: idNumber,
     accredited,
+    needs_catering: needsCatering,
+    needs_hotel: needsHotel,
+    needs_flight: needsFlight,
     access_dates: accessDates,
     sort_order: count ?? 0,
   });
@@ -48,6 +54,9 @@ export async function updateCrewMember(projectId: string, memberId: string, form
   const accessLevel = String(formData.get("access_level") ?? "").trim();
   const idNumber = String(formData.get("id_number") ?? "").trim();
   const accredited = formData.get("accredited") === "on";
+  const needsCatering = formData.get("needs_catering") === "on";
+  const needsHotel = formData.get("needs_hotel") === "on";
+  const needsFlight = formData.get("needs_flight") === "on";
   const accessDates = formData.getAll("access_dates").map(String);
 
   const supabase = await createClient();
@@ -60,6 +69,9 @@ export async function updateCrewMember(projectId: string, memberId: string, form
       access_level: accessLevel,
       id_number: idNumber,
       accredited,
+      needs_catering: needsCatering,
+      needs_hotel: needsHotel,
+      needs_flight: needsFlight,
       access_dates: accessDates,
     })
     .eq("id", memberId);

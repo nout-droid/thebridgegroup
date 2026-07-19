@@ -2,12 +2,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import type { ArtistRider, CrewMember } from "@/lib/types";
+import type { CrewMember, CrewPosition, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { ArtistCard } from "../artist-card";
+import { CrewPlanningCard } from "../crew-planning-card";
 
-export default async function ProductionArtistsPage({
+export default async function ProductionPlanningPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -17,30 +17,37 @@ export default async function ProductionArtistsPage({
 
   const project = await getProjectOrNotFound(supabase, id);
 
-  const { data: artists } = await supabase
-    .from("artist_riders")
+  const { data: positions } = await supabase
+    .from("crew_positions")
     .select("*")
     .eq("project_id", id)
     .order("sort_order", { ascending: true })
-    .returns<ArtistRider[]>();
+    .returns<CrewPosition[]>();
 
-  const { data: artistCrewMembers } = await supabase
+  const { data: suppliers } = await supabase
+    .from("suppliers")
+    .select("*")
+    .order("name", { ascending: true })
+    .returns<Supplier[]>();
+
+  const { data: linkedMembers } = await supabase
     .from("crew_members")
     .select("*")
     .eq("project_id", id)
-    .not("artist_rider_id", "is", null)
+    .not("crew_position_id", "is", null)
     .returns<CrewMember[]>();
 
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="production" />
-      <ProductionSubNav projectId={project.id} active="artiesten" />
+      <ProductionSubNav projectId={project.id} active="planning" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <ArtistCard
+        <CrewPlanningCard
           projectId={project.id}
-          artists={artists ?? []}
-          crewMembers={artistCrewMembers ?? []}
+          positions={positions ?? []}
+          suppliers={suppliers ?? []}
+          linkedMembers={linkedMembers ?? []}
         />
       </main>
       <Footer />

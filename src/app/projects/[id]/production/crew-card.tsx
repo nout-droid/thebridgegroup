@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import type { CrewMember, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { AccessDatesInput } from "@/components/access-dates-input";
@@ -19,7 +20,19 @@ export function CrewCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Crew & Accreditatie</CardTitle>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-base">Crew & Accreditatie</CardTitle>
+          {members.length > 0 && (
+            <a
+              href={`/projects/${projectId}/production/crew/badges`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary underline"
+            >
+              Alle badges downloaden
+            </a>
+          )}
+        </div>
         <p className="text-sm text-muted-foreground">
           Wie is er, van welke leverancier, en is de accreditatie geregeld.
         </p>
@@ -32,7 +45,15 @@ export function CrewCard({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-6"
           >
             <div className="space-y-1">
-              <Label htmlFor={`name-${member.id}`} className="text-xs">Naam</Label>
+              <div className="flex items-center gap-1.5">
+                <Label htmlFor={`name-${member.id}`} className="text-xs">Naam</Label>
+                {member.crew_position_id && (
+                  <Badge variant="secondary" className="text-[10px]">Positie: {member.role || "—"}</Badge>
+                )}
+                {member.artist_rider_id && (
+                  <Badge variant="secondary" className="text-[10px]">Uit artiestenrider</Badge>
+                )}
+              </div>
               <Input
                 id={`name-${member.id}`}
                 name="name"
@@ -76,7 +97,7 @@ export function CrewCard({
                 className="h-8 text-xs"
               />
             </div>
-            <div className="flex items-end justify-between gap-2">
+            <div className="flex flex-wrap items-end gap-3 sm:col-span-2">
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <input
                   type="checkbox"
@@ -85,6 +106,33 @@ export function CrewCard({
                   className="h-4 w-4"
                 />
                 Geaccrediteerd
+              </label>
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="needs_catering"
+                  defaultChecked={member.needs_catering}
+                  className="h-4 w-4"
+                />
+                Catering nodig
+              </label>
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="needs_hotel"
+                  defaultChecked={member.needs_hotel}
+                  className="h-4 w-4"
+                />
+                Hotel nodig
+              </label>
+              <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="needs_flight"
+                  defaultChecked={member.needs_flight}
+                  className="h-4 w-4"
+                />
+                Vliegticket nodig
               </label>
             </div>
             <div className="space-y-1 sm:col-span-6">
@@ -104,6 +152,14 @@ export function CrewCard({
               >
                 Verwijderen
               </Button>
+              <a
+                href={`/projects/${projectId}/production/crew/${member.id}/badge`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs font-medium text-primary underline"
+              >
+                Badge
+              </a>
             </div>
           </form>
         ))}
@@ -132,10 +188,22 @@ export function CrewCard({
             <Label htmlFor="new-idnum" className="text-xs">ID-nummer</Label>
             <Input id="new-idnum" name="id_number" className="h-8 text-xs" />
           </div>
-          <div className="flex items-end justify-between gap-2">
+          <div className="flex flex-wrap items-end gap-3 sm:col-span-2">
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="accredited" className="h-4 w-4" />
               Geaccrediteerd
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input type="checkbox" name="needs_catering" className="h-4 w-4" />
+              Catering nodig
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input type="checkbox" name="needs_hotel" className="h-4 w-4" />
+              Hotel nodig
+            </label>
+            <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <input type="checkbox" name="needs_flight" className="h-4 w-4" />
+              Vliegticket nodig
             </label>
           </div>
           <div className="space-y-1 sm:col-span-6">

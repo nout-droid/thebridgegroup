@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { computeClientPrice, type ActivityLogEntry, type Category, type Quote, type Stage } from "@/lib/types";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
+import { computeRentalDays } from "@/lib/rental-days";
 import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
 import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
@@ -209,16 +210,73 @@ export default async function ProjectPage({
                 <Label htmlFor="status">Status</Label>
                 <Input id="status" name="status" defaultValue={project.status} />
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="rental_days">Aantal huurdagen</Label>
-                <Input
-                  id="rental_days"
-                  name="rental_days"
-                  type="number"
-                  min={1}
-                  defaultValue={project.rental_days}
-                />
+
+              <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
+                <p className="text-sm font-medium">Op-/afbouwperiode</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="build_start_date">Bouw start</Label>
+                    <Input
+                      id="build_start_date"
+                      name="build_start_date"
+                      type="date"
+                      defaultValue={project.build_start_date ?? ""}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="strike_end_date">Afbouw eind</Label>
+                    <Input
+                      id="strike_end_date"
+                      name="strike_end_date"
+                      type="date"
+                      defaultValue={project.strike_end_date ?? ""}
+                    />
+                  </div>
+                </div>
               </div>
+
+              <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
+                <p className="text-sm font-medium">Showperiode</p>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="show_start_date">Show start</Label>
+                    <Input
+                      id="show_start_date"
+                      name="show_start_date"
+                      type="date"
+                      defaultValue={project.show_start_date ?? ""}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="show_end_date">Show eind</Label>
+                    <Input
+                      id="show_end_date"
+                      name="show_end_date"
+                      type="date"
+                      defaultValue={project.show_end_date ?? ""}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="show_type">Type</Label>
+                    <select
+                      id="show_type"
+                      name="show_type"
+                      defaultValue={project.show_type}
+                      className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                    >
+                      <option value="dag">Dag</option>
+                      <option value="nacht">Nacht</option>
+                      <option value="beide">Beide</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <p className="text-sm text-muted-foreground sm:col-span-4">
+                Totaal aantal huurdagen voor prijsberekening:{" "}
+                <span className="font-medium text-foreground">{computeRentalDays(project)}</span>
+              </p>
+
               <Button type="submit" size="sm" className="sm:col-span-4 sm:w-fit">
                 Opslaan
               </Button>

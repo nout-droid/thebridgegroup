@@ -13,6 +13,7 @@ import {
 import { catalogCategoryLabel } from "@/lib/types";
 import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
 import { getTeamOwnerId } from "@/lib/server/team";
+import { computeRentalDays } from "@/lib/rental-days";
 
 export async function createCategory(
   projectId: string,
@@ -113,7 +114,14 @@ export async function updateProjectDetails(projectId: string, formData: FormData
   const clientName = String(formData.get("client_name") ?? "").trim();
   const eventDate = String(formData.get("event_date") ?? "");
   const status = String(formData.get("status") ?? "concept");
-  const rentalDays = Math.max(1, Number(formData.get("rental_days") ?? 4));
+  const buildStartDate = String(formData.get("build_start_date") ?? "") || null;
+  const strikeEndDate = String(formData.get("strike_end_date") ?? "") || null;
+  const showStartDate = String(formData.get("show_start_date") ?? "") || null;
+  const showEndDate = String(formData.get("show_end_date") ?? "") || null;
+  const showTypeRaw = String(formData.get("show_type") ?? "dag");
+  const showType = (["dag", "nacht", "beide"] as const).includes(showTypeRaw as "dag" | "nacht" | "beide")
+    ? showTypeRaw
+    : "dag";
 
   if (!name) return;
 
@@ -125,7 +133,11 @@ export async function updateProjectDetails(projectId: string, formData: FormData
       client_name: clientName,
       event_date: eventDate || null,
       status,
-      rental_days: rentalDays,
+      build_start_date: buildStartDate,
+      strike_end_date: strikeEndDate,
+      show_start_date: showStartDate,
+      show_end_date: showEndDate,
+      show_type: showType,
     })
     .eq("id", projectId);
 
@@ -327,12 +339,12 @@ export async function pushMaterialListGroupToQuote(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("rental_days")
+    .select("build_start_date, strike_end_date")
     .eq("id", projectId)
     .single();
 
   const { data: multiplier } = await supabase.rpc("rental_multiplier", {
-    p_days: project?.rental_days ?? 4,
+    p_days: computeRentalDays(project ?? { build_start_date: null, strike_end_date: null }),
   });
   const mult = multiplier ?? 1;
 

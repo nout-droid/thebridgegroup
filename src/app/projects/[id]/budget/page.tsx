@@ -11,6 +11,7 @@ import { AddCategoryForm } from "../add-category-form";
 import { MaterialList } from "../material-list";
 import { QuotePdfImport } from "../quote-pdf-import";
 import { ProjectSubNav } from "../project-sub-nav";
+import { computeRentalDays } from "@/lib/rental-days";
 
 export default async function ProjectBudgetPage({
   params,
@@ -63,7 +64,7 @@ export default async function ProjectBudgetPage({
     .returns<MaterialListItem[]>();
 
   const { data: rentalMultiplier } = await supabase.rpc("rental_multiplier", {
-    p_days: project.rental_days,
+    p_days: computeRentalDays(project),
   });
 
   return (
@@ -71,6 +72,20 @@ export default async function ProjectBudgetPage({
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="budget" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
+        <div>
+          <h2 className="text-lg font-semibold">Fase 1 — Materiaallijst &amp; begroting</h2>
+          <p className="text-sm text-muted-foreground">
+            Materiaallijst uploaden en matchen met de catalogus, resulterend in een
+            kosteninschatting per categorie.
+          </p>
+        </div>
+
+        <MaterialList
+          projectId={project.id}
+          items={materialListItems ?? []}
+          rentalMultiplier={rentalMultiplier ?? 1}
+        />
+
         <div className="space-y-4">
           {projectWideCategories.map((category) => (
             <CategoryCard
@@ -95,11 +110,12 @@ export default async function ProjectBudgetPage({
           </CardContent>
         </Card>
 
-        <MaterialList
-          projectId={project.id}
-          items={materialListItems ?? []}
-          rentalMultiplier={rentalMultiplier ?? 1}
-        />
+        <div className="border-t pt-6">
+          <h2 className="text-lg font-semibold">Fase 2 — Offertes</h2>
+          <p className="text-sm text-muted-foreground">
+            Offertes van leveranciers uitvragen en bevestigen, op basis van de begroting hierboven.
+          </p>
+        </div>
 
         <QuotePdfImport projectId={project.id} stageId={null} suppliers={suppliers ?? []} />
       </main>

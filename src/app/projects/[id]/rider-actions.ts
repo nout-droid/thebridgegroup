@@ -7,6 +7,7 @@ import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
 export async function addRiderSection(projectId: string, formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const editableByClient = formData.get("editable_by_client") === "on";
+  const includeInCallsheet = formData.get("include_in_callsheet") === "on";
   if (!title) return;
 
   const supabase = await createClient();
@@ -22,6 +23,7 @@ export async function addRiderSection(projectId: string, formData: FormData) {
     rider_id: riderId,
     title,
     editable_by_client: editableByClient,
+    include_in_callsheet: includeInCallsheet,
     sort_order: count ?? 0,
   });
 
@@ -32,12 +34,19 @@ export async function updateRiderSection(projectId: string, sectionId: string, f
   const title = String(formData.get("title") ?? "").trim();
   const content = String(formData.get("content") ?? "");
   const editableByClient = formData.get("editable_by_client") === "on";
+  const includeInCallsheet = formData.get("include_in_callsheet") === "on";
   if (!title) return;
 
   const supabase = await createClient();
   await supabase
     .from("rider_sections")
-    .update({ title, content, editable_by_client: editableByClient, updated_by: "owner" })
+    .update({
+      title,
+      content,
+      editable_by_client: editableByClient,
+      include_in_callsheet: includeInCallsheet,
+      updated_by: "owner",
+    })
     .eq("id", sectionId);
 
   revalidatePath(`/projects/${projectId}/rider`);

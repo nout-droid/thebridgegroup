@@ -2725,3 +2725,70 @@ create policy "owner full access on project_documents" on public.project_documen
   ) with check (
     exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
+
+-- ========== CREW PLANNING ==========
+create table if not exists public.crew_positions (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  work_date date not null,
+  role text not null default '',
+  quantity int not null default 1,
+  provided_by text not null default 'wij' check (provided_by in ('wij', 'klant', 'leverancier')),
+  supplier_id uuid references public.suppliers(id) on delete set null,
+  needs_accreditation boolean not null default false,
+  needs_catering boolean not null default false,
+  needs_hotel boolean not null default false,
+  notes text not null default '',
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists crew_positions_project_id_idx on public.crew_positions(project_id);
+
+alter table public.crew_positions enable row level security;
+
+drop policy if exists "owner full access on crew_positions" on public.crew_positions;
+create policy "owner full access on crew_positions" on public.crew_positions
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+alter table public.crew_members add column if not exists crew_position_id uuid references public.crew_positions(id) on delete set null;
+alter table public.crew_members add column if not exists artist_rider_id uuid references public.artist_riders(id) on delete set null;
+alter table public.crew_members add column if not exists needs_catering boolean not null default false;
+alter table public.crew_members add column if not exists needs_hotel boolean not null default false;
+
+create index if not exists crew_members_crew_position_id_idx on public.crew_members(crew_position_id);
+create index if not exists crew_members_artist_rider_id_idx on public.crew_members(artist_rider_id);
+
+-- ========== CALLSHEET-EXPORT ==========
+alter table public.rider_sections add column if not exists include_in_callsheet boolean not null default false;
+
+-- ========== ACCREDITATIEBADGES ==========
+alter table public.crew_members add column if not exists badge_token uuid not null default gen_random_uuid() unique;
+
+-- ========== VLIEGTICKETS ==========
+alter table public.crew_members add column if not exists needs_flight boolean not null default false;
+alter table public.crew_members add column if not exists passport_number text not null default '';
+alter table public.crew_members add column if not exists flight_departure_airport text not null default '';
+alter table public.crew_members add column if not exists flight_destination text not null default '';
+alter table public.crew_members add column if not exists flight_departure_at timestamptz;
+alter table public.crew_members add column if not exists flight_return_at timestamptz;
+alter table public.crew_members add column if not exists flight_booking_number text not null default '';
+alter table public.crew_members add column if not exists flight_ticket_number text not null default '';
+
+-- ========== PROJECTPERIODE ==========
+alter table public.projects add column if not exists build_start_date date;
+alter table public.projects add column if not exists strike_end_date date;
+alter table public.projects add column if not exists show_start_date date;
+alter table public.projects add column if not exists show_end_date date;
+alter table public.projects add column if not exists show_type text not null default 'dag' check (show_type in ('dag', 'nacht', 'beide'));
+
+update public.projects
+set build_start_date = coalesce(build_start_date, event_date),
+    strike_end_date = coalesce(strike_end_date, event_date + (greatest(rental_days, 1) - 1))
+where build_start_date is null;
+
+alter table public.projects drop column if exists rental_days;

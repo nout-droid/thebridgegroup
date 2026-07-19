@@ -2,7 +2,9 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const TABS = [
+  { key: "planning", label: "Planning" },
   { key: "crew", label: "Crew & Accreditatie" },
+  { key: "hotel", label: "Hotel & Vluchten" },
   { key: "materieel", label: "Materieel" },
   { key: "comms", label: "Comms & Portofoons" },
   { key: "power", label: "Stroom" },

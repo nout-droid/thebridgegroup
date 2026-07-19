@@ -29,14 +29,24 @@ export function RiderCard({
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">Rider</CardTitle>
           {riderId && (
-            <a
-              href={`/projects/${projectId}/rider/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary underline"
-            >
-              Rider downloaden
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href={`/projects/${projectId}/rider/pdf`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary underline"
+              >
+                Rider downloaden
+              </a>
+              <a
+                href={`/projects/${projectId}/rider/callsheet`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary underline"
+              >
+                Callsheet downloaden
+              </a>
+            </div>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
@@ -60,6 +70,7 @@ export function RiderCard({
                 />
                 <div className="flex items-center gap-2">
                   {section.editable_by_client && <Badge variant="secondary">Klant vult in</Badge>}
+                  {section.include_in_callsheet && <Badge variant="secondary">Op callsheet</Badge>}
                   <div className="flex gap-1">
                     <Button
                       type="submit"
@@ -96,15 +107,26 @@ export function RiderCard({
               </div>
               <Textarea name="content" defaultValue={section.content} rows={3} />
               <div className="flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    name="editable_by_client"
-                    defaultChecked={section.editable_by_client}
-                    className="h-4 w-4"
-                  />
-                  Klant mag dit invullen
-                </label>
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      name="editable_by_client"
+                      defaultChecked={section.editable_by_client}
+                      className="h-4 w-4"
+                    />
+                    Klant mag dit invullen
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      name="include_in_callsheet"
+                      defaultChecked={section.include_in_callsheet}
+                      className="h-4 w-4"
+                    />
+                    Op callsheet
+                  </label>
+                </div>
                 <div className="flex gap-2">
                   <Button type="submit" size="sm">
                     Opslaan
@@ -160,10 +182,16 @@ export function RiderCard({
             <Label htmlFor="title">Nieuw onderdeel</Label>
             <Input id="title" name="title" placeholder="bv. Catering" required className="max-w-xs" />
           </div>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input type="checkbox" name="editable_by_client" className="h-4 w-4" />
-            Klant mag dit invullen
-          </label>
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input type="checkbox" name="editable_by_client" className="h-4 w-4" />
+              Klant mag dit invullen
+            </label>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input type="checkbox" name="include_in_callsheet" className="h-4 w-4" />
+              Op callsheet
+            </label>
+          </div>
           <Button type="submit" size="sm">
             Onderdeel toevoegen
           </Button>
