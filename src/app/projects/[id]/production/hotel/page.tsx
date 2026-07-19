@@ -43,6 +43,7 @@ export default async function ProductionHotelPage({
           projectId={project.id}
           hotelMembers={hotelMembers ?? []}
           flightMembers={flightMembers ?? []}
+          suppliersManageTravel={project.suppliers_manage_travel}
         />
       </main>
       <Footer />

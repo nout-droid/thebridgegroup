@@ -1,7 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { findOrCreateCategory } from "@/lib/server/category-helpers";
+
+export async function goToFlightBudgetCategory(projectId: string) {
+  const supabase = await createClient();
+  await findOrCreateCategory(supabase, projectId, null, "Vluchten");
+  redirect(`/projects/${projectId}/budget`);
+}
 
 export async function updateCrewFlightDetails(
   projectId: string,

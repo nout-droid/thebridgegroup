@@ -21,6 +21,8 @@ import { SupplierEquipmentSection } from "./equipment-section";
 import { SupplierCommsSection } from "./comms-section";
 import { SupplierCateringSection } from "./catering-section";
 import { SupplierPowerSection } from "./power-section";
+import { SupplierHotelSection } from "./hotel-section";
+import { SupplierFlightSection } from "./flight-section";
 
 export default async function SupplierRequestsPage({
   params,
@@ -189,6 +191,20 @@ export default async function SupplierRequestsPage({
                   projectId={selectedProject.id}
                   orders={catering}
                 />
+                {selectedProject.suppliers_manage_travel && (
+                  <>
+                    <SupplierHotelSection
+                      supplierId={supplierId}
+                      projectId={selectedProject.id}
+                      members={crewMembers}
+                    />
+                    <SupplierFlightSection
+                      supplierId={supplierId}
+                      projectId={selectedProject.id}
+                      members={crewMembers}
+                    />
+                  </>
+                )}
               </div>
             )}
           </>

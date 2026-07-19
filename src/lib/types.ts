@@ -38,6 +38,7 @@ export interface Project {
   show_start_date: string | null;
   show_end_date: string | null;
   show_type: ShowType;
+  suppliers_manage_travel: boolean;
   background_image_url: string | null;
   event_code: string;
   client_password_hash: string | null;

@@ -119,6 +119,86 @@ export async function deleteSupplierCrewMember(supplierId: string, projectId: st
   revalidate(supplierId, projectId, "");
 }
 
+async function projectAllowsSupplierTravel(admin: ReturnType<typeof createAdminClient>, projectId: string) {
+  const { data } = await admin
+    .from("projects")
+    .select("suppliers_manage_travel")
+    .eq("id", projectId)
+    .maybeSingle();
+  return Boolean(data?.suppliers_manage_travel);
+}
+
+export async function updateSupplierCrewHotelDetails(
+  supplierId: string,
+  projectId: string,
+  memberId: string,
+  formData: FormData
+) {
+  if (!(await isAuthorizedSupplier(supplierId))) return;
+
+  const admin = createAdminClient();
+  if (!(await projectAllowsSupplierTravel(admin, projectId))) return;
+  if (!(await ownsRow(admin, "crew_members", memberId, supplierId))) return;
+
+  const accessDates = formData.getAll("access_dates").map(String);
+
+  await admin.from("crew_members").update({ access_dates: accessDates }).eq("id", memberId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "crew",
+    description: "Hoteldata bijgewerkt",
+  });
+
+  revalidate(supplierId, projectId, "hotel");
+}
+
+export async function updateSupplierCrewFlightDetails(
+  supplierId: string,
+  projectId: string,
+  memberId: string,
+  formData: FormData
+) {
+  if (!(await isAuthorizedSupplier(supplierId))) return;
+
+  const admin = createAdminClient();
+  if (!(await projectAllowsSupplierTravel(admin, projectId))) return;
+  if (!(await ownsRow(admin, "crew_members", memberId, supplierId))) return;
+
+  const passportNumber = String(formData.get("passport_number") ?? "").trim();
+  const departureAirport = String(formData.get("flight_departure_airport") ?? "").trim();
+  const destination = String(formData.get("flight_destination") ?? "").trim();
+  const departureAt = String(formData.get("flight_departure_at") ?? "") || null;
+  const returnAt = String(formData.get("flight_return_at") ?? "") || null;
+  const bookingNumber = String(formData.get("flight_booking_number") ?? "").trim();
+  const ticketNumber = String(formData.get("flight_ticket_number") ?? "").trim();
+
+  await admin
+    .from("crew_members")
+    .update({
+      passport_number: passportNumber,
+      flight_departure_airport: departureAirport,
+      flight_destination: destination,
+      flight_departure_at: departureAt,
+      flight_return_at: returnAt,
+      flight_booking_number: bookingNumber,
+      flight_ticket_number: ticketNumber,
+    })
+    .eq("id", memberId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "crew",
+    description: "Vluchtgegevens bijgewerkt",
+  });
+
+  revalidate(supplierId, projectId, "hotel");
+}
+
 // ========== Materieel (equipment_reservations) ==========
 
 export async function addSupplierEquipment(supplierId: string, projectId: string, formData: FormData) {

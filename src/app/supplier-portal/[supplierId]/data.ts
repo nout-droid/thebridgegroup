@@ -4,10 +4,13 @@ export interface SupplierProject {
   id: string;
   name: string;
   event_date: string | null;
+  suppliers_manage_travel: boolean;
 }
 
 interface QuoteProjectRow {
-  category: { project: { id: string; name: string; event_date: string | null } | null } | null;
+  category: {
+    project: { id: string; name: string; event_date: string | null; suppliers_manage_travel: boolean } | null;
+  } | null;
 }
 
 // Een leverancier "werkt aan" een project zodra er minstens één offerte voor 'm klaarstaat —
@@ -16,7 +19,7 @@ export async function getSupplierProjects(supplierId: string): Promise<SupplierP
   const admin = createAdminClient();
   const { data } = await admin
     .from("quotes")
-    .select("category:categories(project:projects(id, name, event_date))")
+    .select("category:categories(project:projects(id, name, event_date, suppliers_manage_travel))")
     .eq("supplier_id", supplierId)
     .returns<QuoteProjectRow[]>();
 

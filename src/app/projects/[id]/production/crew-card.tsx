@@ -44,9 +44,8 @@ export function CrewCard({
             action={updateCrewMember.bind(null, projectId, member.id)}
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-6"
           >
-            <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <Label htmlFor={`name-${member.id}`} className="text-xs">Naam</Label>
+            {(member.crew_position_id || member.artist_rider_id) && (
+              <div className="flex flex-wrap items-center gap-1.5 sm:col-span-6">
                 {member.crew_position_id && (
                   <Badge variant="secondary" className="text-[10px]">Positie: {member.role || "—"}</Badge>
                 )}
@@ -54,6 +53,9 @@ export function CrewCard({
                   <Badge variant="secondary" className="text-[10px]">Uit artiestenrider</Badge>
                 )}
               </div>
+            )}
+            <div className="space-y-1">
+              <Label htmlFor={`name-${member.id}`} className="text-xs">Naam</Label>
               <Input
                 id={`name-${member.id}`}
                 name="name"

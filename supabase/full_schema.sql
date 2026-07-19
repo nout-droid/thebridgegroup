@@ -2792,3 +2792,6 @@ set build_start_date = coalesce(build_start_date, event_date),
 where build_start_date is null;
 
 alter table public.projects drop column if exists rental_days;
+
+-- ========== LEVERANCIERS BEHEREN HOTEL/VLUCHTEN ==========
+alter table public.projects add column if not exists suppliers_manage_travel boolean not null default false;

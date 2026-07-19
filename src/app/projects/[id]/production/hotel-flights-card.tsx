@@ -3,8 +3,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { CrewMember } from "@/lib/types";
-import { goToHotelBudgetCategory } from "./hotel-actions";
-import { updateCrewFlightDetails } from "./flight-actions";
+import { goToHotelBudgetCategory, setSuppliersManageTravel } from "./hotel-actions";
+import { goToFlightBudgetCategory, updateCrewFlightDetails } from "./flight-actions";
+
+function SupplierAccessToggle({
+  projectId,
+  enabled,
+}: {
+  projectId: string;
+  enabled: boolean;
+}) {
+  return (
+    <Card>
+      <CardContent className="pt-6">
+        <form action={setSuppliersManageTravel.bind(null, projectId)} className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="suppliers_manage_travel" defaultChecked={enabled} className="h-4 w-4" />
+            Leveranciers mogen de hotel- en vluchtgegevens van hun eigen crew zelf invullen
+          </label>
+          <Button type="submit" size="sm" variant="secondary">
+            Opslaan
+          </Button>
+        </form>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Staat dit aan, dan zien leveranciers een Hotel- en Vluchten-sectie bij hun aanvragen,
+          beperkt tot hun eigen crewleden.
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
 
 function toDatetimeLocal(value: string | null): string {
   if (!value) return "";
@@ -119,6 +147,11 @@ function FlightsSection({ projectId, members }: { projectId: string; members: Cr
             </form>
           ))
         )}
+        <form action={goToFlightBudgetCategory.bind(null, projectId)}>
+          <Button type="submit" size="sm" variant="secondary">
+            Vluchtkosten invoeren
+          </Button>
+        </form>
       </CardContent>
     </Card>
   );
@@ -190,13 +223,16 @@ export function HotelFlightsCard({
   projectId,
   hotelMembers,
   flightMembers,
+  suppliersManageTravel,
 }: {
   projectId: string;
   hotelMembers: CrewMember[];
   flightMembers: CrewMember[];
+  suppliersManageTravel: boolean;
 }) {
   return (
     <div className="space-y-6">
+      <SupplierAccessToggle projectId={projectId} enabled={suppliersManageTravel} />
       <HotelSection projectId={projectId} members={hotelMembers} />
       <FlightsSection projectId={projectId} members={flightMembers} />
     </div>
