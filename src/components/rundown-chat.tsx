@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -33,8 +34,13 @@ export function RundownChat({
   const [messageText, setMessageText] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mounted, setMounted] = useState(false);
   const lastSeenIdRef = useRef<string | null>(null);
   const initializedRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     try {
@@ -96,17 +102,19 @@ export function RundownChat({
 
   const orderedMessages = [...messages].reverse();
 
+  const alertBanner = audioAlert && unreadCount > 0 && (
+    <button
+      type="button"
+      onClick={markAllSeen}
+      className="fixed inset-x-0 top-0 z-50 flex animate-pulse items-center justify-center gap-2 bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
+    >
+      Nieuw bericht in de chat — tik om te bekijken
+    </button>
+  );
+
   return (
     <div className="space-y-2">
-      {audioAlert && unreadCount > 0 && (
-        <button
-          type="button"
-          onClick={markAllSeen}
-          className="fixed inset-x-0 top-0 z-50 flex animate-pulse items-center justify-center gap-2 bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
-        >
-          Nieuw bericht in de chat — tik om te bekijken
-        </button>
-      )}
+      {mounted && alertBanner && createPortal(alertBanner, document.body)}
       <Card className={dark ? "border-white/10 bg-white/5 text-white" : undefined}>
         <CardHeader>
           <div className="flex items-center gap-2">

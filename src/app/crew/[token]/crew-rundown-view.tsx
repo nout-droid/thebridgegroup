@@ -34,6 +34,8 @@ type FontScaleKey = keyof typeof FONT_SCALES;
 const VISIBLE_DIVISIONS_KEY = "crew-rundown-visible-divisions";
 const FONT_SCALE_KEY = "crew-rundown-font-scale";
 
+const OUTLINE_DARK = "border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white";
+
 function scopeKey(stageId: string | null) {
   return stageId ?? "project";
 }
@@ -172,7 +174,7 @@ export function CrewRundownView({
   const visibleNotes = data.notes.filter((n) => visibleDivisions.includes(n.division));
 
   return (
-    <div className="min-h-screen bg-muted/30" style={{ zoom: FONT_SCALES[fontScale] }}>
+    <div className="min-h-screen bg-black text-white" style={{ zoom: FONT_SCALES[fontScale] }}>
       <header className="flex items-center gap-2 bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-primary">
         <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
         {data.project.name} &mdash; Crew live
@@ -185,6 +187,7 @@ export function CrewRundownView({
               key={scopeKey(s.stage_id)}
               size="sm"
               variant={selectedScope === scopeKey(s.stage_id) ? "default" : "outline"}
+              className={selectedScope === scopeKey(s.stage_id) ? "" : OUTLINE_DARK}
               onClick={() => setSelectedScope(scopeKey(s.stage_id))}
             >
               {s.stage_name ?? "Projectbreed"}
@@ -199,7 +202,7 @@ export function CrewRundownView({
                 key={d}
                 size="sm"
                 variant={activeDate === d ? "default" : "outline"}
-                className="h-7 text-xs capitalize"
+                className={cn("h-7 text-xs capitalize", activeDate === d ? "" : OUTLINE_DARK)}
                 onClick={() => setSelectedDate(d)}
               >
                 {new Date(`${d}T00:00:00`).toLocaleDateString("nl-NL", {
@@ -212,13 +215,13 @@ export function CrewRundownView({
           </div>
         )}
 
-        <Card>
+        <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
-            <CardTitle className="text-base">Weergave-voorkeuren</CardTitle>
+            <CardTitle className="text-base text-white">Weergave-voorkeuren</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs">Zichtbare devisies</Label>
+              <Label className="text-xs text-white/70">Zichtbare devisies</Label>
               <div className="flex flex-wrap gap-1.5">
                 {DIVISIONS.map((d) => (
                   <Button
@@ -226,7 +229,7 @@ export function CrewRundownView({
                     type="button"
                     size="sm"
                     variant={visibleDivisions.includes(d) ? "default" : "outline"}
-                    className="h-7 text-xs"
+                    className={cn("h-7 text-xs", visibleDivisions.includes(d) ? "" : OUTLINE_DARK)}
                     onClick={() => toggleDivision(d)}
                   >
                     {d}
@@ -235,7 +238,7 @@ export function CrewRundownView({
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Lettergrootte</Label>
+              <Label className="text-xs text-white/70">Lettergrootte</Label>
               <div className="flex gap-1.5">
                 {(Object.keys(FONT_SCALES) as FontScaleKey[]).map((key) => (
                   <Button
@@ -243,7 +246,7 @@ export function CrewRundownView({
                     type="button"
                     size="sm"
                     variant={fontScale === key ? "default" : "outline"}
-                    className="h-7 text-xs capitalize"
+                    className={cn("h-7 text-xs capitalize", fontScale === key ? "" : OUTLINE_DARK)}
                     onClick={() => changeFontScale(key)}
                   >
                     {key}
@@ -254,14 +257,15 @@ export function CrewRundownView({
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle className="text-base">Show rundown</CardTitle>
+              <CardTitle className="text-base text-white">Show rundown</CardTitle>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
                   variant="outline"
+                  className={OUTLINE_DARK}
                   nativeButton={false}
                   render={
                     <a
@@ -280,7 +284,7 @@ export function CrewRundownView({
                   </span>
                 )}
                 {totalOvertimeSeconds > 0 && (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-2.5 py-1 text-xs font-semibold text-orange-800">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-2.5 py-1 text-xs font-semibold text-orange-300">
                     Totaal opgelopen: +{formatDuration(totalOvertimeSeconds)}
                   </span>
                 )}
@@ -289,7 +293,7 @@ export function CrewRundownView({
           </CardHeader>
           <CardContent className="space-y-2">
             {!rows.length && (
-              <p className="text-sm text-muted-foreground">Nog geen cues voor deze rundown.</p>
+              <p className="text-sm text-white/60">Nog geen cues voor deze rundown.</p>
             )}
             {rows.map(({ item, start, end }) => {
               const isCurrent = item.id === rundown?.current_item_id;
@@ -300,23 +304,23 @@ export function CrewRundownView({
                 <div
                   key={item.id}
                   className={cn(
-                    "rounded-md border p-3 text-sm",
-                    isCurrent && "ring-2 ring-primary bg-primary/5"
+                    "rounded-md border border-white/10 bg-white/5 p-3 text-sm",
+                    isCurrent && "ring-2 ring-primary bg-primary/10"
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-medium">
-                      {item.cue_number && <span className="text-muted-foreground">#{item.cue_number} — </span>}
+                      {item.cue_number && <span className="text-white/60">#{item.cue_number} — </span>}
                       {item.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-white/60">
                       {start} &ndash; {end}
                     </p>
                   </div>
                   {visibleInstructions.length > 0 && (
                     <ul className="mt-1 space-y-0.5">
                       {visibleInstructions.map((instr) => (
-                        <li key={instr.id} className="text-xs text-muted-foreground">
+                        <li key={instr.id} className="text-xs text-white/60">
                           <span className="font-semibold">{instr.division}</span> — {instr.instruction}
                         </li>
                       ))}
@@ -326,7 +330,7 @@ export function CrewRundownView({
                     <p
                       className={cn(
                         "mt-1 text-xs font-semibold",
-                        remainingSeconds < 0 ? "text-red-600" : "text-primary"
+                        remainingSeconds < 0 ? "text-red-400" : "text-primary"
                       )}
                     >
                       {remainingSeconds < 0 ? "Over tijd: " : "Resterend: "}
@@ -346,21 +350,22 @@ export function CrewRundownView({
           senderLabel={division}
           audioAlert={division === "Audio"}
           onSent={refetchChat}
+          dark
         />
 
-        <Card>
+        <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
-            <CardTitle className="text-base">Notes</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <CardTitle className="text-base text-white">Notes</CardTitle>
+            <p className="text-sm text-white/60">
               Zichtbaar voor alle devisies en de showcaller.
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap items-end gap-2">
               <div className="space-y-1">
-                <Label className="text-xs">Devisie</Label>
+                <Label className="text-xs text-white/70">Devisie</Label>
                 <Select value={division} onValueChange={(v) => setDivision(v ?? DIVISIONS[0])}>
-                  <SelectTrigger className="h-9 w-40 text-sm">
+                  <SelectTrigger className="h-9 w-40 border-white/20 bg-white/5 text-sm text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -373,12 +378,12 @@ export function CrewRundownView({
                 </Select>
               </div>
               <div className="flex-1 space-y-1">
-                <Label className="text-xs">Note</Label>
+                <Label className="text-xs text-white/70">Note</Label>
                 <Input
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
                   placeholder="bv. Micro 3 valt uit"
-                  className="h-9 text-sm"
+                  className="h-9 border-white/20 bg-white/5 text-sm text-white placeholder:text-white/30"
                 />
               </div>
               <Button size="sm" onClick={submitNote} disabled={submitting || !noteText.trim()}>
@@ -388,12 +393,12 @@ export function CrewRundownView({
 
             <ul className="space-y-1.5">
               {visibleNotes.map((note) => (
-                <li key={note.id} className="rounded-md border p-2 text-sm">
+                <li key={note.id} className="rounded-md border border-white/10 p-2 text-sm">
                   <span className="font-medium">{note.division}:</span> {note.note}
                 </li>
               ))}
               {!visibleNotes.length && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-white/60">
                   {data.notes.length ? "Geen notes voor de zichtbare devisies." : "Nog geen notes."}
                 </p>
               )}
@@ -401,7 +406,7 @@ export function CrewRundownView({
           </CardContent>
         </Card>
       </div>
-      <Footer />
+      <Footer variant="dark" />
     </div>
   );
 }
