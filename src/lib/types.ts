@@ -38,6 +38,9 @@ export interface Project {
   guest_password_hash: string | null;
   crew_password_hash: string | null;
   showcaller_password_hash: string | null;
+  budget_approval_status: "pending" | "approved" | "changes_requested" | "rejected";
+  budget_approval_comment: string | null;
+  budget_approval_at: string | null;
   created_at: string;
 }
 
@@ -127,6 +130,27 @@ export interface SharedIntakeChecklist {
   updated_at: string | null;
   answers: IntakeChecklistAnswer[];
   photos: IntakeChecklistPhoto[];
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  project_id: string;
+  actor_type: "client" | "supplier";
+  actor_label: string;
+  category: string;
+  description: string;
+  acknowledged_at: string | null;
+  notified_at: string | null;
+  created_at: string;
+}
+
+export interface ProjectDocument {
+  id: string;
+  project_id: string;
+  title: string;
+  storage_path: string;
+  original_filename: string;
+  created_at: string;
 }
 
 export interface QuoteDocument {
@@ -226,9 +250,11 @@ export interface CommsAssignment {
   device_type: string;
   channels: string;
   supplier_id: string | null;
+  crew_member_id: string | null;
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
+  crew_member?: CrewMember;
 }
 
 export interface CateringOrder {
@@ -442,6 +468,8 @@ export interface SharedProject {
     event_date: string | null;
     status: string;
     background_image_url: string | null;
+    budget_approval_status: "pending" | "approved" | "changes_requested" | "rejected";
+    budget_approval_comment: string | null;
   };
   project_wide_categories: SharedCategory[];
   stages: SharedStage[];

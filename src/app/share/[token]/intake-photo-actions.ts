@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { deletePortalDocument, uploadPortalDocument } from "@/lib/server/portal-storage";
+import { logActivity } from "@/lib/server/log-activity";
 import type { IntakeChecklistPhoto } from "@/lib/types";
 
 // De klant heeft geen Supabase-sessie, alleen het share_token — dus deze acties
@@ -68,6 +69,14 @@ export async function uploadIntakeChecklistPhotoByClient(
     .eq("id", checklistId);
 
   if (!photo) return { error: "Upload mislukt." };
+
+  await logActivity(admin, {
+    projectId: project.id,
+    actorType: "client",
+    category: "checklist",
+    description: `Bijlage toegevoegd bij checklist: ${file.name}`,
+  });
+
   return { photo: photo as IntakeChecklistPhoto };
 }
 

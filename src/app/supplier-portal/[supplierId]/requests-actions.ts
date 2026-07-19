@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logActivity } from "@/lib/server/log-activity";
 import { isAuthorizedSupplier } from "./actions";
 import { isSupplierLinkedToProject } from "./data";
 
@@ -54,6 +55,14 @@ export async function addSupplierCrewMember(
     sort_order: count ?? 0,
   });
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "crew",
+    description: `Crewlid toegevoegd: ${name}`,
+  });
+
   revalidate(supplierId, projectId, "");
 }
 
@@ -80,6 +89,14 @@ export async function updateSupplierCrewMember(
     .update({ name, role, id_number: idNumber, access_dates: accessDates })
     .eq("id", memberId);
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "crew",
+    description: `Crewlid bijgewerkt: ${name}`,
+  });
+
   revalidate(supplierId, projectId, "");
 }
 
@@ -90,6 +107,15 @@ export async function deleteSupplierCrewMember(supplierId: string, projectId: st
   if (!(await ownsRow(admin, "crew_members", memberId, supplierId))) return;
 
   await admin.from("crew_members").delete().eq("id", memberId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "crew",
+    description: "Crewlid verwijderd",
+  });
+
   revalidate(supplierId, projectId, "");
 }
 
@@ -124,6 +150,14 @@ export async function addSupplierEquipment(supplierId: string, projectId: string
     duration,
     machine_number: machineNumber,
     sort_order: count ?? 0,
+  });
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "materieel",
+    description: `Materieel toegevoegd: ${machineType}`,
   });
 
   revalidate(supplierId, projectId, "materieel");
@@ -161,6 +195,14 @@ export async function updateSupplierEquipment(
     })
     .eq("id", reservationId);
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "materieel",
+    description: `Materieel bijgewerkt: ${machineType}`,
+  });
+
   revalidate(supplierId, projectId, "materieel");
 }
 
@@ -175,6 +217,15 @@ export async function deleteSupplierEquipment(
   if (!(await ownsRow(admin, "equipment_reservations", reservationId, supplierId))) return;
 
   await admin.from("equipment_reservations").delete().eq("id", reservationId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "materieel",
+    description: "Materieel verwijderd",
+  });
+
   revalidate(supplierId, projectId, "materieel");
 }
 
@@ -212,6 +263,14 @@ export async function addSupplierComms(
     sort_order: count ?? 0,
   });
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "comms",
+    description: `Comms-toewijzing toegevoegd: ${userName}`,
+  });
+
   revalidate(supplierId, projectId, "comms");
 }
 
@@ -237,6 +296,14 @@ export async function updateSupplierComms(
     .update({ user_name: userName, device_type: deviceType, channels })
     .eq("id", assignmentId);
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "comms",
+    description: `Comms-toewijzing bijgewerkt: ${userName}`,
+  });
+
   revalidate(supplierId, projectId, "comms");
 }
 
@@ -247,6 +314,15 @@ export async function deleteSupplierComms(supplierId: string, projectId: string,
   if (!(await ownsRow(admin, "comms_assignments", assignmentId, supplierId))) return;
 
   await admin.from("comms_assignments").delete().eq("id", assignmentId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "comms",
+    description: "Comms-toewijzing verwijderd",
+  });
+
   revalidate(supplierId, projectId, "comms");
 }
 
@@ -278,6 +354,14 @@ export async function addSupplierCatering(supplierId: string, projectId: string,
     night_snacks: Math.max(0, Number(formData.get("night_snacks") ?? 0)),
     notes: String(formData.get("notes") ?? "").trim(),
     sort_order: count ?? 0,
+  });
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "catering",
+    description: `Cateringbestelling toegevoegd voor ${orderDate}`,
   });
 
   revalidate(supplierId, projectId, "catering");
@@ -312,6 +396,14 @@ export async function updateSupplierCatering(
     })
     .eq("id", orderId);
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "catering",
+    description: `Catering-aantallen aangepast voor ${orderDate}`,
+  });
+
   revalidate(supplierId, projectId, "catering");
 }
 
@@ -322,6 +414,15 @@ export async function deleteSupplierCatering(supplierId: string, projectId: stri
   if (!(await ownsRow(admin, "catering_orders", orderId, supplierId))) return;
 
   await admin.from("catering_orders").delete().eq("id", orderId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "catering",
+    description: "Cateringbestelling verwijderd",
+  });
+
   revalidate(supplierId, projectId, "catering");
 }
 
@@ -356,6 +457,14 @@ export async function addSupplierPower(supplierId: string, projectId: string, fo
     sort_order: count ?? 0,
   });
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "stroom",
+    description: `Stroomaanvraag toegevoegd: ${description}`,
+  });
+
   revalidate(supplierId, projectId, "power");
 }
 
@@ -383,6 +492,14 @@ export async function updateSupplierPower(
     .update({ stage_id: stageId, description, quantity, position, notes })
     .eq("id", requestId);
 
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "stroom",
+    description: `Stroomaanvraag bijgewerkt: ${description}`,
+  });
+
   revalidate(supplierId, projectId, "power");
 }
 
@@ -393,5 +510,14 @@ export async function deleteSupplierPower(supplierId: string, projectId: string,
   if (!(await ownsRow(admin, "power_requests", requestId, supplierId))) return;
 
   await admin.from("power_requests").delete().eq("id", requestId);
+
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "stroom",
+    description: "Stroomaanvraag verwijderd",
+  });
+
   revalidate(supplierId, projectId, "power");
 }

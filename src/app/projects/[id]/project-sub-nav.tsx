@@ -13,6 +13,8 @@ const TABS = [
   { key: "schedule", label: "Draaiboek" },
   { key: "rundown", label: "Rundown" },
   { key: "production", label: "Productie" },
+  { key: "documents", label: "Documenten" },
+  { key: "evaluation", label: "Evaluatie" },
 ] as const;
 
 export type ProjectTabKey = (typeof TABS)[number]["key"];

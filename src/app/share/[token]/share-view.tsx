@@ -62,8 +62,27 @@ const STATIC_LABELS = [
   "Bijlage toevoegen",
   "Bekijken",
   "Verwijderen",
+  "Jouw reactie op de begroting",
+  "Goedkeuren",
+  "Aanpassing vragen",
+  "Weigeren",
+  "Licht toe wat er moet veranderen…",
+  "Versturen",
+  "Terug",
+  "Reactie wijzigen",
+  "Nog geen reactie",
+  "Goedgekeurd",
+  "Aanpassing gevraagd",
+  "Geweigerd",
   ...Object.values(CATEGORY_STATUS_LABELS),
 ];
+
+const BUDGET_STATUS_LABELS: Record<string, string> = {
+  pending: "Nog geen reactie",
+  approved: "Goedgekeurd",
+  changes_requested: "Aanpassing gevraagd",
+  rejected: "Geweigerd",
+};
 
 type Translator = (text: string) => string;
 
@@ -542,6 +561,106 @@ function ChecklistPanel({
   );
 }
 
+function BudgetApprovalPanel({
+  token,
+  status,
+  comment,
+  t,
+  onResponded,
+}: {
+  token: string;
+  status: "pending" | "approved" | "changes_requested" | "rejected";
+  comment: string | null;
+  t: Translator;
+  onResponded: (status: "approved" | "changes_requested" | "rejected", comment: string) => void;
+}) {
+  const [responding, setResponding] = useState(status === "pending");
+  const [commentMode, setCommentMode] = useState<"changes_requested" | "rejected" | null>(null);
+  const [commentText, setCommentText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  async function respond(newStatus: "approved" | "changes_requested" | "rejected", commentValue: string) {
+    setSubmitting(true);
+    const supabase = createClient();
+    const { data: ok } = await supabase.rpc("respond_to_budget_by_client", {
+      p_share_token: token,
+      p_status: newStatus,
+      p_comment: commentValue,
+    });
+    setSubmitting(false);
+    if (ok) {
+      onResponded(newStatus, commentValue);
+      setResponding(false);
+      setCommentMode(null);
+      setCommentText("");
+    }
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{t("Jouw reactie op de begroting")}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {!responding && status !== "pending" && (
+          <div className="space-y-2">
+            <div className="rounded-md border p-3 text-sm">
+              <p className="font-medium">{t(BUDGET_STATUS_LABELS[status])}</p>
+              {comment && <p className="mt-1 text-muted-foreground">{comment}</p>}
+            </div>
+            <Button type="button" size="sm" variant="ghost" onClick={() => setResponding(true)}>
+              {t("Reactie wijzigen")}
+            </Button>
+          </div>
+        )}
+
+        {responding && commentMode === null && (
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" onClick={() => respond("approved", "")} disabled={submitting}>
+              {t("Goedkeuren")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setCommentMode("changes_requested")}
+            >
+              {t("Aanpassing vragen")}
+            </Button>
+            <Button type="button" size="sm" variant="outline" onClick={() => setCommentMode("rejected")}>
+              {t("Weigeren")}
+            </Button>
+          </div>
+        )}
+
+        {responding && commentMode !== null && (
+          <div className="space-y-2">
+            <Textarea
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder={t("Licht toe wat er moet veranderen…")}
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => respond(commentMode, commentText)}
+                disabled={submitting}
+              >
+                {t("Versturen")}
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setCommentMode(null)}>
+                {t("Terug")}
+              </Button>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ShareView({ token }: { token: string }) {
   const [data, setData] = useState<SharedProject | null>(null);
   const [rider, setRider] = useState<SharedRider | null>(null);
@@ -816,6 +935,27 @@ export function ShareView({ token }: { token: string }) {
               {t("Totaalbudget")}:{" "}
               <span className="font-semibold">€ {totalBudget.toFixed(2)}</span>
             </p>
+
+            <BudgetApprovalPanel
+              token={token}
+              status={data.project.budget_approval_status}
+              comment={data.project.budget_approval_comment}
+              t={t}
+              onResponded={(status, comment) =>
+                setData((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        project: {
+                          ...prev.project,
+                          budget_approval_status: status,
+                          budget_approval_comment: comment,
+                        },
+                      }
+                    : prev
+                )
+              }
+            />
           </>
         )}
       </div>

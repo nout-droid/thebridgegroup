@@ -2,8 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CommsAssignment, CommsKind, Supplier } from "@/lib/types";
+import type { CommsAssignment, CommsKind, CrewMember, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { CrewMemberSelect } from "../crew-member-select";
 import { addCommsAssignment, deleteCommsAssignment, updateCommsAssignment } from "./comms-actions";
 
 function CommsList({
@@ -17,6 +18,7 @@ function CommsList({
   channelsPlaceholder,
   items,
   suppliers,
+  crewMembers,
 }: {
   projectId: string;
   kind: CommsKind;
@@ -28,6 +30,7 @@ function CommsList({
   channelsPlaceholder: string;
   items: CommsAssignment[];
   suppliers: Supplier[];
+  crewMembers: CrewMember[];
 }) {
   return (
     <div className="space-y-3">
@@ -80,6 +83,14 @@ function CommsList({
               suppliers={suppliers}
             />
           </div>
+          <div className="space-y-1">
+            <Label htmlFor={`crew-${item.id}`} className="text-xs">Crewlid (optioneel)</Label>
+            <CrewMemberSelect
+              id={`crew-${item.id}`}
+              defaultValue={item.crew_member_id ?? undefined}
+              members={crewMembers}
+            />
+          </div>
           <div className="flex items-end gap-2">
             <Button type="submit" size="sm" className="h-8 text-xs">
               Opslaan
@@ -127,6 +138,10 @@ function CommsList({
           <Label htmlFor={`new-supplier-${kind}`} className="text-xs">Leverancier</Label>
           <SupplierSelect id={`new-supplier-${kind}`} suppliers={suppliers} />
         </div>
+        <div className="space-y-1">
+          <Label htmlFor={`new-crew-${kind}`} className="text-xs">Crewlid (optioneel)</Label>
+          <CrewMemberSelect id={`new-crew-${kind}`} members={crewMembers} />
+        </div>
         <div className="flex items-end">
           <Button type="submit" size="sm" className="h-8 text-xs">
             Toevoegen
@@ -142,11 +157,13 @@ export function CommsCard({
   intercomAssignments,
   portofoonAssignments,
   suppliers,
+  crewMembers,
 }: {
   projectId: string;
   intercomAssignments: CommsAssignment[];
   portofoonAssignments: CommsAssignment[];
   suppliers: Supplier[];
+  crewMembers: CrewMember[];
 }) {
   return (
     <Card>
@@ -168,6 +185,7 @@ export function CommsCard({
           channelsPlaceholder="bv. Show, Stage"
           items={intercomAssignments}
           suppliers={suppliers}
+          crewMembers={crewMembers}
         />
         <CommsList
           projectId={projectId}
@@ -180,6 +198,7 @@ export function CommsCard({
           channelsPlaceholder="bv. 1: Productie, 4: Beveiliging"
           items={portofoonAssignments}
           suppliers={suppliers}
+          crewMembers={crewMembers}
         />
       </CardContent>
     </Card>

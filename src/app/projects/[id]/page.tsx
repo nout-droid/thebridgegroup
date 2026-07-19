@@ -9,12 +9,33 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { computeClientPrice, type Category, type Quote, type Stage } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { computeClientPrice, type ActivityLogEntry, type Category, type Quote, type Stage } from "@/lib/types";
+import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
 import { createStage } from "./stages/actions";
+import { acknowledgeActivity } from "./activity-actions";
 import { ShareLinkBox } from "./share-link-box";
 import { SupplierDocumentReview } from "./supplier-document-review";
 import { ProjectSubNav } from "./project-sub-nav";
+
+const BUDGET_APPROVAL_LABELS: Record<string, string> = {
+  pending: "Nog geen reactie",
+  approved: "Goedgekeurd",
+  changes_requested: "Aanpassing gevraagd",
+  rejected: "Geweigerd",
+};
+
+function relativeTime(iso: string) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "zojuist";
+  if (minutes < 60) return `${minutes} min geleden`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} uur geleden`;
+  const days = Math.floor(hours / 24);
+  return `${days} dag${days === 1 ? "" : "en"} geleden`;
+}
 
 export default async function ProjectPage({
   params,
@@ -104,6 +125,14 @@ export default async function ProjectPage({
     (d) => d.quote?.category?.project_id === id
   );
 
+  const { data: activity } = await supabase
+    .from("activity_log")
+    .select("*")
+    .eq("project_id", id)
+    .is("acknowledged_at", null)
+    .order("created_at", { ascending: false })
+    .returns<ActivityLogEntry[]>();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -111,6 +140,43 @@ export default async function ProjectPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         {pageError && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{pageError}</p>
+        )}
+
+        {activity && activity.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Recente activiteit</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {activity.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm"
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">
+                        {ACTIVITY_CATEGORY_LABELS[entry.category] ?? entry.category}
+                      </Badge>
+                      <span className="font-medium">{entry.actor_label}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {relativeTime(entry.created_at)}
+                      </span>
+                    </div>
+                    <p>{entry.description}</p>
+                  </div>
+                  <form action={acknowledgeActivity.bind(null, project.id, entry.id)}>
+                    <Button type="submit" size="sm" variant="ghost">
+                      Gezien
+                    </Button>
+                  </form>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
         )}
 
         <Card>
@@ -216,6 +282,20 @@ export default async function ProjectPage({
               <p className="text-lg">
                 Totaalbudget (klant): <span className="font-semibold">&euro; {totalBudget.toFixed(2)}</span>
               </p>
+            )}
+
+            {project.budget_approval_status !== "pending" && (
+              <div className="space-y-1 border-t pt-4">
+                <div className="flex items-center gap-2">
+                  <Label>Reactie klant op begroting</Label>
+                  <Badge variant="secondary">
+                    {BUDGET_APPROVAL_LABELS[project.budget_approval_status]}
+                  </Badge>
+                </div>
+                {project.budget_approval_comment && (
+                  <p className="text-sm text-muted-foreground">{project.budget_approval_comment}</p>
+                )}
+              </div>
             )}
           </CardContent>
         </Card>

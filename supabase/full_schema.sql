@@ -899,7 +899,9 @@ as $$
       'client_name', p.client_name,
       'event_date', p.event_date,
       'status', p.status,
-      'background_image_url', p.background_image_url
+      'background_image_url', p.background_image_url,
+      'budget_approval_status', p.budget_approval_status,
+      'budget_approval_comment', p.budget_approval_comment
     ),
     'project_wide_categories', coalesce((
       select json_agg(cj.data order by cj.sort_order)
@@ -1232,6 +1234,8 @@ set search_path = public
 as $$
 declare
   v_updated int;
+  v_project_id uuid;
+  v_title text;
 begin
   update public.rider_sections rs
   set content = p_content, updated_by = 'client', updated_at = now()
@@ -1243,6 +1247,17 @@ begin
     and p.share_token = p_share_token;
 
   get diagnostics v_updated = row_count;
+
+  if v_updated > 0 then
+    select r.project_id, rs.title into v_project_id, v_title
+    from public.rider_sections rs
+    join public.riders r on r.id = rs.rider_id
+    where rs.id = p_section_id;
+
+    insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+    values (v_project_id, 'client', 'Klant', 'rider', 'Rider bijgewerkt: ' || coalesce(v_title, ''));
+  end if;
+
   return v_updated > 0;
 end;
 $$;
@@ -1475,12 +1490,14 @@ create table if not exists public.comms_assignments (
   device_type text not null default '',
   channels text not null default '',
   supplier_id uuid references public.suppliers(id) on delete set null,
+  crew_member_id uuid references public.crew_members(id) on delete set null,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
 
 create index if not exists comms_assignments_project_id_idx on public.comms_assignments(project_id);
 create index if not exists comms_assignments_supplier_id_idx on public.comms_assignments(supplier_id);
+create index if not exists comms_assignments_crew_member_id_idx on public.comms_assignments(crew_member_id);
 
 alter table public.comms_assignments enable row level security;
 
@@ -2532,6 +2549,10 @@ begin
   do update set content = excluded.content, updated_by = 'client', updated_at = now();
 
   update public.intake_checklists set updated_at = now() where id = v_checklist_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'checklist', 'Checklist ingevuld: ' || p_section_key);
+
   return true;
 end;
 $$;
@@ -2571,4 +2592,136 @@ create policy "owner full access on intake_checklist_photos" on public.intake_ch
       join public.projects p on p.id = ic.project_id
       where ic.id = checklist_id and public.has_project_access(p.id)
     )
+  );
+
+-- ========== ACTIVITEITEN-LOG ==========
+-- Meldingen op het projectdashboard zodra een klant of leverancier iets aanpast.
+-- Bewust beperkt tot echte project-aanpassingen (catering/materieel/comms/stroom/crew
+-- door leveranciers, rider/checklist/offertes door de klant) — geen live show-bediening
+-- (crew-notes, rundown-chat, showcaller-cues), dat zou de log alleen maar vervuilen.
+
+create table if not exists public.activity_log (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  actor_type text not null check (actor_type in ('client', 'supplier')),
+  actor_label text not null,
+  category text not null,
+  description text not null,
+  acknowledged_at timestamptz,
+  notified_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists activity_log_project_id_idx on public.activity_log(project_id);
+
+alter table public.activity_log enable row level security;
+
+drop policy if exists "owner full access on activity_log" on public.activity_log;
+create policy "owner full access on activity_log" on public.activity_log
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+-- ========== BEGROTING-GOEDKEURING (klantportal) ==========
+-- Klant kan de hele begroting in één keer goedkeuren, een aanpassing vragen, of
+-- weigeren — bij de laatste twee met een toelichting. Los veld op projects, niet
+-- verweven met de bestaande project/categorie-statusflow.
+
+alter table public.projects add column if not exists budget_approval_status text not null default 'pending'
+  check (budget_approval_status in ('pending', 'approved', 'changes_requested', 'rejected'));
+alter table public.projects add column if not exists budget_approval_comment text;
+alter table public.projects add column if not exists budget_approval_at timestamptz;
+
+create or replace function public.respond_to_budget_by_client(
+  p_share_token uuid,
+  p_status text,
+  p_comment text
+)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  if p_status not in ('approved', 'changes_requested', 'rejected') then
+    return false;
+  end if;
+
+  select id into v_project_id from public.projects where share_token = p_share_token;
+  if v_project_id is null then
+    return false;
+  end if;
+
+  update public.projects
+  set budget_approval_status = p_status,
+      budget_approval_comment = p_comment,
+      budget_approval_at = now()
+  where id = v_project_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (
+    v_project_id, 'client', 'Klant', 'begroting',
+    case p_status
+      when 'approved' then 'Begroting goedgekeurd'
+      when 'changes_requested' then 'Aanpassing gevraagd: ' || coalesce(nullif(trim(p_comment), ''), '(geen toelichting)')
+      else 'Begroting geweigerd: ' || coalesce(nullif(trim(p_comment), ''), '(geen toelichting)')
+    end
+  );
+
+  return true;
+end;
+$$;
+
+grant execute on function public.respond_to_budget_by_client(uuid, text, text) to anon;
+
+-- ========== EVALUATIEPAGINA ==========
+-- Eén vrij tekstvak per project, intern/eigenaar-only, zodat de evaluatie na afloop
+-- van een event bij het project blijft staan.
+
+create table if not exists public.project_evaluations (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null unique references public.projects(id) on delete cascade,
+  content text not null default '',
+  updated_at timestamptz not null default now(),
+  created_at timestamptz not null default now()
+);
+
+alter table public.project_evaluations enable row level security;
+
+drop policy if exists "owner full access on project_evaluations" on public.project_evaluations;
+create policy "owner full access on project_evaluations" on public.project_evaluations
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+-- ========== DOCUMENTENPAGINA ==========
+-- Losse bestanden (bv. tekeningen) die nergens anders bij horen. Gebruikt de bestaande
+-- private 'portal-documents'-bucket — pad "documents/{project_id}/..." voldoet al aan
+-- de bestaande eigenaar-policy.
+
+create table if not exists public.project_documents (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  title text not null,
+  storage_path text not null,
+  original_filename text not null default '',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists project_documents_project_id_idx on public.project_documents(project_id);
+
+alter table public.project_documents enable row level security;
+
+drop policy if exists "owner full access on project_documents" on public.project_documents;
+create policy "owner full access on project_documents" on public.project_documents
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );

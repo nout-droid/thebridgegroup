@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadPortalDocument } from "@/lib/server/portal-storage";
+import { logActivity } from "@/lib/server/log-activity";
 
 export async function isAuthorizedSupplier(supplierId: string) {
   const supabase = await createClient();
@@ -39,10 +40,10 @@ export async function uploadSupplierDocument(
 
   const { data: quote } = await admin
     .from("quotes")
-    .select("id")
+    .select("id, category:categories(project_id)")
     .eq("id", quoteId)
     .eq("supplier_id", supplierId)
-    .maybeSingle();
+    .maybeSingle<{ id: string; category: { project_id: string } | null }>();
   if (!quote) return;
 
   const path = `quotes/${quoteId}/${Date.now()}-${file.name}`;
@@ -55,6 +56,16 @@ export async function uploadSupplierDocument(
     storage_path: path,
     original_filename: file.name,
   });
+
+  if (quote.category?.project_id) {
+    await logActivity(admin, {
+      projectId: quote.category.project_id,
+      actorType: "supplier",
+      supplierId,
+      category: "offerte",
+      description: "Offerte-PDF geüpload",
+    });
+  }
 
   revalidatePath(`/supplier-portal/${supplierId}`);
 }

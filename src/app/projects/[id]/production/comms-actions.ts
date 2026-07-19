@@ -15,6 +15,7 @@ export async function addCommsAssignment(projectId: string, kind: CommsKind, for
   const deviceType = String(formData.get("device_type") ?? "").trim();
   const channels = String(formData.get("channels") ?? "").trim();
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
+  const crewMemberId = String(formData.get("crew_member_id") ?? "") || null;
 
   const supabase = await createClient();
   const { count } = await supabase
@@ -30,6 +31,7 @@ export async function addCommsAssignment(projectId: string, kind: CommsKind, for
     device_type: deviceType,
     channels,
     supplier_id: supplierId,
+    crew_member_id: crewMemberId,
     sort_order: count ?? 0,
   });
 
@@ -47,11 +49,18 @@ export async function updateCommsAssignment(
   const deviceType = String(formData.get("device_type") ?? "").trim();
   const channels = String(formData.get("channels") ?? "").trim();
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
+  const crewMemberId = String(formData.get("crew_member_id") ?? "") || null;
 
   const supabase = await createClient();
   await supabase
     .from("comms_assignments")
-    .update({ user_name: userName, device_type: deviceType, channels, supplier_id: supplierId })
+    .update({
+      user_name: userName,
+      device_type: deviceType,
+      channels,
+      supplier_id: supplierId,
+      crew_member_id: crewMemberId,
+    })
     .eq("id", assignmentId);
 
   revalidate(projectId);
