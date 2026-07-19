@@ -27,7 +27,9 @@ export async function GET(
 
   const { data: items } = await supabase
     .from("schedule_items")
-    .select("activity_date, activity_time, activity, priority, notes, supplier:suppliers(name), stage:stages(name)")
+    .select(
+      "activity_date, activity_time, activity, priority, notes, stage:stages(name), suppliers:schedule_item_suppliers(supplier:suppliers(name))"
+    )
     .eq("project_id", id)
     .order("activity_date", { ascending: true })
     .order("activity_time", { ascending: true });
@@ -38,7 +40,11 @@ export async function GET(
     activity: item.activity,
     priority: item.priority,
     notes: item.notes,
-    supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
+    supplier_names:
+      (item.suppliers as unknown as { supplier: { name: string } | null }[])
+        .map((s) => s.supplier?.name)
+        .filter((name): name is string => Boolean(name))
+        .join(", ") || null,
     stage_name: (item.stage as unknown as { name: string } | null)?.name ?? null,
   }));
 

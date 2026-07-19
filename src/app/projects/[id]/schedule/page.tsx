@@ -18,9 +18,10 @@ export default async function ProjectSchedulePage({
 
   const { data: scheduleItems } = await supabase
     .from("schedule_items")
-    .select("*, supplier:suppliers(*)")
+    .select("*, suppliers:schedule_item_suppliers(*, supplier:suppliers(*))")
     .eq("project_id", id)
     .is("stage_id", null)
+    .order("sort_order", { foreignTable: "schedule_item_suppliers", ascending: true })
     .returns<ScheduleItem[]>();
 
   const { data: suppliers } = await supabase

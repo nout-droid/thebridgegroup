@@ -2,28 +2,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CrewMember, CrewPosition, Supplier } from "@/lib/types";
+import type { CrewMember, CrewPosition, Stage, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { StageSelect } from "../stage-select";
 import { addCrewPosition, deleteCrewPosition, updateCrewPosition } from "./crew-planning-actions";
 
 function PositionForm({
   projectId,
   position,
   suppliers,
+  stages,
   defaultDate,
+  defaultStageId,
 }: {
   projectId: string;
   position?: CrewPosition;
   suppliers: Supplier[];
+  stages: Stage[];
   defaultDate?: string;
+  defaultStageId?: string;
 }) {
   const action = position
     ? updateCrewPosition.bind(null, projectId, position.id)
     : addCrewPosition.bind(null, projectId);
-  const idPrefix = position?.id ?? `new-${defaultDate ?? "algemeen"}`;
+  const idPrefix = position?.id ?? `new-${defaultStageId ?? "algemeen"}-${defaultDate ?? "algemeen"}`;
 
   return (
     <form action={action} className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4">
+      <div className="space-y-1">
+        <Label htmlFor={`stage-${idPrefix}`} className="text-xs">Podium/area</Label>
+        <StageSelect
+          id={`stage-${idPrefix}`}
+          defaultValue={position?.stage_id ?? defaultStageId}
+          stages={stages}
+        />
+      </div>
       <div className="space-y-1">
         <Label htmlFor={`date-${idPrefix}`} className="text-xs">Datum</Label>
         <Input
@@ -135,54 +148,80 @@ export function CrewPlanningCard({
   projectId,
   positions,
   suppliers,
+  stages,
   linkedMembers,
 }: {
   projectId: string;
   positions: CrewPosition[];
   suppliers: Supplier[];
+  stages: Stage[];
   linkedMembers: CrewMember[];
 }) {
-  const dates = [...new Set(positions.map((p) => p.work_date))].sort();
+  const stageGroups = [
+    { stageId: null as string | null, stageName: "Projectbreed" },
+    ...stages.map((s) => ({ stageId: s.id, stageName: s.name })),
+  ];
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Crew Planning</CardTitle>
+        <CardTitle className="text-base">Crew Planning per podium/area</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Leg per dag en functie vast hoeveel mensen nodig zijn en wie ze levert — nog
-          zonder namen. Vink "Accreditatie nodig" aan om automatisch lege plekken in Crew
-          & Accreditatie aan te maken zodra dit bekend wordt.
+          Leg per podium, dag en functie vast hoeveel mensen nodig zijn en wie ze levert —
+          nog zonder namen. Vink "Accreditatie nodig" aan om automatisch lege plekken in
+          Crew & Accreditatie aan te maken zodra dit bekend wordt.
         </p>
       </CardHeader>
-      <CardContent className="space-y-6">
-        {dates.map((date) => {
-          const dayPositions = positions.filter((p) => p.work_date === date);
-          const positionIds = new Set(dayPositions.map((p) => p.id));
-          const dayMembers = linkedMembers.filter((m) => m.crew_position_id && positionIds.has(m.crew_position_id));
-          const filled = dayMembers.filter((m) => m.name).length;
-          const catering = dayMembers.filter((m) => m.needs_catering).length;
-          const hotel = dayMembers.filter((m) => m.needs_hotel).length;
+      <CardContent className="space-y-8">
+        {stageGroups.map(({ stageId, stageName }) => {
+          const stagePositions = positions.filter((p) => p.stage_id === stageId);
+          if (!stagePositions.length) return null;
+          const dates = [...new Set(stagePositions.map((p) => p.work_date))].sort();
 
           return (
-            <div key={date} className="space-y-3">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-1">
-                <p className="font-medium">{date}</p>
-                {dayMembers.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    {filled} van {dayMembers.length} functies ingevuld · {catering} catering · {hotel} hotel
-                  </p>
-                )}
-              </div>
-              {dayPositions.map((position) => (
-                <PositionForm key={position.id} projectId={projectId} position={position} suppliers={suppliers} />
-              ))}
+            <div key={stageId ?? "algemeen"} className="space-y-4">
+              <p className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {stageName}
+              </p>
+              {dates.map((date) => {
+                const dayPositions = stagePositions.filter((p) => p.work_date === date);
+                const positionIds = new Set(dayPositions.map((p) => p.id));
+                const dayMembers = linkedMembers.filter(
+                  (m) => m.crew_position_id && positionIds.has(m.crew_position_id)
+                );
+                const filled = dayMembers.filter((m) => m.name).length;
+                const catering = dayMembers.filter((m) => m.needs_catering).length;
+                const hotel = dayMembers.filter((m) => m.needs_hotel).length;
+
+                return (
+                  <div key={date} className="space-y-3">
+                    <div className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-1">
+                      <p className="font-medium">{date}</p>
+                      {dayMembers.length > 0 && (
+                        <p className="text-xs text-muted-foreground">
+                          {filled} van {dayMembers.length} functies ingevuld · {catering} catering · {hotel} hotel
+                        </p>
+                      )}
+                    </div>
+                    {dayPositions.map((position) => (
+                      <PositionForm
+                        key={position.id}
+                        projectId={projectId}
+                        position={position}
+                        suppliers={suppliers}
+                        stages={stages}
+                      />
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
 
         <div className="space-y-2 border-t pt-4">
           <p className="text-sm font-medium">Nieuwe positie toevoegen</p>
-          <PositionForm projectId={projectId} suppliers={suppliers} />
+          <PositionForm projectId={projectId} suppliers={suppliers} stages={stages} />
         </div>
       </CardContent>
     </Card>

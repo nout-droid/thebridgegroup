@@ -7,7 +7,7 @@ export interface SchedulePdfEntry {
   activity_date: string;
   activity_time: string;
   activity: string;
-  supplier_name: string | null;
+  supplier_names: string | null;
   priority: string;
   notes: string;
   stage_name: string | null;
@@ -119,7 +119,7 @@ export function buildSchedulePage(data: SchedulePdfData, logoBuffer: Buffer, gen
               <Text style={styles.colTime}>{entry.activity_time?.slice(0, 5)}</Text>
               <Text style={styles.colActivity}>{entry.activity}</Text>
               <Text style={styles.colStage}>{entry.stage_name ?? "Projectbreed"}</Text>
-              <Text style={styles.colSupplier}>{entry.supplier_name ?? "—"}</Text>
+              <Text style={styles.colSupplier}>{entry.supplier_names ?? "—"}</Text>
               <Text style={styles.colPriority}>{entry.priority || "—"}</Text>
             </View>
           ))}

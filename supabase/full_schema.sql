@@ -1405,7 +1405,6 @@ create table if not exists public.schedule_items (
   activity_date date not null,
   activity_time time not null,
   activity text not null,
-  supplier_id uuid references public.suppliers(id) on delete set null,
   priority text not null default '',
   notes text not null default '',
   sort_order int not null default 0,
@@ -1423,6 +1422,37 @@ create policy "owner full access on schedule_items" on public.schedule_items
     exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   ) with check (
     exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+-- Meerdere uitvoerders (leveranciers) per draaiboek-activiteit.
+create table if not exists public.schedule_item_suppliers (
+  id uuid primary key default gen_random_uuid(),
+  schedule_item_id uuid not null references public.schedule_items(id) on delete cascade,
+  supplier_id uuid not null references public.suppliers(id) on delete cascade,
+  sort_order int not null default 0,
+  created_at timestamptz not null default now(),
+  unique (schedule_item_id, supplier_id)
+);
+
+create index if not exists schedule_item_suppliers_item_id_idx on public.schedule_item_suppliers(schedule_item_id);
+create index if not exists schedule_item_suppliers_supplier_id_idx on public.schedule_item_suppliers(supplier_id);
+
+alter table public.schedule_item_suppliers enable row level security;
+
+drop policy if exists "owner full access on schedule_item_suppliers" on public.schedule_item_suppliers;
+create policy "owner full access on schedule_item_suppliers" on public.schedule_item_suppliers
+  for all using (
+    exists (
+      select 1 from public.schedule_items si
+      join public.projects p on p.id = si.project_id
+      where si.id = schedule_item_id and public.has_project_access(p.id)
+    )
+  ) with check (
+    exists (
+      select 1 from public.schedule_items si
+      join public.projects p on p.id = si.project_id
+      where si.id = schedule_item_id and public.has_project_access(p.id)
+    )
   );
 -- Productieplanning: crew & accreditatie, materieel, comms/portofoons, catering,
 -- artiestenriders, open vragen en notulen. Allemaal projectbreed (geen stage-koppeling).
@@ -2735,6 +2765,7 @@ create table if not exists public.crew_positions (
   quantity int not null default 1,
   provided_by text not null default 'wij' check (provided_by in ('wij', 'klant', 'leverancier')),
   supplier_id uuid references public.suppliers(id) on delete set null,
+  stage_id uuid references public.stages(id) on delete set null,
   needs_accreditation boolean not null default false,
   needs_catering boolean not null default false,
   needs_hotel boolean not null default false,
@@ -2744,6 +2775,7 @@ create table if not exists public.crew_positions (
 );
 
 create index if not exists crew_positions_project_id_idx on public.crew_positions(project_id);
+create index if not exists crew_positions_stage_id_idx on public.crew_positions(stage_id);
 
 alter table public.crew_positions enable row level security;
 

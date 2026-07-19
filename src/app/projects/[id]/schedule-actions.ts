@@ -21,7 +21,6 @@ export async function addScheduleItem(
   const activity = String(formData.get("activity") ?? "").trim();
   if (!activityDate || !activityTime || !activity) return;
 
-  const supplierId = String(formData.get("supplier_id") ?? "") || null;
   const priority = String(formData.get("priority") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
@@ -39,7 +38,6 @@ export async function addScheduleItem(
     activity_date: activityDate,
     activity_time: activityTime,
     activity,
-    supplier_id: supplierId,
     priority,
     notes,
     sort_order: count ?? 0,
@@ -59,7 +57,6 @@ export async function updateScheduleItem(
   const activity = String(formData.get("activity") ?? "").trim();
   if (!activityDate || !activityTime || !activity) return;
 
-  const supplierId = String(formData.get("supplier_id") ?? "") || null;
   const priority = String(formData.get("priority") ?? "").trim();
   const notes = String(formData.get("notes") ?? "").trim();
 
@@ -70,7 +67,6 @@ export async function updateScheduleItem(
       activity_date: activityDate,
       activity_time: activityTime,
       activity,
-      supplier_id: supplierId,
       priority,
       notes,
     })
@@ -86,6 +82,41 @@ export async function deleteScheduleItem(
 ) {
   const supabase = await createClient();
   await supabase.from("schedule_items").delete().eq("id", itemId);
+
+  revalidate(projectId, stageId);
+}
+
+export async function addScheduleItemSupplier(
+  projectId: string,
+  stageId: string | null,
+  itemId: string,
+  formData: FormData
+) {
+  const supplierId = String(formData.get("supplier_id") ?? "") || null;
+  if (!supplierId) return;
+
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("schedule_item_suppliers")
+    .select("id", { count: "exact", head: true })
+    .eq("schedule_item_id", itemId);
+
+  await supabase.from("schedule_item_suppliers").insert({
+    schedule_item_id: itemId,
+    supplier_id: supplierId,
+    sort_order: count ?? 0,
+  });
+
+  revalidate(projectId, stageId);
+}
+
+export async function deleteScheduleItemSupplier(
+  projectId: string,
+  stageId: string | null,
+  linkId: string
+) {
+  const supabase = await createClient();
+  await supabase.from("schedule_item_suppliers").delete().eq("id", linkId);
 
   revalidate(projectId, stageId);
 }

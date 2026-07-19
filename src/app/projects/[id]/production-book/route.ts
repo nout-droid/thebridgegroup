@@ -136,7 +136,9 @@ export async function GET(
   // Draaiboek
   const { data: scheduleItems } = await supabase
     .from("schedule_items")
-    .select("activity_date, activity_time, activity, priority, notes, supplier:suppliers(name), stage:stages(name)")
+    .select(
+      "activity_date, activity_time, activity, priority, notes, stage:stages(name), suppliers:schedule_item_suppliers(supplier:suppliers(name))"
+    )
     .eq("project_id", id)
     .order("activity_date", { ascending: true })
     .order("activity_time", { ascending: true });
@@ -151,7 +153,11 @@ export async function GET(
           activity: item.activity,
           priority: item.priority,
           notes: item.notes,
-          supplier_name: name(item.supplier),
+          supplier_names:
+            (item.suppliers as unknown as { supplier: { name: string } | null }[])
+              .map((s) => s.supplier?.name)
+              .filter((n): n is string => Boolean(n))
+              .join(", ") || null,
           stage_name: name(item.stage),
         })),
       })

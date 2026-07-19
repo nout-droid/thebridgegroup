@@ -17,6 +17,7 @@ interface PositionFields {
   quantity: number;
   provided_by: ProvidedBy;
   supplier_id: string | null;
+  stage_id: string | null;
   needs_accreditation: boolean;
   needs_catering: boolean;
   needs_hotel: boolean;
@@ -37,6 +38,7 @@ function parseFormFields(formData: FormData): PositionFields {
     quantity: Math.max(1, Number(formData.get("quantity") ?? 1)),
     provided_by: providedBy,
     supplier_id: providedBy === "leverancier" ? String(formData.get("supplier_id") ?? "") || null : null,
+    stage_id: String(formData.get("stage_id") ?? "") || null,
     needs_accreditation: formData.get("needs_accreditation") === "on",
     needs_catering: formData.get("needs_catering") === "on",
     needs_hotel: formData.get("needs_hotel") === "on",

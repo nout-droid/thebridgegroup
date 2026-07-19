@@ -216,9 +216,17 @@ export interface ScheduleItem {
   activity_date: string;
   activity_time: string;
   activity: string;
-  supplier_id: string | null;
   priority: string;
   notes: string;
+  sort_order: number;
+  created_at: string;
+  suppliers?: ScheduleItemSupplier[];
+}
+
+export interface ScheduleItemSupplier {
+  id: string;
+  schedule_item_id: string;
+  supplier_id: string;
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
@@ -263,6 +271,7 @@ export interface CrewPosition {
   quantity: number;
   provided_by: CrewProvidedBy;
   supplier_id: string | null;
+  stage_id: string | null;
   needs_accreditation: boolean;
   needs_catering: boolean;
   needs_hotel: boolean;
@@ -270,6 +279,7 @@ export interface CrewPosition {
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
+  stage?: Stage;
 }
 
 export interface EquipmentReservation {

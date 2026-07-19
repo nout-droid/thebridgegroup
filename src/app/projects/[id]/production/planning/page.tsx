@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import type { CrewMember, CrewPosition, Supplier } from "@/lib/types";
+import type { CrewMember, CrewPosition, Stage, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
 import { CrewPlanningCard } from "../crew-planning-card";
@@ -30,6 +30,13 @@ export default async function ProductionPlanningPage({
     .order("name", { ascending: true })
     .returns<Supplier[]>();
 
+  const { data: stages } = await supabase
+    .from("stages")
+    .select("*")
+    .eq("project_id", id)
+    .order("name", { ascending: true })
+    .returns<Stage[]>();
+
   const { data: linkedMembers } = await supabase
     .from("crew_members")
     .select("*")
@@ -47,6 +54,7 @@ export default async function ProductionPlanningPage({
           projectId={project.id}
           positions={positions ?? []}
           suppliers={suppliers ?? []}
+          stages={stages ?? []}
           linkedMembers={linkedMembers ?? []}
         />
       </main>
