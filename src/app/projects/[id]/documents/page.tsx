@@ -89,6 +89,24 @@ export default async function ProjectDocumentsPage({
     }
   }
 
+  const { data: unsplitQuoteDocuments } = await supabase
+    .from("quote_documents")
+    .select("id, storage_path, original_filename, created_at, supplier:suppliers(name)")
+    .eq("project_id", id)
+    .is("quote_id", null);
+  for (const doc of unsplitQuoteDocuments ?? []) {
+    const supplierName =
+      (Array.isArray(doc.supplier) ? doc.supplier[0]?.name : (doc.supplier as { name: string } | null)?.name) ?? "";
+    rows.push({
+      id: doc.id,
+      title: `${supplierName ? `${supplierName} — ` : ""}nog te splitsen (${doc.original_filename})`,
+      storagePath: doc.storage_path,
+      source: "Offerte",
+      deletable: false,
+      createdAt: doc.created_at,
+    });
+  }
+
   const { data: guestDocuments } = await supabase
     .from("guest_documents")
     .select("id, title, storage_path, created_at")

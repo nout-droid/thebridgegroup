@@ -120,6 +120,26 @@ export async function createQuote(projectId: string, categoryId: string, formDat
   revalidatePath(path);
 }
 
+export async function requestQuotesForCategories(
+  projectId: string,
+  formData: FormData
+) {
+  const supplierId = String(formData.get("supplier_id") ?? "");
+  const categoryIds = formData.getAll("category_id").map(String).filter(Boolean);
+  if (!supplierId || !categoryIds.length) return;
+
+  const supabase = await createClient();
+
+  for (const categoryId of categoryIds) {
+    await findOrCreateQuote(supabase, categoryId, supplierId, "");
+    const path = await categoryRevalidationPath(supabase, projectId, categoryId);
+    revalidatePath(path);
+  }
+
+  revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
+}
+
 export async function chooseQuote(projectId: string, quoteId: string) {
   const supabase = await createClient();
   const path = await quoteRevalidationPath(supabase, projectId, quoteId);

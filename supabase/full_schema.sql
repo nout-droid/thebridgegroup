@@ -1028,19 +1028,29 @@ grant execute on function public.set_supplier_password(uuid, text) to authentica
 
 create table if not exists public.quote_documents (
   id uuid primary key default gen_random_uuid(),
-  quote_id uuid not null references public.quotes(id) on delete cascade,
+  quote_id uuid references public.quotes(id) on delete cascade,
   uploaded_by text not null check (uploaded_by in ('owner', 'supplier')),
   storage_path text not null,
   original_filename text not null default '',
   confirmed_at timestamptz,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  -- Een document hangt óf aan één offerte (bestaand pad), óf los aan een project+leverancier
+  -- ("nog te splitsen" — leverancier uploadde één PDF voor meerdere aangevraagde categorieën).
+  project_id uuid references public.projects(id) on delete cascade,
+  supplier_id uuid references public.suppliers(id) on delete cascade,
+  constraint quote_documents_scope_check check (
+    (quote_id is not null and project_id is null and supplier_id is null)
+    or (quote_id is null and project_id is not null and supplier_id is not null)
+  )
 );
 
 create index if not exists quote_documents_quote_id_idx on public.quote_documents(quote_id);
+create index if not exists quote_documents_project_supplier_idx on public.quote_documents(project_id, supplier_id);
 
 alter table public.quote_documents enable row level security;
 
--- Eigenaar (Nout) mag alles zien/beheren via de bestaande project-keten.
+-- Eigenaar (Nout) mag alles zien/beheren via de bestaande project-keten, zowel de
+-- offerte-gekoppelde als de nog-los project+leverancier-gekoppelde documenten.
 drop policy if exists "owner full access on quote_documents" on public.quote_documents;
 create policy "owner full access on quote_documents" on public.quote_documents
   for all using (
@@ -1050,12 +1060,18 @@ create policy "owner full access on quote_documents" on public.quote_documents
       join public.projects p on p.id = c.project_id
       where q.id = quote_id and public.has_project_access(p.id)
     )
+    or exists (
+      select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id)
+    )
   ) with check (
     exists (
       select 1 from public.quotes q
       join public.categories c on c.id = q.category_id
       join public.projects p on p.id = c.project_id
       where q.id = quote_id and public.has_project_access(p.id)
+    )
+    or exists (
+      select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id)
     )
   );
 

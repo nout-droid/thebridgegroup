@@ -169,12 +169,14 @@ export interface ProjectDocument {
 
 export interface QuoteDocument {
   id: string;
-  quote_id: string;
+  quote_id: string | null;
   uploaded_by: "owner" | "supplier";
   storage_path: string;
   original_filename: string;
   confirmed_at: string | null;
   created_at: string;
+  project_id: string | null;
+  supplier_id: string | null;
 }
 
 export interface GuestDocument {

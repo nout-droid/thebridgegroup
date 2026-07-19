@@ -18,6 +18,7 @@ import { CategoryCard } from "../category-card";
 import { AddCategoryForm } from "../add-category-form";
 import { MaterialList } from "../material-list";
 import { QuotePdfImport } from "../quote-pdf-import";
+import { RequestQuotesCard } from "../request-quotes-card";
 import { ProjectSubNav } from "../project-sub-nav";
 import { computeRentalDays } from "@/lib/rental-days";
 
@@ -246,6 +247,13 @@ export default async function ProjectBudgetPage({
             Offertes van leveranciers uitvragen en bevestigen, op basis van de begroting hierboven.
           </p>
         </div>
+
+        <RequestQuotesCard
+          projectId={project.id}
+          categories={categories ?? []}
+          stages={stages ?? []}
+          suppliers={suppliers ?? []}
+        />
 
         <QuotePdfImport projectId={project.id} stageId={null} suppliers={suppliers ?? []} />
       </main>

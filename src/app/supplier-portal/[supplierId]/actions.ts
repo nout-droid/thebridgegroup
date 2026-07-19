@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { uploadPortalDocument } from "@/lib/server/portal-storage";
 import { logActivity } from "@/lib/server/log-activity";
+import { isSupplierLinkedToProject } from "./data";
 
 export async function isAuthorizedSupplier(supplierId: string) {
   const supabase = await createClient();
@@ -28,44 +29,37 @@ export async function isAuthorizedSupplier(supplierId: string) {
 
 export async function uploadSupplierDocument(
   supplierId: string,
-  quoteId: string,
+  projectId: string,
   formData: FormData
 ) {
   if (!(await isAuthorizedSupplier(supplierId))) return;
+  if (!(await isSupplierLinkedToProject(supplierId, projectId))) return;
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return;
 
   const admin = createAdminClient();
 
-  const { data: quote } = await admin
-    .from("quotes")
-    .select("id, category:categories(project_id)")
-    .eq("id", quoteId)
-    .eq("supplier_id", supplierId)
-    .maybeSingle<{ id: string; category: { project_id: string } | null }>();
-  if (!quote) return;
-
-  const path = `quotes/${quoteId}/${Date.now()}-${file.name}`;
+  const path = `projects/${projectId}/suppliers/${supplierId}/${Date.now()}-${file.name}`;
   const { error } = await uploadPortalDocument(path, file);
   if (error) return;
 
   await admin.from("quote_documents").insert({
-    quote_id: quoteId,
+    quote_id: null,
+    project_id: projectId,
+    supplier_id: supplierId,
     uploaded_by: "supplier",
     storage_path: path,
     original_filename: file.name,
   });
 
-  if (quote.category?.project_id) {
-    await logActivity(admin, {
-      projectId: quote.category.project_id,
-      actorType: "supplier",
-      supplierId,
-      category: "offerte",
-      description: "Offerte-PDF geüpload",
-    });
-  }
+  await logActivity(admin, {
+    projectId,
+    actorType: "supplier",
+    supplierId,
+    category: "offerte",
+    description: "Offerte-PDF geüpload",
+  });
 
   revalidatePath(`/supplier-portal/${supplierId}`);
 }

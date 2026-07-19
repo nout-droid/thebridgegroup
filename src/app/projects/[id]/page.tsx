@@ -18,6 +18,7 @@ import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
 import { ShareLinkBox } from "./share-link-box";
 import { SupplierDocumentReview } from "./supplier-document-review";
+import { SupplierProjectDocumentReview } from "./supplier-project-document-review";
 import { ProjectSubNav } from "./project-sub-nav";
 
 const BUDGET_APPROVAL_LABELS: Record<string, string> = {
@@ -122,11 +123,28 @@ export default async function ProjectPage({
     )
     .eq("uploaded_by", "supplier")
     .is("confirmed_at", null)
+    .not("quote_id", "is", null)
     .returns<PendingDocumentRow[]>();
 
   const pendingDocuments = (allPendingDocuments ?? []).filter(
     (d) => d.quote?.category?.project_id === id
   );
+
+  interface PendingProjectDocumentRow {
+    id: string;
+    original_filename: string;
+    created_at: string;
+    supplier_id: string;
+    supplier: { name: string } | null;
+  }
+
+  const { data: pendingProjectDocuments } = await supabase
+    .from("quote_documents")
+    .select("id, original_filename, created_at, supplier_id, supplier:suppliers(name)")
+    .eq("uploaded_by", "supplier")
+    .is("confirmed_at", null)
+    .eq("project_id", id)
+    .returns<PendingProjectDocumentRow[]>();
 
   const { data: activity } = await supabase
     .from("activity_log")
@@ -380,7 +398,7 @@ export default async function ProjectPage({
           </CardContent>
         </Card>
 
-        {pendingDocuments.length > 0 && (
+        {(pendingDocuments.length > 0 || (pendingProjectDocuments?.length ?? 0) > 0) && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Leveranciers-uploads ter controle</CardTitle>
@@ -390,6 +408,15 @@ export default async function ProjectPage({
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
+              {(pendingProjectDocuments ?? []).map((doc) => (
+                <SupplierProjectDocumentReview
+                  key={doc.id}
+                  projectId={project.id}
+                  documentId={doc.id}
+                  supplierId={doc.supplier_id}
+                  label={`${doc.supplier?.name ?? "Onbekende leverancier"} (${doc.original_filename})`}
+                />
+              ))}
               {pendingDocuments.map((doc) => (
                 <SupplierDocumentReview
                   key={doc.id}
