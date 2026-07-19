@@ -2,9 +2,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CrewMember } from "@/lib/types";
-import { goToHotelBudgetCategory, setSuppliersManageTravel } from "./hotel-actions";
-import { goToFlightBudgetCategory, updateCrewFlightDetails } from "./flight-actions";
+import type { Category, CrewMember, Quote, Supplier } from "@/lib/types";
+import { SupplierSelect } from "../supplier-select";
+import { saveHotelCost, setSuppliersManageTravel } from "./hotel-actions";
+import { saveFlightCost, updateCrewFlightDetails } from "./flight-actions";
 
 function SupplierAccessToggle({
   projectId,
@@ -34,12 +35,87 @@ function SupplierAccessToggle({
   );
 }
 
+function CostForm({
+  action,
+  idPrefix,
+  suppliers,
+  category,
+  quote,
+}: {
+  action: (formData: FormData) => void;
+  idPrefix: string;
+  suppliers: Supplier[];
+  category: Category | null;
+  quote: Quote | null;
+}) {
+  return (
+    <form action={action} className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4">
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-supplier`} className="text-xs">Leverancier</Label>
+        <SupplierSelect id={`${idPrefix}-supplier`} defaultValue={quote?.supplier_id ?? undefined} suppliers={suppliers} />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-cost`} className="text-xs">Inkoopprijs</Label>
+        <Input
+          id={`${idPrefix}-cost`}
+          name="cost_price"
+          type="number"
+          step="0.01"
+          min={0}
+          defaultValue={quote?.cost_price ?? undefined}
+          className="h-8 text-xs"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-margin-type`} className="text-xs">Marge type</Label>
+        <select
+          id={`${idPrefix}-margin-type`}
+          name="margin_type"
+          defaultValue={category?.margin_type ?? "percentage"}
+          className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs"
+        >
+          <option value="percentage">Percentage</option>
+          <option value="fixed">Vast bedrag</option>
+        </select>
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-margin-value`} className="text-xs">Marge waarde</Label>
+        <Input
+          id={`${idPrefix}-margin-value`}
+          name="margin_value"
+          type="number"
+          step="0.01"
+          defaultValue={category?.margin_value ?? 0}
+          className="h-8 text-xs"
+        />
+      </div>
+      <div className="flex items-end sm:col-span-4">
+        <Button type="submit" size="sm" className="h-8 text-xs">
+          Opslaan
+        </Button>
+      </div>
+    </form>
+  );
+}
+
 function toDatetimeLocal(value: string | null): string {
   if (!value) return "";
   return value.slice(0, 16);
 }
 
-function FlightsSection({ projectId, members }: { projectId: string; members: CrewMember[] }) {
+function FlightsSection({
+  projectId,
+  members,
+  suppliers,
+  flightCategory,
+  flightQuote,
+}: {
+  projectId: string;
+  members: CrewMember[];
+  suppliers: Supplier[];
+  flightCategory: Category | null;
+  flightQuote: Quote | null;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -147,17 +223,40 @@ function FlightsSection({ projectId, members }: { projectId: string; members: Cr
             </form>
           ))
         )}
-        <form action={goToFlightBudgetCategory.bind(null, projectId)}>
-          <Button type="submit" size="sm" variant="secondary">
-            Vluchtkosten invoeren
-          </Button>
-        </form>
+
+        <div className="space-y-2 border-t pt-3">
+          <p className="text-sm font-medium">Vluchtkosten</p>
+          <CostForm
+            action={saveFlightCost.bind(null, projectId)}
+            idPrefix="flight-cost"
+            suppliers={suppliers}
+            category={flightCategory}
+            quote={flightQuote}
+          />
+          {flightQuote && (
+            <p className="text-xs text-muted-foreground">
+              Staat al in de begroting als categorie "Vluchten" — wijzigingen hier passen 'm meteen aan.
+            </p>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function HotelSection({ projectId, members }: { projectId: string; members: CrewMember[] }) {
+function HotelSection({
+  projectId,
+  members,
+  suppliers,
+  hotelCategory,
+  hotelQuote,
+}: {
+  projectId: string;
+  members: CrewMember[];
+  suppliers: Supplier[];
+  hotelCategory: Category | null;
+  hotelQuote: Quote | null;
+}) {
   return (
     <Card>
       <CardHeader>
@@ -197,22 +296,31 @@ function HotelSection({ projectId, members }: { projectId: string; members: Crew
             </table>
           </div>
         )}
-        <div className="flex flex-wrap gap-3">
-          {members.length > 0 && (
-            <a
-              href={`/projects/${projectId}/production/hotel/pdf`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary underline"
-            >
-              Hotelaanvraag downloaden (PDF)
-            </a>
+        {members.length > 0 && (
+          <a
+            href={`/projects/${projectId}/production/hotel/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary underline"
+          >
+            Hotelaanvraag downloaden (PDF)
+          </a>
+        )}
+
+        <div className="space-y-2 border-t pt-3">
+          <p className="text-sm font-medium">Hotelkosten</p>
+          <CostForm
+            action={saveHotelCost.bind(null, projectId)}
+            idPrefix="hotel-cost"
+            suppliers={suppliers}
+            category={hotelCategory}
+            quote={hotelQuote}
+          />
+          {hotelQuote && (
+            <p className="text-xs text-muted-foreground">
+              Staat al in de begroting als categorie "Hotel" — wijzigingen hier passen 'm meteen aan.
+            </p>
           )}
-          <form action={goToHotelBudgetCategory.bind(null, projectId)}>
-            <Button type="submit" size="sm" variant="secondary">
-              Hotelkosten invoeren
-            </Button>
-          </form>
         </div>
       </CardContent>
     </Card>
@@ -224,17 +332,39 @@ export function HotelFlightsCard({
   hotelMembers,
   flightMembers,
   suppliersManageTravel,
+  suppliers,
+  hotelCategory,
+  hotelQuote,
+  flightCategory,
+  flightQuote,
 }: {
   projectId: string;
   hotelMembers: CrewMember[];
   flightMembers: CrewMember[];
   suppliersManageTravel: boolean;
+  suppliers: Supplier[];
+  hotelCategory: Category | null;
+  hotelQuote: Quote | null;
+  flightCategory: Category | null;
+  flightQuote: Quote | null;
 }) {
   return (
     <div className="space-y-6">
       <SupplierAccessToggle projectId={projectId} enabled={suppliersManageTravel} />
-      <HotelSection projectId={projectId} members={hotelMembers} />
-      <FlightsSection projectId={projectId} members={flightMembers} />
+      <HotelSection
+        projectId={projectId}
+        members={hotelMembers}
+        suppliers={suppliers}
+        hotelCategory={hotelCategory}
+        hotelQuote={hotelQuote}
+      />
+      <FlightsSection
+        projectId={projectId}
+        members={flightMembers}
+        suppliers={suppliers}
+        flightCategory={flightCategory}
+        flightQuote={flightQuote}
+      />
     </div>
   );
 }
