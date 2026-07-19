@@ -44,7 +44,10 @@ export function QuotePdfImport({
   const [confirmingCategory, setConfirmingCategory] = useState<string | null>(null);
   const [confirmError, setConfirmError] = useState<string | null>(null);
 
-  async function handleUpload(formData: FormData) {
+  async function handleUpload(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+
     setLoading(true);
     setUploadError(null);
     try {
@@ -127,7 +130,7 @@ export function QuotePdfImport({
               </SelectContent>
             </Select>
           </div>
-          <form action={handleUpload} className="flex items-end gap-2">
+          <form onSubmit={handleUpload} className="flex items-end gap-2">
             <Input type="file" name="file" accept=".pdf" required />
             <Button type="submit" disabled={loading}>
               {loading ? "Bezig..." : "Uploaden"}
