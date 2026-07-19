@@ -39,9 +39,8 @@ export async function createCategory(
   });
 
   revalidatePath(`/projects/${projectId}`);
-  revalidatePath(
-    stageId ? `/projects/${projectId}/stages/${stageId}` : `/projects/${projectId}/budget`
-  );
+  revalidatePath(`/projects/${projectId}/budget`);
+  if (stageId) revalidatePath(`/projects/${projectId}/stages/${stageId}`);
 }
 
 export async function updateCategory(projectId: string, categoryId: string, formData: FormData) {
@@ -60,6 +59,7 @@ export async function updateCategory(projectId: string, categoryId: string, form
     .eq("id", categoryId);
 
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -68,6 +68,7 @@ export async function deleteCategory(projectId: string, categoryId: string) {
   const path = await categoryRevalidationPath(supabase, projectId, categoryId);
   await supabase.from("categories").delete().eq("id", categoryId);
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -101,6 +102,7 @@ export async function createQuote(projectId: string, categoryId: string, formDat
   });
 
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -109,6 +111,7 @@ export async function chooseQuote(projectId: string, quoteId: string) {
   const path = await quoteRevalidationPath(supabase, projectId, quoteId);
   await supabase.rpc("choose_quote", { p_quote_id: quoteId });
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -117,6 +120,7 @@ export async function deleteQuote(projectId: string, quoteId: string) {
   const path = await quoteRevalidationPath(supabase, projectId, quoteId);
   await supabase.from("quotes").delete().eq("id", quoteId);
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -416,6 +420,7 @@ export async function addQuoteLineItem(projectId: string, quoteId: string, formD
   });
 
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }
 
@@ -433,5 +438,6 @@ export async function deleteQuoteLineItem(projectId: string, lineItemId: string)
 
   await supabase.from("quote_line_items").delete().eq("id", lineItemId);
   revalidatePath(`/projects/${projectId}`);
+  revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
 }

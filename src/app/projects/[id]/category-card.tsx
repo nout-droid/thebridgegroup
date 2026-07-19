@@ -222,7 +222,8 @@ export function CategoryCard({
           <p className="text-sm">
             Klantprijs: <span className="font-semibold">&euro; {clientPrice.toFixed(2)}</span>{" "}
             <span className="text-muted-foreground">
-              (inkoop &euro; {chosenQuote!.cost_price.toFixed(2)} + marge)
+              (inkoop &euro; {chosenQuote!.cost_price.toFixed(2)} + marge &euro;{" "}
+              {(clientPrice - chosenQuote!.cost_price).toFixed(2)})
             </span>
           </p>
         )}
