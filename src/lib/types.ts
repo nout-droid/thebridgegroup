@@ -140,6 +140,12 @@ export interface SharedIntakeChecklist {
   photos: IntakeChecklistPhoto[];
 }
 
+export interface SharedCo2 {
+  flight_count: number;
+  total_km: number;
+  quote_kg: number;
+}
+
 export interface ActivityLogEntry {
   id: string;
   project_id: string;

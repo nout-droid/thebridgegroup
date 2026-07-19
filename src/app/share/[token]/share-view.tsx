@@ -20,11 +20,13 @@ import {
   CATEGORY_STATUS_LABELS,
   type IntakeChecklistPhoto,
   type SharedCategory,
+  type SharedCo2,
   type SharedIntakeChecklist,
   type SharedMedia,
   type SharedProject,
   type SharedRider,
 } from "@/lib/types";
+import { computeCo2Total, FLIGHT_CO2_KG, KM_CO2_KG_PER_KM } from "@/lib/co2";
 import { toEmbedUrl } from "@/lib/video-embed";
 import { Footer } from "@/components/footer";
 import { INTAKE_CHECKLIST_SECTIONS } from "@/lib/intake-checklist-sections";
@@ -74,6 +76,13 @@ const STATIC_LABELS = [
   "Goedgekeurd",
   "Aanpassing gevraagd",
   "Geweigerd",
+  "CO2",
+  "CO2-indicatie",
+  "Een indicatie van de CO2-uitstoot voor dit event, aan onze kant — vluchten, transport en door leveranciers opgegeven cijfers. Bedoeld als bewustwording, niet als exacte meting.",
+  "Vluchten (crew)",
+  "Transport",
+  "Leveranciers (opgegeven)",
+  `Vuistregels: ${FLIGHT_CO2_KG} kg per vlucht (gemiddelde retourvlucht, korte/middellange afstand), ${KM_CO2_KG_PER_KM} kg per km wegtransport.`,
   ...Object.values(CATEGORY_STATUS_LABELS),
 ];
 
@@ -661,15 +670,55 @@ function BudgetApprovalPanel({
   );
 }
 
+function Co2Panel({ co2, t }: { co2: SharedCo2; t: Translator }) {
+  const total = computeCo2Total(co2.flight_count, co2.total_km, co2.quote_kg);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{t("CO2-indicatie")}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {t(
+            "Een indicatie van de CO2-uitstoot voor dit event, aan onze kant — vluchten, transport en door leveranciers opgegeven cijfers. Bedoeld als bewustwording, niet als exacte meting."
+          )}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-3xl font-semibold text-primary">
+          🌱 {Math.round(total.totalKg).toLocaleString("nl-NL")} kg
+        </p>
+        <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+          <div>
+            <dt className="text-muted-foreground">{t("Vluchten (crew)")}</dt>
+            <dd className="font-medium">{Math.round(total.flightKg).toLocaleString("nl-NL")} kg</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t("Transport")}</dt>
+            <dd className="font-medium">{Math.round(total.kmKg).toLocaleString("nl-NL")} kg</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">{t("Leveranciers (opgegeven)")}</dt>
+            <dd className="font-medium">{Math.round(total.quoteKg).toLocaleString("nl-NL")} kg</dd>
+          </div>
+        </dl>
+        <p className="text-xs text-muted-foreground">
+          {t(`Vuistregels: ${FLIGHT_CO2_KG} kg per vlucht (gemiddelde retourvlucht, korte/middellange afstand), ${KM_CO2_KG_PER_KM} kg per km wegtransport.`)}
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function ShareView({ token }: { token: string }) {
   const [data, setData] = useState<SharedProject | null>(null);
   const [rider, setRider] = useState<SharedRider | null>(null);
   const [checklist, setChecklist] = useState<SharedIntakeChecklist | null>(null);
+  const [co2, setCo2] = useState<SharedCo2 | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lang, setLang] = useState<"nl" | "en">("nl");
   const [cache, setCache] = useState<Map<string, string>>(new Map());
   const [translationError, setTranslationError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"budget" | "rider" | "checklist">("budget");
+  const [activeTab, setActiveTab] = useState<"budget" | "rider" | "checklist" | "co2">("budget");
 
   useEffect(() => {
     const supabase = createClient();
@@ -691,6 +740,8 @@ export function ShareView({ token }: { token: string }) {
         p_share_token: token,
       });
       if (!cancelled && checklistData) setChecklist(checklistData as SharedIntakeChecklist);
+      const { data: co2Data } = await supabase.rpc("get_shared_co2", { p_share_token: token });
+      if (!cancelled && co2Data) setCo2(co2Data as SharedCo2);
       setData(data as SharedProject);
     }
 
@@ -852,6 +903,19 @@ export function ShareView({ token }: { token: string }) {
           >
             {t("Aanvraag checklist")}
           </button>
+          {co2 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("co2")}
+              className={`px-3 py-2 text-sm font-medium ${
+                activeTab === "co2"
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {t("CO2")}
+            </button>
+          )}
         </div>
 
         {activeTab === "rider" && rider && rider.sections.length > 0 ? (
@@ -905,6 +969,8 @@ export function ShareView({ token }: { token: string }) {
               )
             }
           />
+        ) : activeTab === "co2" && co2 ? (
+          <Co2Panel co2={co2} t={t} />
         ) : (
           <>
             <MediaGallery media={data.media} t={t} />
