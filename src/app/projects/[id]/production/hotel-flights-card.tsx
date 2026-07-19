@@ -4,8 +4,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { Category, CrewMember, Quote, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
-import { saveHotelCost, setSuppliersManageTravel } from "./hotel-actions";
+import { saveHotelCost, setSuppliersManageTravel, updateCrewPerDiem } from "./hotel-actions";
 import { saveFlightCost, updateCrewFlightDetails } from "./flight-actions";
+import { computeNights } from "@/lib/nights";
 
 function SupplierAccessToggle({
   projectId,
@@ -305,6 +306,49 @@ function HotelSection({
           >
             Hotelaanvraag downloaden (PDF)
           </a>
+        )}
+
+        {members.length > 0 && (
+          <div className="space-y-2 border-t pt-3">
+            <p className="text-sm font-medium">Sejourskosten per persoon</p>
+            <p className="text-xs text-muted-foreground">
+              Dagvergoeding voor iedereen die in het hotel zit — telt automatisch mee in de
+              begroting als categorie "Sejours".
+            </p>
+            <div className="space-y-2">
+              {members.map((member) => {
+                const nights = computeNights(member.access_dates ?? []);
+                const total = nights * (member.per_diem_rate ?? 0);
+                return (
+                  <form
+                    key={member.id}
+                    action={updateCrewPerDiem.bind(null, projectId, member.id)}
+                    className="flex flex-wrap items-end gap-3 rounded-md border p-2"
+                  >
+                    <p className="min-w-0 flex-1 truncate text-xs font-medium">
+                      {member.name || "Naam volgt"} <span className="text-muted-foreground">({nights}n)</span>
+                    </p>
+                    <div className="space-y-1">
+                      <Label htmlFor={`perdiem-${member.id}`} className="text-xs">€ per nacht</Label>
+                      <Input
+                        id={`perdiem-${member.id}`}
+                        name="per_diem_rate"
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        defaultValue={member.per_diem_rate}
+                        className="h-8 w-24 text-xs"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Totaal: € {total.toFixed(2)}</p>
+                    <Button type="submit" size="sm" className="h-8 text-xs">
+                      Opslaan
+                    </Button>
+                  </form>
+                );
+              })}
+            </div>
+          </div>
         )}
 
         <div className="space-y-2 border-t pt-3">

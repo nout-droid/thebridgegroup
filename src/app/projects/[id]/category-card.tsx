@@ -53,7 +53,8 @@ export function CategoryCard({
   suppliers: Supplier[];
 }) {
   const chosenQuote = quotes.find((q) => q.status === "gekozen");
-  const clientPrice = chosenQuote ? computeClientPrice(category, chosenQuote.cost_price) : null;
+  const effectiveCost = chosenQuote?.cost_price ?? category.manual_cost ?? null;
+  const clientPrice = effectiveCost !== null ? computeClientPrice(category, effectiveCost) : null;
 
   return (
     <Card>
@@ -111,10 +112,36 @@ export function CategoryCard({
               defaultValue={category.margin_value}
             />
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`manual_cost-${category.id}`}>Stelpost (indien geen offerte)</Label>
+            <Input
+              id={`manual_cost-${category.id}`}
+              name="manual_cost"
+              type="number"
+              step="0.01"
+              placeholder="Handmatige inschatting"
+              defaultValue={category.manual_cost ?? ""}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`estimated_km-${category.id}`}>Geschat aantal km (optioneel)</Label>
+            <Input
+              id={`estimated_km-${category.id}`}
+              name="estimated_km"
+              type="number"
+              step="1"
+              placeholder="Voor CO2-indicatie"
+              defaultValue={category.estimated_km ?? ""}
+            />
+          </div>
           <Button type="submit" size="sm" className="col-span-2 sm:col-span-4 sm:w-fit">
             Opslaan
           </Button>
         </form>
+        <p className="text-xs text-muted-foreground">
+          Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een
+          offerte kiest, wint die.
+        </p>
 
         {!quotes.length ? (
           <p className="text-sm text-muted-foreground">Nog geen offertes toegevoegd.</p>
@@ -213,6 +240,16 @@ export function CategoryCard({
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-1.5">
+            <Label htmlFor={`co2-${category.id}`}>CO2 (kg, optioneel)</Label>
+            <Input
+              id={`co2-${category.id}`}
+              name="co2_kg"
+              type="number"
+              step="0.1"
+              placeholder="Bv. transport"
+            />
+          </div>
           <Button type="submit" size="sm" className="self-end">
             Offerte toevoegen
           </Button>
@@ -222,8 +259,9 @@ export function CategoryCard({
           <p className="text-sm">
             Klantprijs: <span className="font-semibold">&euro; {clientPrice.toFixed(2)}</span>{" "}
             <span className="text-muted-foreground">
-              (inkoop &euro; {chosenQuote!.cost_price.toFixed(2)} + marge &euro;{" "}
-              {(clientPrice - chosenQuote!.cost_price).toFixed(2)})
+              (inkoop &euro; {effectiveCost!.toFixed(2)} + marge &euro;{" "}
+              {(clientPrice - effectiveCost!).toFixed(2)}
+              {!chosenQuote && " · stelpost"})
             </span>
           </p>
         )}

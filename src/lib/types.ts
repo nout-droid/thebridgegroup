@@ -198,6 +198,8 @@ export interface Category {
   status: CategoryStatus;
   margin_type: MarginType;
   margin_value: number;
+  manual_cost: number | null;
+  estimated_km: number | null;
   created_at: string;
 }
 
@@ -241,6 +243,7 @@ export interface CrewMember {
   flight_return_at: string | null;
   flight_booking_number: string;
   flight_ticket_number: string;
+  per_diem_rate: number;
   supplier?: Supplier;
 }
 
@@ -454,6 +457,7 @@ export interface Quote {
   notes: string;
   status: QuoteStatus;
   received_at: string | null;
+  co2_kg: number | null;
   created_at: string;
   supplier?: Supplier;
   line_items?: QuoteLineItem[];

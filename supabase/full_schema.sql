@@ -844,12 +844,12 @@ as $$
       c.status,
       c.margin_type,
       c.margin_value,
-      chosen.cost_price,
+      coalesce(chosen.cost_price, c.manual_cost) as cost_price,
       chosen.supplier_name,
       case
-        when chosen.cost_price is null then null
-        when c.margin_type = 'percentage' then round(chosen.cost_price * (1 + c.margin_value / 100), 2)
-        else chosen.cost_price + c.margin_value
+        when coalesce(chosen.cost_price, c.manual_cost) is null then null
+        when c.margin_type = 'percentage' then round(coalesce(chosen.cost_price, c.manual_cost) * (1 + c.margin_value / 100), 2)
+        else coalesce(chosen.cost_price, c.manual_cost) + c.margin_value
       end as client_price,
       coalesce(chosen.line_items, '[]'::json) as line_items
     from public.categories c
@@ -2795,3 +2795,9 @@ alter table public.projects drop column if exists rental_days;
 
 -- ========== LEVERANCIERS BEHEREN HOTEL/VLUCHTEN ==========
 alter table public.projects add column if not exists suppliers_manage_travel boolean not null default false;
+
+-- ========== STELPOSTEN, SEJOURS & CO2 ==========
+alter table public.categories add column if not exists manual_cost numeric;
+alter table public.categories add column if not exists estimated_km numeric;
+alter table public.crew_members add column if not exists per_diem_rate numeric not null default 0;
+alter table public.quotes add column if not exists co2_kg numeric;

@@ -48,6 +48,10 @@ export async function updateCategory(projectId: string, categoryId: string, form
   const status = String(formData.get("status") ?? "concept") as CategoryStatus;
   const marginType = String(formData.get("margin_type") ?? "percentage") as MarginType;
   const marginValue = Number(formData.get("margin_value") ?? 0);
+  const manualCostRaw = String(formData.get("manual_cost") ?? "").trim();
+  const manualCost = manualCostRaw === "" ? null : Number(manualCostRaw);
+  const estimatedKmRaw = String(formData.get("estimated_km") ?? "").trim();
+  const estimatedKm = estimatedKmRaw === "" ? null : Number(estimatedKmRaw);
 
   if (!name) return;
 
@@ -55,7 +59,14 @@ export async function updateCategory(projectId: string, categoryId: string, form
   const path = await categoryRevalidationPath(supabase, projectId, categoryId);
   await supabase
     .from("categories")
-    .update({ name, status, margin_type: marginType, margin_value: marginValue })
+    .update({
+      name,
+      status,
+      margin_type: marginType,
+      margin_value: marginValue,
+      manual_cost: manualCost,
+      estimated_km: estimatedKm,
+    })
     .eq("id", categoryId);
 
   revalidatePath(`/projects/${projectId}`);
@@ -77,6 +88,8 @@ export async function createQuote(projectId: string, categoryId: string, formDat
   const costPrice = Number(formData.get("cost_price") ?? 0);
   let status = String(formData.get("status") ?? "aangevraagd") as QuoteStatus;
   const notes = String(formData.get("notes") ?? "").trim();
+  const co2Raw = String(formData.get("co2_kg") ?? "").trim();
+  const co2Kg = co2Raw === "" ? null : Number(co2Raw);
 
   if (!supplierId) return;
 
@@ -99,6 +112,7 @@ export async function createQuote(projectId: string, categoryId: string, formDat
     cost_price: costPrice,
     status,
     notes,
+    co2_kg: co2Kg,
   });
 
   revalidatePath(`/projects/${projectId}`);

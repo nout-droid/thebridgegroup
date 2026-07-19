@@ -34,9 +34,10 @@ function sumCategories(categories: Category[], quotesByCategory: Map<string, Quo
   return categories.reduce(
     (acc, category) => {
       const chosen = quotesByCategory.get(category.id)?.find((q) => q.status === "gekozen");
-      if (!chosen) return acc;
-      acc.cost += chosen.cost_price;
-      acc.client += computeClientPrice(category, chosen.cost_price);
+      const cost = chosen?.cost_price ?? category.manual_cost;
+      if (cost === null || cost === undefined) return acc;
+      acc.cost += cost;
+      acc.client += computeClientPrice(category, cost);
       return acc;
     },
     { cost: 0, client: 0 }

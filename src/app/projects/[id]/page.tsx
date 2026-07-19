@@ -85,14 +85,16 @@ export default async function ProjectPage({
 
   const totalBudget = (categories ?? []).reduce((sum, category) => {
     const chosen = quotesByCategory.get(category.id)?.find((q) => q.status === "gekozen");
-    return chosen ? sum + computeClientPrice(category, chosen.cost_price) : sum;
+    const cost = chosen?.cost_price ?? category.manual_cost;
+    return cost !== null && cost !== undefined ? sum + computeClientPrice(category, cost) : sum;
   }, 0);
 
   const stageSubtotals = new Map<string, number>();
   for (const category of categories ?? []) {
     if (!category.stage_id) continue;
     const chosen = quotesByCategory.get(category.id)?.find((q) => q.status === "gekozen");
-    const price = chosen ? computeClientPrice(category, chosen.cost_price) : 0;
+    const cost = chosen?.cost_price ?? category.manual_cost;
+    const price = cost !== null && cost !== undefined ? computeClientPrice(category, cost) : 0;
     stageSubtotals.set(category.stage_id, (stageSubtotals.get(category.stage_id) ?? 0) + price);
   }
 

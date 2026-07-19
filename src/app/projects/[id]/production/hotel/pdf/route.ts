@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateHotelRequestPdf } from "@/lib/generate-hotel-request-pdf";
-
-function nightsBetween(checkIn: string, checkOut: string): number {
-  const start = new Date(`${checkIn}T00:00:00`).getTime();
-  const end = new Date(`${checkOut}T00:00:00`).getTime();
-  return Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)));
-}
+import { computeNights } from "@/lib/nights";
 
 export async function GET(
   _request: Request,
@@ -40,14 +35,12 @@ export async function GET(
 
   const entries = (members ?? []).map((member) => {
     const dates = [...(member.access_dates ?? [])].sort();
-    const checkIn = dates[0] ?? "onbekend";
-    const checkOut = dates[dates.length - 1] ?? "onbekend";
     return {
       name: member.name,
       role: member.role,
-      checkIn,
-      checkOut,
-      nights: dates.length >= 2 ? nightsBetween(checkIn, checkOut) : 1,
+      checkIn: dates[0] ?? "onbekend",
+      checkOut: dates[dates.length - 1] ?? "onbekend",
+      nights: computeNights(dates),
     };
   });
 
