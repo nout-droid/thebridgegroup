@@ -67,6 +67,16 @@ export function MaterialList({
     }
   }
 
+  // Vuistregel-inschatting voor DMX-netwerkbehoefte bij licht: ~20 armaturen per universe,
+  // ~4 universes per node, ~4 nodes per switch. Puur een richtlijn — geen vervanging voor het
+  // controleren van de daadwerkelijke fixture-specs en netwerktopologie.
+  const lightFixtureCount = items.reduce((sum, item) => {
+    return item.matched_article?.category === "LIGHT" ? sum + item.quantity : sum;
+  }, 0);
+  const estimatedUniverses = Math.ceil(lightFixtureCount / 20);
+  const estimatedNodes = Math.ceil(estimatedUniverses / 4);
+  const estimatedSwitches = Math.ceil(estimatedNodes / 4);
+
   return (
     <Card>
       <CardHeader>
@@ -219,6 +229,20 @@ export function MaterialList({
                     </form>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {lightFixtureCount > 0 && (
+              <div className="space-y-1 rounded-md border border-dashed p-3 text-sm">
+                <p className="font-medium">Geschatte DMX-netwerkbehoefte (vuistregel)</p>
+                <p className="text-muted-foreground">
+                  {lightFixtureCount} lichtarmaturen in deze lijst → circa {estimatedUniverses}{" "}
+                  DMX-universe{estimatedUniverses === 1 ? "" : "s"}, {estimatedNodes} node
+                  {estimatedNodes === 1 ? "" : "s"} (4 universes/node), {estimatedSwitches}{" "}
+                  netwerkswitch{estimatedSwitches === 1 ? "" : "es"} (4 nodes/switch). Controleer
+                  altijd de daadwerkelijke fixture-specs en netwerktopologie — voeg de juiste
+                  node/switch-modellen hieronder toe via &quot;+ Regel toevoegen&quot;.
+                </p>
               </div>
             )}
           </>

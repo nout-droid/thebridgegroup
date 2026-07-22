@@ -338,13 +338,17 @@ export async function uploadMaterialList(
     const itemIds: string[] = [];
     const articleIds: string[] = [];
     const prices: number[] = [];
-    for (const item of items) {
+    let inkoopTotal = 0;
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const alias = aliasByText.get(normalizeAliasText(item.raw_description));
       const best = alias ?? bestByDescription.get(item.raw_description);
       if (best?.article_id) {
+        const price = alias ? alias.day_price : best.day_price;
         itemIds.push(item.id);
         articleIds.push(best.article_id);
-        prices.push(alias ? alias.day_price : best.day_price);
+        prices.push(price);
+        inkoopTotal += price * (rows[i]?.quantity ?? 1);
       }
     }
 
@@ -354,6 +358,32 @@ export async function uploadMaterialList(
         p_article_ids: articleIds,
         p_prices: prices,
       });
+    }
+
+    // Elke export krijgt standaard drie vrij invulbare stelposten (bekabeling, transport,
+    // crew) op 10% van de herkende inkoopsom — een startpunt dat de gebruiker net zo makkelijk
+    // kan aanpassen als elke andere regel (zie updateMaterialListItem). Niet nogmaals toevoegen
+    // als deze scope al stelposten heeft (bv. bij een tweede upload).
+    let stelpostQuery = supabase
+      .from("material_list_items")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", projectId)
+      .ilike("raw_description", "Stelpost %");
+    stelpostQuery = stageId ? stelpostQuery.eq("stage_id", stageId) : stelpostQuery.is("stage_id", null);
+    const { count: existingStelpostCount } = await stelpostQuery;
+
+    if (!existingStelpostCount && inkoopTotal > 0) {
+      const stelpostValue = Math.round(inkoopTotal * 0.1 * 100) / 100;
+      await supabase.from("material_list_items").insert(
+        ["Stelpost bekabeling", "Stelpost transport", "Stelpost crew"].map((description) => ({
+          project_id: projectId,
+          stage_id: stageId,
+          raw_description: description,
+          quantity: 1,
+          unit: "stelpost",
+          unit_price: stelpostValue,
+        }))
+      );
     }
   }
 
