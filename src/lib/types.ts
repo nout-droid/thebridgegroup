@@ -279,6 +279,7 @@ export interface CrewPosition {
   needs_accreditation: boolean;
   needs_catering: boolean;
   needs_hotel: boolean;
+  needs_flight: boolean;
   notes: string;
   sort_order: number;
   created_at: string;

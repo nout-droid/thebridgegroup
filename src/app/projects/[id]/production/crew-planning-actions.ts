@@ -21,6 +21,7 @@ interface PositionFields {
   needs_accreditation: boolean;
   needs_catering: boolean;
   needs_hotel: boolean;
+  needs_flight: boolean;
   notes: string;
 }
 
@@ -42,6 +43,7 @@ function parseFormFields(formData: FormData): PositionFields {
     needs_accreditation: formData.get("needs_accreditation") === "on",
     needs_catering: formData.get("needs_catering") === "on",
     needs_hotel: formData.get("needs_hotel") === "on",
+    needs_flight: formData.get("needs_flight") === "on",
     notes: String(formData.get("notes") ?? "").trim(),
   };
 }
@@ -83,6 +85,7 @@ async function syncAccreditationForPosition(
         access_dates: [position.work_date],
         needs_catering: position.needs_catering,
         needs_hotel: position.needs_hotel,
+        needs_flight: position.needs_flight,
         accredited: false,
         sort_order: startSortOrder + i,
       }))

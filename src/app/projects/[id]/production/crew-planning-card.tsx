@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -119,6 +122,15 @@ function PositionForm({
           />
           Hotel nodig
         </label>
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            name="needs_flight"
+            defaultChecked={position?.needs_flight}
+            className="h-4 w-4"
+          />
+          Vlucht nodig
+        </label>
       </div>
       <div className="space-y-1 sm:col-span-4">
         <Label htmlFor={`notes-${idPrefix}`} className="text-xs">Notities</Label>
@@ -162,6 +174,25 @@ export function CrewPlanningCard({
     ...stages.map((s) => ({ stageId: s.id, stageName: s.name })),
   ];
 
+  const allDates = [...new Set(positions.map((p) => p.work_date))].sort();
+  const [areaFilter, setAreaFilter] = useState("alle");
+  const [dateFilter, setDateFilter] = useState("alle");
+  const [search, setSearch] = useState("");
+
+  const filteredPositions = positions.filter((position) => {
+    if (areaFilter !== "alle" && (position.stage_id ?? "algemeen") !== areaFilter) return false;
+    if (dateFilter !== "alle" && position.work_date !== dateFilter) return false;
+    if (search.trim()) {
+      const query = search.trim().toLowerCase();
+      const matchesRole = position.role.toLowerCase().includes(query);
+      const matchesPerson = linkedMembers.some(
+        (m) => m.crew_position_id === position.id && m.name.toLowerCase().includes(query)
+      );
+      if (!matchesRole && !matchesPerson) return false;
+    }
+    return true;
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -171,10 +202,51 @@ export function CrewPlanningCard({
           nog zonder namen. Vink "Accreditatie nodig" aan om automatisch lege plekken in
           Crew & Accreditatie aan te maken zodra dit bekend wordt.
         </p>
+        <div className="flex flex-wrap items-end gap-2 pt-2">
+          <div className="space-y-1">
+            <Label htmlFor="planning-filter-area" className="text-xs">Podium/area</Label>
+            <select
+              id="planning-filter-area"
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle podia</option>
+              <option value="algemeen">Projectbreed</option>
+              {stages.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="planning-filter-date" className="text-xs">Datum</Label>
+            <select
+              id="planning-filter-date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle datums</option>
+              {allDates.map((date) => (
+                <option key={date} value={date}>{date}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="planning-filter-search" className="text-xs">Zoek op functie/naam</Label>
+            <Input
+              id="planning-filter-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="bv. Podiumtechnicus"
+              className="h-8 w-48 text-xs"
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-8">
         {stageGroups.map(({ stageId, stageName }) => {
-          const stagePositions = positions.filter((p) => p.stage_id === stageId);
+          const stagePositions = filteredPositions.filter((p) => p.stage_id === stageId);
           if (!stagePositions.length) return null;
           const dates = [...new Set(stagePositions.map((p) => p.work_date))].sort();
 

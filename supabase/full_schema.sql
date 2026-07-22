@@ -3261,3 +3261,8 @@ grant execute on function public.suggest_catalog_matches_bulk(text[]) to authent
 -- heeft opgegeven.
 alter table public.projects add column if not exists client_budget numeric;
 alter table public.projects add column if not exists default_margin_percentage numeric not null default 20;
+
+-- crew_members had al needs_flight (Vluchten-sectie), maar crew_positions (de planningsslot
+-- vóórdat een naam bekend is) nog niet — mirror van needs_catering/needs_hotel die al wel op
+-- positieniveau bestaan en doorschieten naar crew_members zodra een naam wordt toegevoegd.
+alter table public.crew_positions add column if not exists needs_flight boolean not null default false;
