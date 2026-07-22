@@ -90,7 +90,14 @@ export function MaterialList({
                   const total = lineTotal(item, rentalMultiplier);
                   const article = item.matched_article;
                   const label = article
-                    ? `${article.supplier?.name ?? ""} — ${article.name} (€ ${article.day_price.toFixed(2)}/dag)`
+                    ? `${article.supplier?.name ?? ""} — ${article.name} (€ ${article.day_price.toFixed(2)}/dag)` +
+                      (article.last_seen_price != null
+                        ? ` · laatst gezien € ${article.last_seen_price.toFixed(2)}${
+                            article.last_seen_price_at
+                              ? ` (${new Date(article.last_seen_price_at).toLocaleDateString("nl-NL")})`
+                              : ""
+                          }`
+                        : "")
                     : "Geen match";
                   return (
                     <TableRow key={item.id}>

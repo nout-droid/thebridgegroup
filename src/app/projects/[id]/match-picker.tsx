@@ -75,6 +75,14 @@ export function MatchPicker({
                   >
                     {suggestion.supplier_name} &mdash; {suggestion.name} (&euro;{" "}
                     {suggestion.day_price.toFixed(2)})
+                    {suggestion.last_seen_price != null && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        · laatst gezien &euro; {suggestion.last_seen_price.toFixed(2)}
+                        {suggestion.last_seen_price_at &&
+                          ` (${new Date(suggestion.last_seen_price_at).toLocaleDateString("nl-NL")})`}
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}

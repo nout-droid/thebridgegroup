@@ -547,9 +547,12 @@ export interface CatalogArticle {
   supplier_id: string;
   external_code: string;
   name: string;
+  brand: string | null;
   category: string;
   properties: string;
   day_price: number;
+  last_seen_price: number | null;
+  last_seen_price_at: string | null;
   unit: string;
   created_at: string;
 }
@@ -573,6 +576,8 @@ export interface CatalogMatchSuggestion {
   name: string;
   category: string;
   day_price: number;
+  last_seen_price: number | null;
+  last_seen_price_at: string | null;
   similarity: number;
 }
 

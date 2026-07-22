@@ -185,6 +185,14 @@ export async function confirmSupplierProjectDocument(
     }
   }
 
+  const matchedLines = assigned.filter((line) => line.matched_article_id);
+  if (matchedLines.length) {
+    await supabase.rpc("update_catalog_last_seen_prices", {
+      p_article_ids: matchedLines.map((line) => line.matched_article_id as string),
+      p_prices: matchedLines.map((line) => line.price),
+    });
+  }
+
   await supabase
     .from("quote_documents")
     .update({ confirmed_at: new Date().toISOString() })
