@@ -290,6 +290,7 @@ export interface CrewPosition {
 export interface EquipmentReservation {
   id: string;
   project_id: string;
+  stage_id: string | null;
   machine_type: string;
   supplier_id: string | null;
   quantity: number;
@@ -309,6 +310,7 @@ export type CommsKind = "intercom" | "portofoon";
 export interface CommsAssignment {
   id: string;
   project_id: string;
+  stage_id: string | null;
   kind: CommsKind;
   user_name: string;
   device_type: string;

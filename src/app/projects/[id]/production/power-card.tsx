@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +21,12 @@ export function PowerCard({
   stages: Stage[];
   suppliers: Supplier[];
 }) {
+  const [areaFilter, setAreaFilter] = useState("alle");
+  const filteredRequests =
+    areaFilter === "alle"
+      ? requests
+      : requests.filter((r) => (r.stage_id ?? "algemeen") === areaFilter);
+
   return (
     <Card>
       <CardHeader>
@@ -25,6 +34,21 @@ export function PowerCard({
         <p className="text-sm text-muted-foreground">
           Stroomaanvragen per podium: wat, hoeveel en op welke positie.
         </p>
+        <div className="space-y-1 pt-2">
+          <Label htmlFor="power-filter-area" className="text-xs">Podium/area</Label>
+          <select
+            id="power-filter-area"
+            value={areaFilter}
+            onChange={(e) => setAreaFilter(e.target.value)}
+            className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+          >
+            <option value="alle">Alle podia</option>
+            <option value="algemeen">Projectbreed</option>
+            {stages.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {requests.length > 0 && (
@@ -37,7 +61,7 @@ export function PowerCard({
             Stroomaanvraag downloaden (PDF)
           </a>
         )}
-        {requests.map((request) => (
+        {filteredRequests.map((request) => (
           <form
             key={request.id}
             action={updatePowerRequest.bind(null, projectId, request.id)}

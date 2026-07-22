@@ -12,6 +12,7 @@ export async function addCommsAssignment(projectId: string, kind: CommsKind, for
   const userName = String(formData.get("user_name") ?? "").trim();
   if (!userName) return;
 
+  const stageId = String(formData.get("stage_id") ?? "") || null;
   const deviceType = String(formData.get("device_type") ?? "").trim();
   const channels = String(formData.get("channels") ?? "").trim();
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
@@ -26,6 +27,7 @@ export async function addCommsAssignment(projectId: string, kind: CommsKind, for
 
   await supabase.from("comms_assignments").insert({
     project_id: projectId,
+    stage_id: stageId,
     kind,
     user_name: userName,
     device_type: deviceType,
@@ -46,6 +48,7 @@ export async function updateCommsAssignment(
   const userName = String(formData.get("user_name") ?? "").trim();
   if (!userName) return;
 
+  const stageId = String(formData.get("stage_id") ?? "") || null;
   const deviceType = String(formData.get("device_type") ?? "").trim();
   const channels = String(formData.get("channels") ?? "").trim();
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
@@ -55,6 +58,7 @@ export async function updateCommsAssignment(
   await supabase
     .from("comms_assignments")
     .update({
+      stage_id: stageId,
       user_name: userName,
       device_type: deviceType,
       channels,

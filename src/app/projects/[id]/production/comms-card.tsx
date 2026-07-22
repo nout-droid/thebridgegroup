@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CommsAssignment, CommsKind, CrewMember, Supplier } from "@/lib/types";
+import type { CommsAssignment, CommsKind, CrewMember, Stage, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { StageSelect } from "../stage-select";
 import { CrewMemberSelect } from "../crew-member-select";
 import { addCommsAssignment, deleteCommsAssignment, updateCommsAssignment } from "./comms-actions";
 
@@ -19,6 +23,7 @@ function CommsList({
   items,
   suppliers,
   crewMembers,
+  stages,
 }: {
   projectId: string;
   kind: CommsKind;
@@ -31,6 +36,7 @@ function CommsList({
   items: CommsAssignment[];
   suppliers: Supplier[];
   crewMembers: CrewMember[];
+  stages: Stage[];
 }) {
   return (
     <div className="space-y-3">
@@ -53,6 +59,14 @@ function CommsList({
               defaultValue={item.user_name}
               className="h-8 text-xs"
               required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor={`stage-${item.id}`} className="text-xs">Podium/area</Label>
+            <StageSelect
+              id={`stage-${item.id}`}
+              defaultValue={item.stage_id ?? undefined}
+              stages={stages}
             />
           </div>
           <div className="space-y-1">
@@ -117,6 +131,10 @@ function CommsList({
           <Input id={`new-user-${kind}`} name="user_name" className="h-8 text-xs" required />
         </div>
         <div className="space-y-1">
+          <Label htmlFor={`new-stage-${kind}`} className="text-xs">Podium/area</Label>
+          <StageSelect id={`new-stage-${kind}`} stages={stages} />
+        </div>
+        <div className="space-y-1">
           <Label htmlFor={`new-device-${kind}`} className="text-xs">{deviceLabel}</Label>
           <Input
             id={`new-device-${kind}`}
@@ -158,13 +176,30 @@ export function CommsCard({
   portofoonAssignments,
   suppliers,
   crewMembers,
+  stages,
 }: {
   projectId: string;
   intercomAssignments: CommsAssignment[];
   portofoonAssignments: CommsAssignment[];
   suppliers: Supplier[];
   crewMembers: CrewMember[];
+  stages: Stage[];
 }) {
+  const [areaFilter, setAreaFilter] = useState("alle");
+  const [supplierFilter, setSupplierFilter] = useState("alle");
+  const [search, setSearch] = useState("");
+
+  function applyFilters(items: CommsAssignment[]) {
+    return items.filter((item) => {
+      if (areaFilter !== "alle" && (item.stage_id ?? "algemeen") !== areaFilter) return false;
+      if (supplierFilter !== "alle" && (item.supplier_id ?? "") !== supplierFilter) return false;
+      if (search.trim() && !item.user_name.toLowerCase().includes(search.trim().toLowerCase())) {
+        return false;
+      }
+      return true;
+    });
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -172,6 +207,47 @@ export function CommsCard({
         <p className="text-sm text-muted-foreground">
           Wie zit op welk intercom-kanaal en welke portofoon-groep.
         </p>
+        <div className="flex flex-wrap items-end gap-2 pt-2">
+          <div className="space-y-1">
+            <Label htmlFor="comms-filter-area" className="text-xs">Podium/area</Label>
+            <select
+              id="comms-filter-area"
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle podia</option>
+              <option value="algemeen">Projectbreed</option>
+              {stages.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="comms-filter-supplier" className="text-xs">Leverancier</Label>
+            <select
+              id="comms-filter-supplier"
+              value={supplierFilter}
+              onChange={(e) => setSupplierFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle leveranciers</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="comms-filter-search" className="text-xs">Zoek op gebruiker</Label>
+            <Input
+              id="comms-filter-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="bv. Jan"
+              className="h-8 w-40 text-xs"
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {(intercomAssignments.length > 0 || portofoonAssignments.length > 0) && (
@@ -193,9 +269,10 @@ export function CommsCard({
           devicePlaceholder="bv. Wireless"
           channelsLabel="Kanalen"
           channelsPlaceholder="bv. Show, Stage"
-          items={intercomAssignments}
+          items={applyFilters(intercomAssignments)}
           suppliers={suppliers}
           crewMembers={crewMembers}
+          stages={stages}
         />
         <CommsList
           projectId={projectId}
@@ -206,9 +283,10 @@ export function CommsCard({
           devicePlaceholder="bv. kanaal 3"
           channelsLabel="Groepen"
           channelsPlaceholder="bv. 1: Productie, 4: Beveiliging"
-          items={portofoonAssignments}
+          items={applyFilters(portofoonAssignments)}
           suppliers={suppliers}
           crewMembers={crewMembers}
+          stages={stages}
         />
       </CardContent>
     </Card>

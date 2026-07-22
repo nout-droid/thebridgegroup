@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { EquipmentReservation, Supplier } from "@/lib/types";
+import type { EquipmentReservation, Stage, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { StageSelect } from "../stage-select";
 import {
   addEquipmentReservation,
   deleteEquipmentReservation,
@@ -14,11 +18,34 @@ export function EquipmentCard({
   projectId,
   reservations,
   suppliers,
+  stages,
 }: {
   projectId: string;
   reservations: EquipmentReservation[];
   suppliers: Supplier[];
+  stages: Stage[];
 }) {
+  const [areaFilter, setAreaFilter] = useState("alle");
+  const [supplierFilter, setSupplierFilter] = useState("alle");
+  const [dateFilter, setDateFilter] = useState("alle");
+  const [search, setSearch] = useState("");
+
+  const dates = [...new Set(reservations.map((r) => r.reservation_date).filter((d): d is string => !!d))].sort();
+
+  const filtered = reservations.filter((item) => {
+    if (areaFilter !== "alle" && (item.stage_id ?? "algemeen") !== areaFilter) return false;
+    if (supplierFilter !== "alle" && (item.supplier_id ?? "") !== supplierFilter) return false;
+    if (dateFilter !== "alle" && item.reservation_date !== dateFilter) return false;
+    if (search.trim()) {
+      const query = search.trim().toLowerCase();
+      const matches =
+        item.key_holder.toLowerCase().includes(query) ||
+        item.machine_type.toLowerCase().includes(query);
+      if (!matches) return false;
+    }
+    return true;
+  });
+
   return (
     <Card>
       <CardHeader>
@@ -26,6 +53,61 @@ export function EquipmentCard({
         <p className="text-sm text-muted-foreground">
           Gehuurde machines: van wie, wanneer, en waar ligt de sleutel.
         </p>
+        <div className="flex flex-wrap items-end gap-2 pt-2">
+          <div className="space-y-1">
+            <Label htmlFor="equip-filter-area" className="text-xs">Podium/area</Label>
+            <select
+              id="equip-filter-area"
+              value={areaFilter}
+              onChange={(e) => setAreaFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle podia</option>
+              <option value="algemeen">Projectbreed</option>
+              {stages.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="equip-filter-date" className="text-xs">Datum</Label>
+            <select
+              id="equip-filter-date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle datums</option>
+              {dates.map((date) => (
+                <option key={date} value={date}>{date}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="equip-filter-supplier" className="text-xs">Leverancier</Label>
+            <select
+              id="equip-filter-supplier"
+              value={supplierFilter}
+              onChange={(e) => setSupplierFilter(e.target.value)}
+              className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value="alle">Alle leveranciers</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>{s.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="equip-filter-search" className="text-xs">Zoek op type/sleutelhouder</Label>
+            <Input
+              id="equip-filter-search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="bv. Manitou"
+              className="h-8 w-48 text-xs"
+            />
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         {reservations.length > 0 && (
@@ -38,7 +120,7 @@ export function EquipmentCard({
             Materieellijst downloaden (PDF)
           </a>
         )}
-        {reservations.map((item) => (
+        {filtered.map((item) => (
           <form
             key={item.id}
             action={updateEquipmentReservation.bind(null, projectId, item.id)}
@@ -52,6 +134,14 @@ export function EquipmentCard({
                 defaultValue={item.machine_type}
                 className="h-8 text-xs"
                 required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`stage-${item.id}`} className="text-xs">Podium/area</Label>
+              <StageSelect
+                id={`stage-${item.id}`}
+                defaultValue={item.stage_id ?? undefined}
+                stages={stages}
               />
             </div>
             <div className="space-y-1">
@@ -154,6 +244,10 @@ export function EquipmentCard({
           <div className="space-y-1">
             <Label htmlFor="new-type" className="text-xs">Type machine</Label>
             <Input id="new-type" name="machine_type" placeholder="bv. Manitou" className="h-8 text-xs" required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-stage" className="text-xs">Podium/area</Label>
+            <StageSelect id="new-stage" stages={stages} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-supplier" className="text-xs">Leverancier</Label>

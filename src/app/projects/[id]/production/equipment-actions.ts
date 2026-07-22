@@ -11,6 +11,7 @@ export async function addEquipmentReservation(projectId: string, formData: FormD
   const machineType = String(formData.get("machine_type") ?? "").trim();
   if (!machineType) return;
 
+  const stageId = String(formData.get("stage_id") ?? "") || null;
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
   const quantity = Math.max(1, Number(formData.get("quantity") ?? 1));
   const accessories = String(formData.get("accessories") ?? "").trim();
@@ -28,6 +29,7 @@ export async function addEquipmentReservation(projectId: string, formData: FormD
 
   await supabase.from("equipment_reservations").insert({
     project_id: projectId,
+    stage_id: stageId,
     machine_type: machineType,
     supplier_id: supplierId,
     quantity,
@@ -51,6 +53,7 @@ export async function updateEquipmentReservation(
   const machineType = String(formData.get("machine_type") ?? "").trim();
   if (!machineType) return;
 
+  const stageId = String(formData.get("stage_id") ?? "") || null;
   const supplierId = String(formData.get("supplier_id") ?? "") || null;
   const quantity = Math.max(1, Number(formData.get("quantity") ?? 1));
   const accessories = String(formData.get("accessories") ?? "").trim();
@@ -64,6 +67,7 @@ export async function updateEquipmentReservation(
   await supabase
     .from("equipment_reservations")
     .update({
+      stage_id: stageId,
       machine_type: machineType,
       supplier_id: supplierId,
       quantity,

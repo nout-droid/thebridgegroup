@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import type { EquipmentReservation, Supplier } from "@/lib/types";
+import type { EquipmentReservation, Stage, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
 import { EquipmentCard } from "../equipment-card";
@@ -30,6 +30,13 @@ export default async function ProductionEquipmentPage({
     .order("name", { ascending: true })
     .returns<Supplier[]>();
 
+  const { data: stages } = await supabase
+    .from("stages")
+    .select("*")
+    .eq("project_id", id)
+    .order("sort_order", { ascending: true })
+    .returns<Stage[]>();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -40,6 +47,7 @@ export default async function ProductionEquipmentPage({
           projectId={project.id}
           reservations={reservations ?? []}
           suppliers={suppliers ?? []}
+          stages={stages ?? []}
         />
       </main>
       <Footer />
