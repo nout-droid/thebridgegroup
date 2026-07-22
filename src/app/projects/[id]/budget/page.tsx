@@ -211,27 +211,6 @@ export default async function ProjectBudgetPage({
           </CardContent>
         </Card>
 
-        {(stages ?? []).map((stage) => (
-          <BudgetGroup
-            key={stage.id}
-            title={stage.name}
-            categories={categoriesByStage.get(stage.id) ?? []}
-            quotesByCategory={quotesByCategory}
-            suppliers={suppliers ?? []}
-            projectId={project.id}
-            stageId={stage.id}
-          />
-        ))}
-
-        <BudgetGroup
-          title="Overige kosten (projectbreed)"
-          categories={projectWideCategories}
-          quotesByCategory={quotesByCategory}
-          suppliers={suppliers ?? []}
-          projectId={project.id}
-          stageId={null}
-        />
-
         <div className="border-t pt-6">
           <h2 className="text-lg font-semibold">Fase 1 — Materiaallijst &amp; begroting</h2>
           <p className="text-sm text-muted-foreground">
@@ -261,6 +240,35 @@ export default async function ProjectBudgetPage({
         />
 
         <QuotePdfImport projectId={project.id} stageId={null} suppliers={suppliers ?? []} />
+
+        <div className="border-t pt-6">
+          <h2 className="text-lg font-semibold">Categorieën per podium</h2>
+          <p className="text-sm text-muted-foreground">
+            Het resultaat van de offertes hierboven: gekozen en aangevraagde offertes per
+            categorie.
+          </p>
+        </div>
+
+        {(stages ?? []).map((stage) => (
+          <BudgetGroup
+            key={stage.id}
+            title={stage.name}
+            categories={categoriesByStage.get(stage.id) ?? []}
+            quotesByCategory={quotesByCategory}
+            suppliers={suppliers ?? []}
+            projectId={project.id}
+            stageId={stage.id}
+          />
+        ))}
+
+        <BudgetGroup
+          title="Overige kosten (projectbreed)"
+          categories={projectWideCategories}
+          quotesByCategory={quotesByCategory}
+          suppliers={suppliers ?? []}
+          projectId={project.id}
+          stageId={null}
+        />
       </main>
       <Footer />
     </div>
