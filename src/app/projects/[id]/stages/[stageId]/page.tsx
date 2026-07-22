@@ -120,6 +120,7 @@ export default async function StagePage({
           items={materialListItems ?? []}
           suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
+          defaultMarginPercentage={project.default_margin_percentage}
         />
 
         <div className="space-y-4">

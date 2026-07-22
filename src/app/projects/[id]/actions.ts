@@ -194,6 +194,20 @@ export async function updateProjectDetails(projectId: string, formData: FormData
   revalidatePath("/projects");
 }
 
+export async function updateProjectBudget(projectId: string, formData: FormData) {
+  const clientBudgetRaw = formData.get("client_budget");
+  const clientBudget = clientBudgetRaw === null || clientBudgetRaw === "" ? null : Number(clientBudgetRaw);
+  const defaultMarginPercentage = Number(formData.get("default_margin_percentage") ?? 20);
+
+  const supabase = await createClient();
+  await supabase
+    .from("projects")
+    .update({ client_budget: clientBudget, default_margin_percentage: defaultMarginPercentage })
+    .eq("id", projectId);
+
+  revalidatePath(`/projects/${projectId}/budget`);
+}
+
 export async function updateEventCode(projectId: string, formData: FormData) {
   const eventCode = String(formData.get("event_code") ?? "").trim().toUpperCase();
   if (!eventCode) return;

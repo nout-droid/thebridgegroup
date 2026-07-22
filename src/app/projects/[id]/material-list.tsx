@@ -35,12 +35,14 @@ export function MaterialList({
   items,
   suppliers,
   rentalMultiplier,
+  defaultMarginPercentage,
 }: {
   projectId: string;
   stageId: string | null;
   items: MaterialListItem[];
   suppliers: Supplier[];
   rentalMultiplier: number;
+  defaultMarginPercentage: number;
 }) {
   const groups = new Map<
     string,
@@ -193,8 +195,14 @@ export function MaterialList({
                     className="flex items-center justify-between text-sm"
                   >
                     <span>
-                      {catalogCategoryLabel(group.category)} — {group.supplierName}:{" "}
-                      <span className="font-medium">€ {group.total.toFixed(2)}</span>
+                      {catalogCategoryLabel(group.category)} — {group.supplierName}: inkoop{" "}
+                      <span className="font-medium">€ {group.total.toFixed(2)}</span>{" "}
+                      <span className="text-muted-foreground">
+                        · klant (indicatief, {defaultMarginPercentage}% marge)
+                      </span>{" "}
+                      <span className="font-medium">
+                        € {(group.total * (1 + defaultMarginPercentage / 100)).toFixed(2)}
+                      </span>
                     </span>
                     <form
                       action={pushMaterialListGroupToQuote.bind(

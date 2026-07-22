@@ -48,6 +48,8 @@ export interface Project {
   budget_approval_status: "pending" | "approved" | "changes_requested" | "rejected";
   budget_approval_comment: string | null;
   budget_approval_at: string | null;
+  client_budget: number | null;
+  default_margin_percentage: number;
   created_at: string;
 }
 

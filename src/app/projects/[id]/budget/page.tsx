@@ -6,6 +6,10 @@ import { checkCanViewBudget } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   CATEGORY_STATUS_LABELS,
   computeClientPrice,
@@ -21,6 +25,7 @@ import { MaterialList } from "../material-list";
 import { QuotePdfImport } from "../quote-pdf-import";
 import { RequestQuotesCard } from "../request-quotes-card";
 import { ProjectSubNav } from "../project-sub-nav";
+import { updateProjectBudget } from "../actions";
 import { computeRentalDays } from "@/lib/rental-days";
 
 // Het parsen van een offerte-PDF matcht elke regel tegen de catalogus (RPC-aanroepen) —
@@ -220,6 +225,65 @@ export default async function ProjectBudgetPage({
                       .join(", ")}`}
               </p>
             )}
+
+            <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t pt-4">
+              <div>
+                <p className="text-xs text-muted-foreground">Budget klant</p>
+                {project.client_budget != null ? (
+                  <p className="text-xl font-semibold">
+                    {euro(grandTotal.client)} van {euro(project.client_budget)}
+                    <span
+                      className={cn(
+                        "ml-1 text-sm font-normal",
+                        grandTotal.client / project.client_budget > 1
+                          ? "text-destructive"
+                          : grandTotal.client / project.client_budget > 0.9
+                            ? "text-yellow-600"
+                            : "text-muted-foreground"
+                      )}
+                    >
+                      ({((grandTotal.client / project.client_budget) * 100).toFixed(0)}%)
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Nog geen klantbudget ingesteld.</p>
+                )}
+              </div>
+              <form
+                action={updateProjectBudget.bind(null, project.id)}
+                className="flex flex-wrap items-end gap-2"
+              >
+                <div className="space-y-1">
+                  <Label htmlFor="client_budget" className="text-xs">
+                    Budget klant (&euro;)
+                  </Label>
+                  <Input
+                    id="client_budget"
+                    name="client_budget"
+                    type="number"
+                    step="0.01"
+                    defaultValue={project.client_budget ?? ""}
+                    className="h-8 w-32 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="default_margin_percentage" className="text-xs">
+                    Standaardmarge (%)
+                  </Label>
+                  <Input
+                    id="default_margin_percentage"
+                    name="default_margin_percentage"
+                    type="number"
+                    step="0.1"
+                    defaultValue={project.default_margin_percentage}
+                    className="h-8 w-24 text-xs"
+                  />
+                </div>
+                <Button type="submit" size="sm">
+                  Opslaan
+                </Button>
+              </form>
+            </div>
           </CardContent>
         </Card>
 
@@ -238,6 +302,7 @@ export default async function ProjectBudgetPage({
           items={materialListItems ?? []}
           suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
+          defaultMarginPercentage={project.default_margin_percentage}
         />
 
         <div className="border-t pt-6">
