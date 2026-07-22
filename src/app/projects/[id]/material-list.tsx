@@ -25,10 +25,12 @@ function lineTotal(item: MaterialListItem, multiplier: number) {
 
 export function MaterialList({
   projectId,
+  stageId,
   items,
   rentalMultiplier,
 }: {
   projectId: string;
+  stageId: string | null;
   items: MaterialListItem[];
   rentalMultiplier: number;
 }) {
@@ -61,7 +63,7 @@ export function MaterialList({
         <CardTitle className="text-base">Materiaallijst</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form action={uploadMaterialList.bind(null, projectId)} className="flex items-center gap-2">
+        <form action={uploadMaterialList.bind(null, projectId, stageId)} className="flex items-center gap-2">
           <Input type="file" name="file" accept=".csv,.xlsx" required className="max-w-xs" />
           <Button type="submit" size="sm">
             Uploaden
@@ -108,6 +110,7 @@ export function MaterialList({
                       <TableCell>
                         <MatchPicker
                           projectId={projectId}
+                          stageId={stageId}
                           itemId={item.id}
                           currentLabel={label}
                           defaultQuery={item.raw_description}
@@ -115,7 +118,7 @@ export function MaterialList({
                       </TableCell>
                       <TableCell>{total != null ? `€ ${total.toFixed(2)}` : "—"}</TableCell>
                       <TableCell className="text-right">
-                        <form action={deleteMaterialListItem.bind(null, projectId, item.id)}>
+                        <form action={deleteMaterialListItem.bind(null, projectId, stageId, item.id)}>
                           <Button type="submit" variant="ghost" size="sm">
                             Verwijderen
                           </Button>
@@ -143,6 +146,7 @@ export function MaterialList({
                       action={pushMaterialListGroupToQuote.bind(
                         null,
                         projectId,
+                        stageId,
                         group.category,
                         group.supplierId
                       )}

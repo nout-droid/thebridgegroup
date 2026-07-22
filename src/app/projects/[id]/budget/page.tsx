@@ -161,6 +161,7 @@ export default async function ProjectBudgetPage({
     .from("material_list_items")
     .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
     .eq("project_id", id)
+    .is("stage_id", null)
     .order("created_at", { ascending: true })
     .returns<MaterialListItem[]>();
 
@@ -215,12 +216,14 @@ export default async function ProjectBudgetPage({
           <h2 className="text-lg font-semibold">Fase 1 — Materiaallijst &amp; begroting</h2>
           <p className="text-sm text-muted-foreground">
             Materiaallijst uploaden en matchen met de catalogus, resulterend in een
-            kosteninschatting per categorie.
+            kosteninschatting per categorie. Deze lijst is voor projectbrede materialen — voor
+            materiaal per podium, upload de lijst op de betreffende podiumpagina.
           </p>
         </div>
 
         <MaterialList
           projectId={project.id}
+          stageId={null}
           items={materialListItems ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
         />

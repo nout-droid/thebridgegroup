@@ -229,32 +229,6 @@ function normalizeAliasText(text: string) {
   return text.trim().toLowerCase();
 }
 
-interface AliasMatch {
-  article_id: string;
-  day_price: number;
-}
-
-async function findAliasMatch(
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  rawText: string
-): Promise<AliasMatch | null> {
-  const { data: alias } = await supabase
-    .from("article_aliases")
-    .select("article_id")
-    .eq("raw_text", normalizeAliasText(rawText))
-    .maybeSingle();
-
-  if (!alias) return null;
-
-  const { data: article } = await supabase
-    .from("catalog_articles_net")
-    .select("day_price")
-    .eq("id", alias.article_id)
-    .maybeSingle();
-
-  return article ? { article_id: alias.article_id, day_price: article.day_price } : null;
-}
-
 async function rememberAlias(
   supabase: Awaited<ReturnType<typeof createClient>>,
   rawText: string,
@@ -273,7 +247,16 @@ async function rememberAlias(
   );
 }
 
-export async function uploadMaterialList(projectId: string, formData: FormData) {
+function materialListRevalidatePaths(projectId: string, stageId: string | null) {
+  revalidatePath(`/projects/${projectId}/budget`);
+  if (stageId) revalidatePath(`/projects/${projectId}/stages/${stageId}`);
+}
+
+export async function uploadMaterialList(
+  projectId: string,
+  stageId: string | null,
+  formData: FormData
+) {
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) return;
 
@@ -287,6 +270,7 @@ export async function uploadMaterialList(projectId: string, formData: FormData) 
     .insert(
       rows.map((row) => ({
         project_id: projectId,
+        stage_id: stageId,
         raw_description: row.description,
         quantity: row.quantity,
         unit: row.unit,
@@ -294,37 +278,77 @@ export async function uploadMaterialList(projectId: string, formData: FormData) 
     )
     .select("id, raw_description");
 
-  for (const item of inserted ?? []) {
-    const alias = await findAliasMatch(supabase, item.raw_description);
-    if (alias) {
-      await supabase
-        .from("material_list_items")
-        .update({
-          matched_article_id: alias.article_id,
-          unit_price: alias.day_price,
-        })
-        .eq("id", item.id);
-      continue;
+  const items = inserted ?? [];
+  if (items.length) {
+    // Eén alias-lookup + één bulk-RPC i.p.v. twee databasecalls per regel — bij een grote
+    // Vectorworks-export scheelt dat tientallen seconden (zelfde aanpak als quote-pdf-actions.ts).
+    const normalizedTexts = [...new Set(items.map((item) => normalizeAliasText(item.raw_description)))];
+    const { data: aliasRows } = normalizedTexts.length
+      ? await supabase
+          .from("article_aliases")
+          .select("raw_text, article_id")
+          .in("raw_text", normalizedTexts)
+          .returns<{ raw_text: string; article_id: string }[]>()
+      : { data: [] };
+
+    const aliasArticleIds = [...new Set((aliasRows ?? []).map((row) => row.article_id))];
+    const { data: aliasPrices } = aliasArticleIds.length
+      ? await supabase
+          .from("catalog_articles_net")
+          .select("id, day_price")
+          .in("id", aliasArticleIds)
+          .returns<{ id: string; day_price: number }[]>()
+      : { data: [] };
+    const priceByArticleId = new Map((aliasPrices ?? []).map((row) => [row.id, row.day_price]));
+
+    const aliasByText = new Map<string, { article_id: string; day_price: number }>();
+    for (const row of aliasRows ?? []) {
+      const day_price = priceByArticleId.get(row.article_id);
+      if (day_price != null) aliasByText.set(row.raw_text, { article_id: row.article_id, day_price });
     }
 
-    const { data: suggestions } = await supabase.rpc("suggest_catalog_matches", {
-      p_description: item.raw_description,
-      p_limit: 1,
-    });
-    const best = suggestions?.[0];
-    if (best) {
-      await supabase
-        .from("material_list_items")
-        .update({ matched_article_id: best.article_id, unit_price: best.day_price })
-        .eq("id", item.id);
+    const unmatchedItems = items.filter(
+      (item) => !aliasByText.has(normalizeAliasText(item.raw_description))
+    );
+    type BulkMatch = { article_id: string; day_price: number };
+    const bulkResult = unmatchedItems.length
+      ? await supabase.rpc("suggest_catalog_matches_bulk", {
+          p_descriptions: unmatchedItems.map((item) => item.raw_description),
+        })
+      : { data: [] as BulkMatch[] };
+    const bulkMatches = (bulkResult.data ?? []) as BulkMatch[];
+    const bestByDescription = new Map(
+      unmatchedItems.map((item, i) => [item.raw_description, bulkMatches[i]] as const)
+    );
+
+    const itemIds: string[] = [];
+    const articleIds: string[] = [];
+    const prices: number[] = [];
+    for (const item of items) {
+      const alias = aliasByText.get(normalizeAliasText(item.raw_description));
+      const best = alias ?? bestByDescription.get(item.raw_description);
+      if (best?.article_id) {
+        itemIds.push(item.id);
+        articleIds.push(best.article_id);
+        prices.push(alias ? alias.day_price : best.day_price);
+      }
+    }
+
+    if (itemIds.length) {
+      await supabase.rpc("update_material_list_matches", {
+        p_item_ids: itemIds,
+        p_article_ids: articleIds,
+        p_prices: prices,
+      });
     }
   }
 
-  revalidatePath(`/projects/${projectId}/budget`);
+  materialListRevalidatePaths(projectId, stageId);
 }
 
 export async function updateMaterialListMatch(
   projectId: string,
+  stageId: string | null,
   itemId: string,
   articleId: string,
   unitPrice: number
@@ -346,10 +370,15 @@ export async function updateMaterialListMatch(
     await rememberAlias(supabase, item.raw_description, articleId);
   }
 
-  revalidatePath(`/projects/${projectId}/budget`);
+  materialListRevalidatePaths(projectId, stageId);
 }
 
-export async function updateMaterialListItem(projectId: string, itemId: string, formData: FormData) {
+export async function updateMaterialListItem(
+  projectId: string,
+  stageId: string | null,
+  itemId: string,
+  formData: FormData
+) {
   const quantity = Number(formData.get("quantity") ?? 1);
   const unitPrice = formData.get("unit_price");
 
@@ -362,13 +391,13 @@ export async function updateMaterialListItem(projectId: string, itemId: string, 
     })
     .eq("id", itemId);
 
-  revalidatePath(`/projects/${projectId}/budget`);
+  materialListRevalidatePaths(projectId, stageId);
 }
 
-export async function deleteMaterialListItem(projectId: string, itemId: string) {
+export async function deleteMaterialListItem(projectId: string, stageId: string | null, itemId: string) {
   const supabase = await createClient();
   await supabase.from("material_list_items").delete().eq("id", itemId);
-  revalidatePath(`/projects/${projectId}/budget`);
+  materialListRevalidatePaths(projectId, stageId);
 }
 
 interface MaterialListGroupRow {
@@ -381,6 +410,7 @@ interface MaterialListGroupRow {
 
 export async function pushMaterialListGroupToQuote(
   projectId: string,
+  stageId: string | null,
   category: string,
   supplierId: string
 ) {
@@ -397,11 +427,12 @@ export async function pushMaterialListGroupToQuote(
   });
   const mult = multiplier ?? 1;
 
-  const { data: items } = await supabase
+  let query = supabase
     .from("material_list_items")
     .select("id, raw_description, quantity, unit_price, matched_article:catalog_articles(category, supplier_id)")
-    .eq("project_id", projectId)
-    .returns<MaterialListGroupRow[]>();
+    .eq("project_id", projectId);
+  query = stageId ? query.eq("stage_id", stageId) : query.is("stage_id", null);
+  const { data: items } = await query.returns<MaterialListGroupRow[]>();
 
   const groupItems = (items ?? []).filter(
     (item) =>
@@ -413,7 +444,7 @@ export async function pushMaterialListGroupToQuote(
   if (!groupItems.length) return;
 
   const categoryName = catalogCategoryLabel(category);
-  const categoryId = await findOrCreateCategory(supabase, projectId, null, categoryName);
+  const categoryId = await findOrCreateCategory(supabase, projectId, stageId, categoryName);
   if (!categoryId) return;
 
   const quoteId = await findOrCreateQuote(
@@ -435,7 +466,7 @@ export async function pushMaterialListGroupToQuote(
     }))
   );
 
-  revalidatePath(`/projects/${projectId}/budget`);
+  materialListRevalidatePaths(projectId, stageId);
 }
 
 export async function addQuoteLineItem(projectId: string, quoteId: string, formData: FormData) {

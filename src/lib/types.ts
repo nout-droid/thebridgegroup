@@ -560,6 +560,7 @@ export interface CatalogArticle {
 export interface MaterialListItem {
   id: string;
   project_id: string;
+  stage_id: string | null;
   raw_description: string;
   quantity: number;
   unit: string;

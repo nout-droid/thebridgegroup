@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { computeClientPrice, type Category, type Quote, type Supplier } from "@/lib/types";
+import { computeClientPrice, type Category, type MaterialListItem, type Quote, type Supplier } from "@/lib/types";
 import { CategoryCard } from "../../category-card";
 import { AddCategoryForm } from "../../add-category-form";
+import { MaterialList } from "../../material-list";
 import { QuotePdfImport } from "../../quote-pdf-import";
 import { updateStage, deleteStage } from "../actions";
 import { StageSubNav } from "./stage-sub-nav";
+import { computeRentalDays } from "@/lib/rental-days";
 
 export default async function StagePage({
   params,
@@ -59,6 +61,18 @@ export default async function StagePage({
     return chosen ? sum + computeClientPrice(category, chosen.cost_price) : sum;
   }, 0);
 
+  const { data: materialListItems } = await supabase
+    .from("material_list_items")
+    .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
+    .eq("project_id", id)
+    .eq("stage_id", stageId)
+    .order("created_at", { ascending: true })
+    .returns<MaterialListItem[]>();
+
+  const { data: rentalMultiplier } = await supabase.rpc("rental_multiplier", {
+    p_days: computeRentalDays(project),
+  });
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -99,6 +113,13 @@ export default async function StagePage({
             </p>
           </CardContent>
         </Card>
+
+        <MaterialList
+          projectId={project.id}
+          stageId={stage.id}
+          items={materialListItems ?? []}
+          rentalMultiplier={rentalMultiplier ?? 1}
+        />
 
         <div className="space-y-4">
           {(categories ?? []).map((category) => (

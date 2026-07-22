@@ -10,11 +10,13 @@ import { updateMaterialListMatch } from "./actions";
 
 export function MatchPicker({
   projectId,
+  stageId,
   itemId,
   currentLabel,
   defaultQuery,
 }: {
   projectId: string;
+  stageId: string | null;
   itemId: string;
   currentLabel: string;
   defaultQuery: string;
@@ -38,7 +40,7 @@ export function MatchPicker({
   }
 
   async function pick(suggestion: CatalogMatchSuggestion) {
-    await updateMaterialListMatch(projectId, itemId, suggestion.article_id, suggestion.day_price);
+    await updateMaterialListMatch(projectId, stageId, itemId, suggestion.article_id, suggestion.day_price);
     setOpen(false);
     router.refresh();
   }
