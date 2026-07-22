@@ -2,6 +2,9 @@ export interface DefaultRiderSection {
   title: string;
   editable_by_client: boolean;
   content?: string;
+  // Secties die per podium/area verschillen (bv. afmetingen, rig per stage) i.p.v. projectbreed
+  // (bv. contactpersonen, veiligheid, weer). Zie ensureStageRiderSections in ensure-rider.ts.
+  stageSpecific?: boolean;
 }
 
 // Gebaseerd op het officiële "Festival Stage Rider" sjabloon van The Bridge AV Group.
@@ -35,6 +38,7 @@ export const DEFAULT_RIDER_SECTIONS: DefaultRiderSection[] = [
   {
     title: "Stage informatie",
     editable_by_client: false,
+    stageSpecific: true,
     content:
       "Stage dimensions (W x D x H): \n" +
       "Trim / rigging height: \n" +
@@ -105,13 +109,14 @@ export const DEFAULT_RIDER_SECTIONS: DefaultRiderSection[] = [
   {
     title: "Stage plot / technische tekening",
     editable_by_client: false,
+    stageSpecific: true,
     content:
       "Bijlage toegevoegd: \nVersie / datum tekening: \nContactpersoon technisch ontwerp: ",
   },
-  { title: "Audio", editable_by_client: false },
-  { title: "Light", editable_by_client: false },
-  { title: "Video", editable_by_client: false },
-  { title: "Rigging", editable_by_client: false },
-  { title: "Special FX", editable_by_client: false },
-  { title: "Decor", editable_by_client: false },
+  { title: "Audio", editable_by_client: false, stageSpecific: true },
+  { title: "Light", editable_by_client: false, stageSpecific: true },
+  { title: "Video", editable_by_client: false, stageSpecific: true },
+  { title: "Rigging", editable_by_client: false, stageSpecific: true },
+  { title: "Special FX", editable_by_client: false, stageSpecific: true },
+  { title: "Decor", editable_by_client: false, stageSpecific: true },
 ];

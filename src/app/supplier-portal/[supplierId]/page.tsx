@@ -88,8 +88,17 @@ export default async function SupplierRiderPage({
             .returns<RiderSectionItem[]>()
         : { data: [] as RiderSectionItem[] };
 
+      const stageIds = [...new Set((riderSections ?? []).map((s) => s.stage_id).filter((id): id is string => !!id))];
+      const { data: stages } = stageIds.length
+        ? await admin.from("stages").select("id, name").in("id", stageIds)
+        : { data: [] };
+      const stageNameById = new Map((stages ?? []).map((s) => [s.id, s.name]));
+
       sections = (riderSections ?? []).map((section) => ({
         ...section,
+        title: section.stage_id && stageNameById.has(section.stage_id)
+          ? `[${stageNameById.get(section.stage_id)}] ${section.title}`
+          : section.title,
         items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
       }));
     }

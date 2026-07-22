@@ -89,6 +89,7 @@ export interface Rider {
 export interface RiderSection {
   id: string;
   rider_id: string;
+  stage_id: string | null;
   title: string;
   content: string;
   editable_by_client: boolean;
@@ -113,6 +114,8 @@ export interface SharedRiderSection {
   title: string;
   content: string;
   editable_by_client: boolean;
+  stage_id: string | null;
+  stage_name: string | null;
   items: { id: string; description: string }[];
 }
 

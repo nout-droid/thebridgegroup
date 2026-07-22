@@ -47,8 +47,13 @@ export async function GET(
     version: riderData.version,
     generatedAt: new Date(),
     sections: riderData.sections.map(
-      (section: { title: string; content: string; items: { description: string }[] }) => ({
-        title: section.title,
+      (section: {
+        title: string;
+        content: string;
+        stage_name: string | null;
+        items: { description: string }[];
+      }) => ({
+        title: section.stage_name ? `[${section.stage_name}] ${section.title}` : section.title,
         content: section.content,
         items: section.items,
       })

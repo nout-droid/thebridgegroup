@@ -350,7 +350,7 @@ function RiderPanel({
                 key={section.id}
                 token={token}
                 sectionId={section.id}
-                title={section.title}
+                title={section.stage_name ? `[${section.stage_name}] ${section.title}` : section.title}
                 content={section.content}
                 items={section.items}
                 t={t}
@@ -359,7 +359,10 @@ function RiderPanel({
             ) : (
               <div key={section.id} className="space-y-1 rounded-md border p-3">
                 <div className="flex items-center justify-between">
-                  <p className="font-medium">{t(section.title)}</p>
+                  <p className="font-medium">
+                    {section.stage_name && `[${section.stage_name}] `}
+                    {t(section.title)}
+                  </p>
                   <span className="text-xs text-muted-foreground">
                     {t("Door The Bridge AV Group")}
                   </span>

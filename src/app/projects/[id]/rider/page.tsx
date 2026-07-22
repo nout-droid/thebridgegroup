@@ -24,6 +24,7 @@ export default async function ProjectRiderPage({
         .from("rider_sections")
         .select("*")
         .eq("rider_id", riderId)
+        .is("stage_id", null)
         .order("sort_order", { ascending: true })
         .returns<RiderSection[]>()
     : { data: [] as RiderSection[] };
@@ -52,8 +53,10 @@ export default async function ProjectRiderPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <RiderCard
           projectId={project.id}
+          stageId={null}
           riderId={riderId ?? null}
           sections={riderSectionsWithItems}
+          title="Rider (projectbreed)"
         />
       </main>
       <Footer />

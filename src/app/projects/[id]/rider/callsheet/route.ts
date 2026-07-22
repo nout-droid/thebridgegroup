@@ -35,10 +35,11 @@ export async function GET(
   const { data: sections } = rider
     ? await supabase
         .from("rider_sections")
-        .select("id, title, content")
+        .select("id, title, content, stage_id, stage:stages(name)")
         .eq("rider_id", rider.id)
         .eq("include_in_callsheet", true)
         .order("sort_order", { ascending: true })
+        .returns<{ id: string; title: string; content: string; stage_id: string | null; stage: { name: string } | null }[]>()
     : { data: [] };
 
   const sectionIds = (sections ?? []).map((s) => s.id);
@@ -55,7 +56,7 @@ export async function GET(
     version: rider?.version ?? 1,
     generatedAt: new Date(),
     sections: (sections ?? []).map((section) => ({
-      title: section.title,
+      title: section.stage ? `[${section.stage.name}] ${section.title}` : section.title,
       content: section.content,
       items: (items ?? [])
         .filter((item) => item.section_id === section.id)

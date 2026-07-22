@@ -16,19 +16,25 @@ import {
 
 export function RiderCard({
   projectId,
+  stageId,
   riderId,
   sections,
+  title = "Rider",
+  showDownloadLinks = true,
 }: {
   projectId: string;
+  stageId: string | null;
   riderId: string | null;
   sections: RiderSection[];
+  title?: string;
+  showDownloadLinks?: boolean;
 }) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">Rider</CardTitle>
-          {riderId && (
+          <CardTitle className="text-base">{title}</CardTitle>
+          {riderId && showDownloadLinks && (
             <div className="flex items-center gap-3">
               <a
                 href={`/projects/${projectId}/rider/pdf`}
@@ -58,7 +64,7 @@ export function RiderCard({
         {sections.map((section, index) => (
           <div key={section.id} className="space-y-3 rounded-md border p-3">
             <form
-              action={updateRiderSection.bind(null, projectId, section.id)}
+              action={updateRiderSection.bind(null, projectId, stageId, section.id)}
               className="space-y-2"
             >
               <div className="flex items-center justify-between gap-2">
@@ -77,6 +83,7 @@ export function RiderCard({
                       formAction={moveRiderSection.bind(
                         null,
                         projectId,
+                        stageId,
                         riderId ?? "",
                         section.id,
                         "up"
@@ -92,6 +99,7 @@ export function RiderCard({
                       formAction={moveRiderSection.bind(
                         null,
                         projectId,
+                        stageId,
                         riderId ?? "",
                         section.id,
                         "down"
@@ -133,7 +141,7 @@ export function RiderCard({
                   </Button>
                   <Button
                     type="submit"
-                    formAction={deleteRiderSection.bind(null, projectId, section.id)}
+                    formAction={deleteRiderSection.bind(null, projectId, stageId, section.id)}
                     size="sm"
                     variant="ghost"
                   >
@@ -150,7 +158,7 @@ export function RiderCard({
                   {(section.items ?? []).map((item) => (
                     <li key={item.id} className="flex items-center justify-between gap-2 text-sm">
                       <span>{item.description}</span>
-                      <form action={deleteRiderSectionItem.bind(null, projectId, item.id)}>
+                      <form action={deleteRiderSectionItem.bind(null, projectId, stageId, item.id)}>
                         <Button type="submit" variant="ghost" size="sm" className="h-6 px-2 text-xs">
                           Verwijderen
                         </Button>
@@ -160,7 +168,7 @@ export function RiderCard({
                 </ul>
               )}
               <form
-                action={addRiderSectionItem.bind(null, projectId, section.id)}
+                action={addRiderSectionItem.bind(null, projectId, stageId, section.id)}
                 className="flex gap-2"
               >
                 <Input
@@ -177,7 +185,7 @@ export function RiderCard({
           </div>
         ))}
 
-        <form action={addRiderSection.bind(null, projectId)} className="space-y-2 border-t pt-4">
+        <form action={addRiderSection.bind(null, projectId, stageId)} className="space-y-2 border-t pt-4">
           <div className="space-y-1.5">
             <Label htmlFor="title">Nieuw onderdeel</Label>
             <Input id="title" name="title" placeholder="bv. Catering" required className="max-w-xs" />
