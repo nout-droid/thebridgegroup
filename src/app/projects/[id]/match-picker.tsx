@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { CatalogMatchSuggestion } from "@/lib/types";
-import { updateMaterialListMatch } from "./actions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CATALOG_CATEGORY_LABELS, type CatalogMatchSuggestion, type Supplier } from "@/lib/types";
+import { SupplierSelect } from "./supplier-select";
+import { createCatalogArticleAndMatch, updateMaterialListMatch } from "./actions";
 
 export function MatchPicker({
   projectId,
@@ -14,18 +16,22 @@ export function MatchPicker({
   itemId,
   currentLabel,
   defaultQuery,
+  suppliers,
 }: {
   projectId: string;
   stageId: string | null;
   itemId: string;
   currentLabel: string;
   defaultQuery: string;
+  suppliers: Supplier[];
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(defaultQuery);
   const [suggestions, setSuggestions] = useState<CatalogMatchSuggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [showNewArticle, setShowNewArticle] = useState(false);
 
   async function search() {
     if (!query.trim()) return;
@@ -36,6 +42,7 @@ export function MatchPicker({
       p_limit: 8,
     });
     setSuggestions((data as CatalogMatchSuggestion[]) ?? []);
+    setSearched(true);
     setLoading(false);
   }
 
@@ -89,6 +96,69 @@ export function MatchPicker({
                 </li>
               ))}
             </ul>
+          )}
+          {searched && suggestions.length === 0 && !showNewArticle && (
+            <p className="text-xs text-muted-foreground">
+              Niets gevonden.{" "}
+              <button
+                type="button"
+                onClick={() => setShowNewArticle(true)}
+                className="text-primary underline"
+              >
+                Nieuw artikel toevoegen
+              </button>
+            </p>
+          )}
+          {!showNewArticle && searched && suggestions.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowNewArticle(true)}
+              className="text-xs text-primary underline"
+            >
+              Niet het juiste artikel? Nieuw artikel toevoegen
+            </button>
+          )}
+          {showNewArticle && (
+            <form
+              action={async (formData) => {
+                await createCatalogArticleAndMatch(projectId, stageId, itemId, formData);
+                setOpen(false);
+                router.refresh();
+              }}
+              className="space-y-2 rounded-md border border-dashed p-2"
+            >
+              <Input
+                name="name"
+                defaultValue={defaultQuery}
+                placeholder="Artikelnaam"
+                className="h-8 text-xs"
+                required
+              />
+              <SupplierSelect id={`new-article-supplier-${itemId}`} suppliers={suppliers} />
+              <Select name="category" items={Object.entries(CATALOG_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}>
+                <SelectTrigger className="h-8 w-full text-xs">
+                  <SelectValue placeholder="Categorie" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(CATALOG_CATEGORY_LABELS).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Input
+                name="day_price"
+                type="number"
+                step="0.01"
+                placeholder="Prijs per dag (€)"
+                className="h-8 text-xs"
+                required
+              />
+              <Button type="submit" size="sm">
+                Toevoegen &amp; koppelen
+              </Button>
+            </form>
           )}
         </div>
       )}

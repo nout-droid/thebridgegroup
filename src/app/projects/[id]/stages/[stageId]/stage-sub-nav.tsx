@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 const TABS = [
   { key: "overview", label: "Overzicht" },
-  { key: "rider", label: "Rider" },
+  { key: "rider", label: "Event rider" },
   { key: "schedule", label: "Draaiboek" },
   { key: "rundown", label: "Rundown" },
 ] as const;

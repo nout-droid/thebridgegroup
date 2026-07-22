@@ -118,6 +118,7 @@ export default async function StagePage({
           projectId={project.id}
           stageId={stage.id}
           items={materialListItems ?? []}
+          suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
         />
 

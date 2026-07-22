@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { checkCanViewBudget } from "@/lib/server/team";
@@ -70,7 +71,17 @@ function BudgetGroup({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-2">
-        <h3 className="text-base font-semibold">{title}</h3>
+        <h3 className="text-base font-semibold">
+          {title}
+          {stageId && (
+            <Link
+              href={`/projects/${projectId}/stages/${stageId}`}
+              className="ml-2 text-xs font-normal text-primary hover:underline"
+            >
+              Naar podium &rarr;
+            </Link>
+          )}
+        </h3>
         {categories.length > 0 && (
           <p className="text-sm text-muted-foreground">
             Subtotaal: <span className="font-medium text-foreground">{euro(totals.client)}</span>{" "}
@@ -225,6 +236,7 @@ export default async function ProjectBudgetPage({
           projectId={project.id}
           stageId={null}
           items={materialListItems ?? []}
+          suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
         />
 

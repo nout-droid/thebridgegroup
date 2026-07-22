@@ -54,7 +54,7 @@ export function RequestQuotesCard({
         <p className="text-sm text-muted-foreground">
           Kies een leverancier en vink de categorieën aan waar je een offerte voor wilt — bijvoorbeeld
           alleen Licht + Rigging, zonder dat deze leverancier iets van Layher te zien krijgt. Alle
-          technische info en tekeningen vindt de leverancier onder Rider.
+          technische info en tekeningen vindt de leverancier onder Event rider.
         </p>
       </CardHeader>
       <CardContent className="space-y-4">

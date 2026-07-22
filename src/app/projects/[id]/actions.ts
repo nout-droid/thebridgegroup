@@ -377,19 +377,23 @@ export async function updateMaterialListItem(
   projectId: string,
   stageId: string | null,
   itemId: string,
+  matchedArticleId: string | null,
   formData: FormData
 ) {
   const quantity = Number(formData.get("quantity") ?? 1);
-  const unitPrice = formData.get("unit_price");
+  const unitPriceRaw = formData.get("unit_price");
+  const unitPrice = unitPriceRaw === null || unitPriceRaw === "" ? null : Number(unitPriceRaw);
+  const saveAsDefault = formData.get("save_as_default") === "on";
 
   const supabase = await createClient();
   await supabase
     .from("material_list_items")
-    .update({
-      quantity,
-      unit_price: unitPrice === null || unitPrice === "" ? null : Number(unitPrice),
-    })
+    .update({ quantity, unit_price: unitPrice })
     .eq("id", itemId);
+
+  if (saveAsDefault && matchedArticleId && unitPrice != null) {
+    await supabase.from("catalog_articles").update({ day_price: unitPrice }).eq("id", matchedArticleId);
+  }
 
   materialListRevalidatePaths(projectId, stageId);
 }
@@ -397,6 +401,73 @@ export async function updateMaterialListItem(
 export async function deleteMaterialListItem(projectId: string, stageId: string | null, itemId: string) {
   const supabase = await createClient();
   await supabase.from("material_list_items").delete().eq("id", itemId);
+  materialListRevalidatePaths(projectId, stageId);
+}
+
+export async function createCatalogArticleAndMatch(
+  projectId: string,
+  stageId: string | null,
+  itemId: string,
+  formData: FormData
+) {
+  const name = String(formData.get("name") ?? "").trim();
+  const supplierId = String(formData.get("supplier_id") ?? "");
+  const category = String(formData.get("category") ?? "");
+  const price = Number(formData.get("day_price") ?? 0);
+  if (!name || !supplierId || !category) return;
+
+  const supabase = await createClient();
+  const { data: article } = await supabase
+    .from("catalog_articles")
+    .insert({
+      supplier_id: supplierId,
+      external_code: name,
+      name,
+      category,
+      day_price: price,
+      brand: name.split(/\s+/)[0] || null,
+    })
+    .select("id")
+    .single();
+  if (!article) return;
+
+  const { data: item } = await supabase
+    .from("material_list_items")
+    .select("raw_description")
+    .eq("id", itemId)
+    .single();
+
+  await supabase
+    .from("material_list_items")
+    .update({ matched_article_id: article.id, unit_price: price })
+    .eq("id", itemId);
+
+  if (item) {
+    await rememberAlias(supabase, item.raw_description, article.id);
+  }
+
+  materialListRevalidatePaths(projectId, stageId);
+}
+
+export async function addMaterialListItem(
+  projectId: string,
+  stageId: string | null,
+  articleId: string,
+  description: string,
+  quantity: number,
+  price: number
+) {
+  if (!description.trim()) return;
+  const supabase = await createClient();
+  await supabase.from("material_list_items").insert({
+    project_id: projectId,
+    stage_id: stageId,
+    raw_description: description,
+    quantity,
+    unit: "stuks",
+    matched_article_id: articleId,
+    unit_price: price,
+  });
   materialListRevalidatePaths(projectId, stageId);
 }
 

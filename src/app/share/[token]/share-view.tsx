@@ -53,7 +53,7 @@ const STATIC_LABELS = [
   "Nog geen onderdelen.",
   "Deze begroting kon niet gevonden worden.",
   "Begroting",
-  "Rider",
+  "Event rider",
   "Rider downloaden",
   "Door The Bridge AV Group",
   "Jouw invoer",
@@ -329,7 +329,7 @@ function RiderPanel({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">{t("Rider")}</CardTitle>
+          <CardTitle className="text-base">{t("Event rider")}</CardTitle>
           <a
             href={`/share/${token}/rider/pdf`}
             target="_blank"
@@ -889,7 +889,7 @@ export function ShareView({ token }: { token: string }) {
                   : "text-muted-foreground"
               }`}
             >
-              {t("Rider")}
+              {t("Event rider")}
             </button>
           )}
           <button

@@ -70,7 +70,7 @@ export async function SupplierDashboard({
                   <CardTitle className="text-base">{project.projectName}</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     Upload één offerte-PDF voor alle categorieën hieronder tegelijk — we splitsen
-                    de kosten er zelf uit. Alle technische info en tekeningen vind je onder Rider.
+                    de kosten er zelf uit. Alle technische info en tekeningen vind je onder Event rider.
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4">

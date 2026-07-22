@@ -3,7 +3,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { key: "rider", label: "Rider" },
+  { key: "rider", label: "Event rider" },
   { key: "offertes", label: "Offertes" },
   { key: "aanvragen", label: "Aanvragen" },
 ] as const;

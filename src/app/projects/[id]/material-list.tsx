@@ -14,9 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { catalogCategoryLabel, type MaterialListItem } from "@/lib/types";
-import { deleteMaterialListItem, pushMaterialListGroupToQuote, uploadMaterialList } from "./actions";
+import { catalogCategoryLabel, type MaterialListItem, type Supplier } from "@/lib/types";
+import {
+  deleteMaterialListItem,
+  pushMaterialListGroupToQuote,
+  updateMaterialListItem,
+  uploadMaterialList,
+} from "./actions";
 import { MatchPicker } from "./match-picker";
+import { AddMaterialListItem } from "./add-material-list-item";
 
 function lineTotal(item: MaterialListItem, multiplier: number) {
   if (item.unit_price == null) return null;
@@ -27,11 +33,13 @@ export function MaterialList({
   projectId,
   stageId,
   items,
+  suppliers,
   rentalMultiplier,
 }: {
   projectId: string;
   stageId: string | null;
   items: MaterialListItem[];
+  suppliers: Supplier[];
   rentalMultiplier: number;
 }) {
   const groups = new Map<
@@ -83,6 +91,7 @@ export function MaterialList({
                   <TableHead>Omschrijving</TableHead>
                   <TableHead>Aantal</TableHead>
                   <TableHead>Match</TableHead>
+                  <TableHead>Prijs/dag</TableHead>
                   <TableHead>Regeltotaal</TableHead>
                   <TableHead />
                 </TableRow>
@@ -91,8 +100,9 @@ export function MaterialList({
                 {items.map((item) => {
                   const total = lineTotal(item, rentalMultiplier);
                   const article = item.matched_article;
+                  const formId = `material-item-${item.id}`;
                   const label = article
-                    ? `${article.supplier?.name ?? ""} — ${article.name} (€ ${article.day_price.toFixed(2)}/dag)` +
+                    ? `${article.supplier?.name ?? ""} — ${article.name}` +
                       (article.last_seen_price != null
                         ? ` · laatst gezien € ${article.last_seen_price.toFixed(2)}${
                             article.last_seen_price_at
@@ -105,7 +115,15 @@ export function MaterialList({
                     <TableRow key={item.id}>
                       <TableCell className="max-w-xs">{item.raw_description}</TableCell>
                       <TableCell>
-                        {item.quantity} {item.unit}
+                        <Input
+                          form={formId}
+                          name="quantity"
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.quantity}
+                          className="h-8 w-20 text-xs"
+                        />{" "}
+                        {item.unit}
                       </TableCell>
                       <TableCell>
                         <MatchPicker
@@ -114,11 +132,47 @@ export function MaterialList({
                           itemId={item.id}
                           currentLabel={label}
                           defaultQuery={item.raw_description}
+                          suppliers={suppliers}
                         />
                       </TableCell>
+                      <TableCell>
+                        <Input
+                          form={formId}
+                          name="unit_price"
+                          type="number"
+                          step="0.01"
+                          defaultValue={item.unit_price ?? ""}
+                          placeholder="—"
+                          className="h-8 w-24 text-xs"
+                        />
+                        {article && (
+                          <label className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                            <input form={formId} type="checkbox" name="save_as_default" />
+                            ook als standaard opslaan
+                          </label>
+                        )}
+                      </TableCell>
                       <TableCell>{total != null ? `€ ${total.toFixed(2)}` : "—"}</TableCell>
-                      <TableCell className="text-right">
-                        <form action={deleteMaterialListItem.bind(null, projectId, stageId, item.id)}>
+                      <TableCell className="space-x-1 text-right">
+                        <form
+                          id={formId}
+                          action={updateMaterialListItem.bind(
+                            null,
+                            projectId,
+                            stageId,
+                            item.id,
+                            item.matched_article_id
+                          )}
+                          className="inline"
+                        >
+                          <Button type="submit" size="sm" variant="secondary">
+                            Opslaan
+                          </Button>
+                        </form>
+                        <form
+                          action={deleteMaterialListItem.bind(null, projectId, stageId, item.id)}
+                          className="inline"
+                        >
                           <Button type="submit" variant="ghost" size="sm">
                             Verwijderen
                           </Button>
@@ -161,6 +215,10 @@ export function MaterialList({
             )}
           </>
         )}
+
+        <div className="border-t pt-4">
+          <AddMaterialListItem projectId={projectId} stageId={stageId} />
+        </div>
       </CardContent>
     </Card>
   );

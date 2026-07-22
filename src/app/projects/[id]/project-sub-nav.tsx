@@ -5,16 +5,16 @@ import { checkCanViewBudget } from "@/lib/server/team";
 
 const TABS = [
   { key: "overview", label: "Overzicht" },
+  { key: "intake", label: "Aanvraag checklist" },
   { key: "budget", label: "Begroting" },
-  { key: "media", label: "Media" },
-  { key: "guests", label: "Gastenportaal" },
-  { key: "rider", label: "Rider" },
-  { key: "intake", label: "Checklist" },
+  { key: "rider", label: "Event rider" },
   { key: "schedule", label: "Draaiboek" },
   { key: "rundown", label: "Rundown" },
   { key: "production", label: "Productie" },
+  { key: "media", label: "Media" },
   { key: "documents", label: "Documenten" },
   { key: "evaluation", label: "Evaluatie" },
+  { key: "guests", label: "Gastenportaal" },
 ] as const;
 
 export type ProjectTabKey = (typeof TABS)[number]["key"];
