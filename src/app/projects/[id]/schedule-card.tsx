@@ -1,7 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { ScheduleItem, Supplier } from "@/lib/types";
 import {
   addScheduleItem,
@@ -20,6 +24,14 @@ function sortItems(items: ScheduleItem[]): ScheduleItem[] {
   });
 }
 
+function formatDayLabel(date: string) {
+  return new Date(`${date}T00:00:00`).toLocaleDateString("nl-NL", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export function ScheduleCard({
   projectId,
   stageId,
@@ -32,6 +44,10 @@ export function ScheduleCard({
   suppliers: Supplier[];
 }) {
   const sorted = sortItems(items);
+  const dates = [...new Set(sorted.map((item) => item.activity_date))];
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(dates[0]);
+  const activeDate = selectedDate && dates.includes(selectedDate) ? selectedDate : dates[0];
+  const dayItems = activeDate ? sorted.filter((item) => item.activity_date === activeDate) : sorted;
 
   return (
     <Card>
@@ -52,7 +68,28 @@ export function ScheduleCard({
             Draaiboek downloaden (PDF)
           </a>
         )}
-        {sorted.map((item) => {
+
+        {dates.length > 1 && (
+          <div className="flex flex-wrap gap-1.5">
+            {dates.map((date) => (
+              <button
+                key={date}
+                type="button"
+                onClick={() => setSelectedDate(date)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs font-medium capitalize transition-colors",
+                  date === activeDate
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-input text-muted-foreground hover:bg-muted"
+                )}
+              >
+                {formatDayLabel(date)}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {dayItems.map((item) => {
           const linkedSuppliers = item.suppliers ?? [];
           const linkedSupplierIds = new Set(linkedSuppliers.map((s) => s.supplier_id));
           const availableSuppliers = suppliers.filter((s) => !linkedSupplierIds.has(s.id));
@@ -174,7 +211,14 @@ export function ScheduleCard({
         >
           <div className="space-y-1">
             <Label htmlFor="new-date" className="text-xs">Datum</Label>
-            <Input id="new-date" name="activity_date" type="date" className="h-8 text-xs" required />
+            <Input
+              id="new-date"
+              name="activity_date"
+              type="date"
+              defaultValue={activeDate}
+              className="h-8 text-xs"
+              required
+            />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-time" className="text-xs">Tijd</Label>
