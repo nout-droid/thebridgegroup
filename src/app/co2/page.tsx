@@ -71,7 +71,7 @@ export default async function Co2Page() {
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <div>
-          <h1 className="text-2xl font-semibold">CO2-tracker</h1>
+          <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">CO2-tracker</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Een indicatie van de CO2-uitstoot die we als Bridge AV Group opbouwen aan vluchten en
             transport, over al onze projecten heen. Bedoeld als bewustwording, niet als exacte

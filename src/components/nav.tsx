@@ -22,7 +22,10 @@ export async function Nav() {
     <header className="border-b border-black bg-black text-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         <nav className="flex items-center gap-6 text-sm uppercase tracking-wide">
-          <Link href="/projects" className="flex items-center gap-2 font-semibold text-primary">
+          <Link
+            href="/projects"
+            className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight text-primary normal-case"
+          >
             <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
             The Bridge — Productie
           </Link>

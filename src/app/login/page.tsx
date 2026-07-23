@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,7 +19,11 @@ export default async function LoginPage({
       style={{ backgroundImage: "url(/login-background.jpg)" }}
     >
       <div className="h-[72vh] shrink-0" />
-      <div className="w-full max-w-sm rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
+      <div className="flex w-full max-w-sm flex-col items-center rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
+        <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
+        <h1 className="text-center font-heading text-2xl font-extrabold uppercase tracking-tight text-primary">
+          The Bridge AV Group
+        </h1>
         <p className="mb-6 text-center text-sm text-white/70">Log in om je projecten te beheren.</p>
 
         {error && (
@@ -32,7 +37,7 @@ export default async function LoginPage({
           </p>
         )}
 
-        <form action={signIn} className="space-y-4">
+        <form action={signIn} className="w-full space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="signin-email" className="text-white/80">E-mail</Label>
             <Input

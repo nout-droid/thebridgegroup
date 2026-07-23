@@ -29,7 +29,7 @@ export default async function ProjectsPage({
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{pageError}</p>
         )}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">Projecten</h1>
+          <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Projecten</h1>
           <NewProjectDialog />
         </div>
 

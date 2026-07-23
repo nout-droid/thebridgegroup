@@ -56,7 +56,7 @@ export default async function SuppliersPage({
     <div className="flex min-h-screen flex-col">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <h1 className="text-2xl font-semibold">Leveranciers</h1>
+        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Leveranciers</h1>
 
         {error && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>

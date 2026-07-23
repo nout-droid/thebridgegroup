@@ -811,8 +811,8 @@ export function ShareView({ token }: { token: string }) {
 
   return (
     <div>
-      <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-primary">
-        <div className="flex items-center gap-2">
+      <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
+        <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
           <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
           The Bridge AV Group
         </div>
@@ -850,7 +850,9 @@ export function ShareView({ token }: { token: string }) {
           style={{ backgroundImage: `url(${data.project.background_image_url})` }}
         >
           <div className="w-full bg-gradient-to-t from-black/80 to-transparent px-6 py-8">
-            <h1 className="text-3xl font-semibold text-white">{t(data.project.name)}</h1>
+            <h1 className="font-heading text-4xl font-extrabold uppercase tracking-tight text-white">
+              {t(data.project.name)}
+            </h1>
             <p className="text-white/80">
               {data.project.client_name ? t(data.project.client_name) : ""}
               {data.project.event_date ? ` · ${data.project.event_date}` : ""}
@@ -862,7 +864,9 @@ export function ShareView({ token }: { token: string }) {
       <div className="mx-auto w-full max-w-4xl space-y-6 px-6 py-8">
         {!data.project.background_image_url && (
           <div>
-            <h1 className="text-2xl font-semibold">{t(data.project.name)}</h1>
+            <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">
+              {t(data.project.name)}
+            </h1>
             <p className="text-muted-foreground">
               {data.project.client_name ? t(data.project.client_name) : ""}
               {data.project.event_date ? ` · ${data.project.event_date}` : ""}

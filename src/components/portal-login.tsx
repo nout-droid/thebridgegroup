@@ -31,7 +31,7 @@ export function PortalLogin({
       <div className="h-[72vh] shrink-0" />
       <div className="flex w-full max-w-sm flex-col items-center rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
         <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
-        <h1 className="text-center text-lg font-semibold uppercase tracking-wide text-primary">
+        <h1 className="text-center font-heading text-2xl font-extrabold uppercase tracking-tight text-primary">
           The Bridge AV Group
         </h1>
         <p className="mb-8 text-center text-sm text-white/60">{description}</p>
