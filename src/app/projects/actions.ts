@@ -31,34 +31,23 @@ export async function createProject(formData: FormData) {
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
 
-  let data: { id: string } | null = null;
-  let error: { message: string; code?: string } | null = null;
+  // Loopt via een security-definer RPC i.p.v. een rechtstreekse insert — zie
+  // migrations_create_project_secure_rpc.sql voor de reden (bevestigde RLS-evaluatie-anomalie
+  // op deze tabel, niet op te lossen via de policy zelf).
+  const { data: newId, error } = await supabase.rpc("create_project_secure", {
+    p_owner_id: ownerId,
+    p_name: name,
+    p_client_name: clientName,
+    p_event_date: eventDate || null,
+    p_event_code: generateEventCode(),
+  });
 
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const result = await supabase
-      .from("projects")
-      .insert({
-        user_id: ownerId,
-        name,
-        client_name: clientName,
-        event_date: eventDate || null,
-        event_code: generateEventCode(),
-      })
-      .select("id")
-      .single();
-
-    data = result.data;
-    error = result.error;
-
-    if (!error || error.code !== "23505") break;
-  }
-
-  if (error || !data) {
+  if (error || !newId) {
     redirect(`/projects?error=${encodeURIComponent(error?.message ?? "Onbekende fout")}`);
   }
 
   revalidatePath("/projects");
-  redirect(`/projects/${data.id}`);
+  redirect(`/projects/${newId}`);
 }
 
 export async function deleteProject(projectId: string) {
@@ -91,34 +80,25 @@ export async function duplicateProject(projectId: string) {
   // vergelijkbaar project. Offertes, crew, draaiboek, rider-inhoud en klant-/crew-toegang
   // worden bewust NIET meegekopieerd (project-specifiek, en toegangswachtwoorden horen niet
   // over te gaan naar een kopie).
-  let created: { id: string } | null = null;
-  let error: { code?: string; message: string } | null = null;
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const result = await supabase
-      .from("projects")
-      .insert({
-        user_id: ownerId,
-        name: `${original.name} (kopie)`,
-        client_name: original.client_name,
-        event_date: original.event_date,
-        build_start_date: original.build_start_date,
-        strike_end_date: original.strike_end_date,
-        show_start_date: original.show_start_date,
-        show_end_date: original.show_end_date,
-        show_type: original.show_type,
-        suppliers_manage_travel: original.suppliers_manage_travel,
-        background_image_url: original.background_image_url,
-        client_budget: original.client_budget,
-        default_margin_percentage: original.default_margin_percentage,
-        event_code: generateEventCode(),
-      })
-      .select("id")
-      .single();
-
-    created = result.data;
-    error = result.error;
-    if (!error || error.code !== "23505") break;
-  }
+  // Loopt via dezelfde security-definer RPC als createProject — zie
+  // migrations_create_project_secure_rpc.sql.
+  const { data: newId, error } = await supabase.rpc("create_project_secure", {
+    p_owner_id: ownerId,
+    p_name: `${original.name} (kopie)`,
+    p_client_name: original.client_name,
+    p_event_date: original.event_date,
+    p_event_code: generateEventCode(),
+    p_build_start_date: original.build_start_date,
+    p_strike_end_date: original.strike_end_date,
+    p_show_start_date: original.show_start_date,
+    p_show_end_date: original.show_end_date,
+    p_show_type: original.show_type,
+    p_suppliers_manage_travel: original.suppliers_manage_travel,
+    p_background_image_url: original.background_image_url,
+    p_client_budget: original.client_budget,
+    p_default_margin_percentage: original.default_margin_percentage,
+  });
+  const created = newId ? { id: newId } : null;
   if (!created) {
     redirect(`/projects?error=${encodeURIComponent(error?.message ?? "Dupliceren mislukt.")}`);
   }
