@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -6,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { Footer } from "@/components/footer";
+import { GuestView } from "./guest-view";
 
 export default async function GuestPage({
   params,
@@ -63,40 +63,13 @@ export default async function GuestPage({
   );
 
   return (
-    <div>
-      <header className="flex items-center gap-2 bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-primary">
-        <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-        The Bridge AV Group
-      </header>
-      <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
-        <div>
-          <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">{project.name}</h1>
-          {project.event_date && <p className="text-muted-foreground">{project.event_date}</p>}
-        </div>
-
-        {!documentsWithUrls.length ? (
-          <p className="text-sm text-muted-foreground">Er zijn nog geen documenten geplaatst.</p>
-        ) : (
-          <ul className="space-y-2">
-            {documentsWithUrls.map((doc) => (
-              <li key={doc.id} className="flex items-center justify-between rounded-md border p-3">
-                <span>{doc.title}</span>
-                {doc.url && (
-                  <a
-                    href={doc.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary underline"
-                  >
-                    Downloaden
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+    <>
+      <GuestView
+        projectName={project.name}
+        eventDate={project.event_date}
+        documents={documentsWithUrls}
+      />
       <Footer />
-    </div>
+    </>
   );
 }
