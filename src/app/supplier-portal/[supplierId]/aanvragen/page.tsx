@@ -1,10 +1,9 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
-import { cn } from "@/lib/utils";
+import { AanvragenHeader } from "./aanvragen-header";
 import type {
   CrewMember,
   EquipmentReservation,
@@ -135,34 +134,14 @@ export default async function SupplierRequestsPage({
     <div className="flex min-h-screen flex-col">
       <Nav supplierId={supplierId} supplierName={supplier.name} active="aanvragen" />
       <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
-        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Aanvragen</h1>
+        <AanvragenHeader
+          supplierId={supplierId}
+          projects={projects.map((p) => ({ id: p.id, name: p.name }))}
+          selectedProjectId={selectedProject?.id ?? null}
+        />
 
-        {!projects.length ? (
-          <p className="text-sm text-muted-foreground">
-            Er staat nog geen project voor je klaar. Zodra er een offerteverzoek voor je is aangemaakt
-            verschijnt het project hier.
-          </p>
-        ) : (
+        {projects.length > 0 && (
           <>
-            {projects.length > 1 && (
-              <div className="flex flex-wrap gap-2">
-                {projects.map((project) => (
-                  <Link
-                    key={project.id}
-                    href={`/supplier-portal/${supplierId}/aanvragen?project=${project.id}`}
-                    className={cn(
-                      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                      selectedProject?.id === project.id
-                        ? "bg-foreground text-background"
-                        : "bg-muted text-muted-foreground hover:bg-muted/70"
-                    )}
-                  >
-                    {project.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-
             {selectedProject && (
               <div className="space-y-6">
                 <SupplierCrewSection

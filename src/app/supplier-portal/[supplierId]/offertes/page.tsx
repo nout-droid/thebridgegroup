@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import type { QuoteDocument } from "@/lib/types";
-import { SupplierDashboard, type SupplierProjectGroup, type SupplierQuoteRow } from "../supplier-dashboard";
+import { getSignedPortalUrl } from "@/lib/server/portal-storage";
+import { SupplierDashboard, type SupplierProjectGroup } from "../supplier-dashboard";
 
 interface RawQuoteRow {
   id: string;
@@ -78,6 +79,15 @@ export default async function SupplierPortalDashboard({
     .order("created_at", { ascending: false })
     .returns<RawPendingDocumentRow[]>();
 
+  const allDocuments = [
+    ...(quotes ?? []).flatMap((q) => q.documents ?? []),
+    ...(pendingDocuments ?? []),
+  ];
+  const signedUrls = await Promise.all(
+    allDocuments.map((doc) => getSignedPortalUrl(doc.storage_path))
+  );
+  const signedUrlById = new Map(allDocuments.map((doc, i) => [doc.id, signedUrls[i]]));
+
   const groups = new Map<string, SupplierProjectGroup>();
 
   function ensureGroup(projectId: string, projectName: string): SupplierProjectGroup {
@@ -98,16 +108,16 @@ export default async function SupplierPortalDashboard({
       costPrice: q.cost_price,
       status: q.status,
       categoryName: q.category?.name ?? "—",
-      documents: (q.documents ?? []).sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      ),
+      documents: (q.documents ?? [])
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .map((doc) => ({ ...doc, signedUrl: signedUrlById.get(doc.id) ?? null })),
     });
   }
 
   for (const doc of pendingDocuments ?? []) {
     if (!doc.project) continue;
     const group = ensureGroup(doc.project.id, doc.project.name);
-    group.pendingDocuments.push(doc);
+    group.pendingDocuments.push({ ...doc, signedUrl: signedUrlById.get(doc.id) ?? null });
   }
 
   const rows = [...groups.values()].sort((a, b) => a.projectName.localeCompare(b.projectName));

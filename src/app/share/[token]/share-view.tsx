@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslator, type Translator } from "@/hooks/use-translator";
+import { LanguageToggle } from "@/components/language-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,8 +94,6 @@ const BUDGET_STATUS_LABELS: Record<string, string> = {
   changes_requested: "Aanpassing gevraagd",
   rejected: "Geweigerd",
 };
-
-type Translator = (text: string) => string;
 
 function collectDynamicTexts(data: SharedProject, rider: SharedRider | null): string[] {
   const texts = new Set<string>();
@@ -718,9 +718,6 @@ export function ShareView({ token }: { token: string }) {
   const [checklist, setChecklist] = useState<SharedIntakeChecklist | null>(null);
   const [co2, setCo2] = useState<SharedCo2 | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lang, setLang] = useState<"nl" | "en">("nl");
-  const [cache, setCache] = useState<Map<string, string>>(new Map());
-  const [translationError, setTranslationError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"budget" | "rider" | "checklist" | "co2">("budget");
 
   useEffect(() => {
@@ -756,46 +753,8 @@ export function ShareView({ token }: { token: string }) {
     };
   }, [token]);
 
-  const allTexts = useMemo(() => {
-    const dynamic = data ? collectDynamicTexts(data, rider) : [];
-    return Array.from(new Set([...STATIC_LABELS, ...dynamic]));
-  }, [data, rider]);
-
-  useEffect(() => {
-    if (lang !== "en") return;
-    const missing = allTexts.filter((text) => !cache.has(text));
-    if (!missing.length) return;
-
-    let cancelled = false;
-    fetch("/api/translate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ texts: missing }),
-    })
-      .then((res) => res.json())
-      .then((result) => {
-        if (cancelled) return;
-        if (!result.translations) {
-          setTranslationError(result.error ?? "Vertalen mislukt.");
-          return;
-        }
-        setTranslationError(null);
-        setCache((prev) => {
-          const next = new Map(prev);
-          missing.forEach((text: string, i: number) => next.set(text, result.translations[i] ?? text));
-          return next;
-        });
-      })
-      .catch(() => {
-        if (!cancelled) setTranslationError("Vertalen mislukt.");
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [lang, allTexts, cache]);
-
-  const t: Translator = (text) => (lang === "en" ? cache.get(text) ?? text : text);
+  const dynamicTexts = useMemo(() => (data ? collectDynamicTexts(data, rider) : []), [data, rider]);
+  const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts);
 
   if (error) {
     return <p className="p-6 text-sm text-muted-foreground">{error}</p>;
@@ -816,26 +775,7 @@ export function ShareView({ token }: { token: string }) {
           <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
           The Bridge AV Group
         </div>
-        <div className="flex gap-1 normal-case tracking-normal">
-          <Button
-            type="button"
-            size="sm"
-            variant={lang === "nl" ? "secondary" : "ghost"}
-            className={lang === "nl" ? "" : "text-white/70 hover:bg-white/10 hover:text-white"}
-            onClick={() => setLang("nl")}
-          >
-            NL
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant={lang === "en" ? "secondary" : "ghost"}
-            className={lang === "en" ? "" : "text-white/70 hover:bg-white/10 hover:text-white"}
-            onClick={() => setLang("en")}
-          >
-            EN
-          </Button>
-        </div>
+        <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </header>
 
       {translationError && lang === "en" && (
