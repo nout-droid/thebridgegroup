@@ -10,18 +10,18 @@ import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 
 const STATIC_LABELS = [
-  "The Bridge AV Group",
-  "Log in om je projecten te beheren.",
+  "Nieuw account aanmaken",
+  "Start je proefperiode — geen creditcard nodig.",
+  "Bedrijfsnaam",
   "E-mail",
   "Wachtwoord",
-  "Bezig met inloggen…",
+  "Bezig met aanmelden…",
+  "Account aanmaken",
+  "Heb je al een account?",
   "Inloggen",
-  "Wachtwoord vergeten?",
-  "Nog geen account?",
-  "Meld je aan",
 ];
 
-export function LoginView({
+export function SignupView({
   action,
   error,
   message,
@@ -40,14 +40,14 @@ export function LoginView({
       <div className="flex w-full justify-end px-2 pt-4">
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </div>
-      <div className="flex h-[68vh] shrink-0 items-end" />
+      <div className="flex h-[20vh] shrink-0 items-end" />
       <div className="flex w-full max-w-sm flex-col items-center rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
         <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
         <h1 className="text-center font-heading text-2xl font-extrabold uppercase tracking-tight text-primary">
-          {t("The Bridge AV Group")}
+          {t("Nieuw account aanmaken")}
         </h1>
         <p className="mb-6 text-center text-sm text-white/70">
-          {t("Log in om je projecten te beheren.")}
+          {t("Start je proefperiode — geen creditcard nodig.")}
         </p>
 
         {error && (
@@ -63,11 +63,23 @@ export function LoginView({
 
         <form action={action} className="w-full space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="signin-email" className="text-white/80">
+            <Label htmlFor="signup-company" className="text-white/80">
+              {t("Bedrijfsnaam")}
+            </Label>
+            <Input
+              id="signup-company"
+              name="company_name"
+              required
+              autoComplete="organization"
+              className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="signup-email" className="text-white/80">
               {t("E-mail")}
             </Label>
             <Input
-              id="signin-email"
+              id="signup-email"
               name="email"
               type="email"
               required
@@ -76,33 +88,28 @@ export function LoginView({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="signin-password" className="text-white/80">
+            <Label htmlFor="signup-password" className="text-white/80">
               {t("Wachtwoord")}
             </Label>
             <Input
-              id="signin-password"
+              id="signup-password"
               name="password"
               type="password"
               required
-              autoComplete="current-password"
+              autoComplete="new-password"
+              minLength={6}
               className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
             />
           </div>
-          <SubmitButton className="w-full" pendingText={t("Bezig met inloggen…")}>
-            {t("Inloggen")}
+          <SubmitButton className="w-full" pendingText={t("Bezig met aanmelden…")}>
+            {t("Account aanmaken")}
           </SubmitButton>
         </form>
 
-        <Link
-          href="/login/reset-password"
-          className="mt-4 block text-center text-sm text-white/60 underline-offset-4 hover:text-white hover:underline"
-        >
-          {t("Wachtwoord vergeten?")}
-        </Link>
-        <p className="mt-2 text-center text-sm text-white/60">
-          {t("Nog geen account?")}{" "}
-          <Link href="/signup" className="underline-offset-4 hover:text-white hover:underline">
-            {t("Meld je aan")}
+        <p className="mt-4 text-center text-sm text-white/60">
+          {t("Heb je al een account?")}{" "}
+          <Link href="/login" className="underline-offset-4 hover:text-white hover:underline">
+            {t("Inloggen")}
           </Link>
         </p>
       </div>

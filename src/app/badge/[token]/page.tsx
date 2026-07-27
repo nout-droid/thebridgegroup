@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkInCrewMember } from "./actions";
 
 interface BadgeMemberRow {
   name: string;
@@ -9,6 +10,7 @@ interface BadgeMemberRow {
   needs_hotel: boolean;
   project_id: string;
   access_dates: string[];
+  checked_in_at: string | null;
   crew_position: { stage: { name: string } | null } | null;
 }
 
@@ -32,11 +34,12 @@ export default async function BadgeScanPage({
 
   const admin = createAdminClient();
 
+  // "*" i.p.v. een expliciete kolomlijst met checked_in_at: zo blijft deze query (en dus de
+  // hele badge, ook voor bestaand crew) werken zolang de check-in-migratie nog niet is
+  // uitgevoerd — checked_in_at is dan gewoon undefined i.p.v. dat de hele select faalt.
   const { data: member } = await admin
     .from("crew_members")
-    .select(
-      "name, role, accredited, needs_catering, needs_hotel, project_id, access_dates, crew_position:crew_positions(stage:stages(name))"
-    )
+    .select("*, crew_position:crew_positions(stage:stages(name))")
     .eq("badge_token", token)
     .maybeSingle<BadgeMemberRow>();
 
@@ -114,6 +117,29 @@ export default async function BadgeScanPage({
             Hotel: {member.needs_hotel ? "Ja" : "Nee"}
           </div>
         </div>
+
+        {accessGranted && (
+          <div className="border-t pt-3">
+            {member.checked_in_at ? (
+              <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
+                Ingecheckt om{" "}
+                {new Date(member.checked_in_at).toLocaleTimeString("nl-NL", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
+            ) : (
+              <form action={checkInCrewMember.bind(null, token)}>
+                <button
+                  type="submit"
+                  className="w-full rounded-md bg-primary py-3 text-center font-semibold text-primary-foreground"
+                >
+                  Inchecken
+                </button>
+              </form>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

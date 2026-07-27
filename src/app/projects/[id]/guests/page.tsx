@@ -1,9 +1,11 @@
+import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
-import type { GuestDocument } from "@/lib/types";
+import type { EventGuest, GuestDocument } from "@/lib/types";
 import { GuestDocumentsCard } from "../guest-documents-card";
+import { GuestListCard } from "../guest-list-card";
 import { ProjectSubNav } from "../project-sub-nav";
 
 export default async function ProjectGuestsPage({
@@ -23,11 +25,24 @@ export default async function ProjectGuestsPage({
     .order("created_at", { ascending: false })
     .returns<GuestDocument[]>();
 
+  const { data: guests } = await supabase
+    .from("event_guests")
+    .select("*")
+    .eq("project_id", id)
+    .order("created_at", { ascending: false })
+    .returns<EventGuest[]>();
+
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = host?.startsWith("localhost") ? "http" : "https";
+  const baseUrl = `${protocol}://${host}`;
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="guests" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
+        <GuestListCard projectId={project.id} guests={guests ?? []} baseUrl={baseUrl} />
         <GuestDocumentsCard project={project} documents={guestDocuments ?? []} />
       </main>
       <Footer />

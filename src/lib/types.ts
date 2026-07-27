@@ -25,6 +25,55 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
 
 export type ShowType = "dag" | "nacht" | "beide";
 
+export const GUEST_TYPES = ["gast", "vip", "pers", "sponsor", "overig"] as const;
+export type GuestType = (typeof GUEST_TYPES)[number];
+
+export const GUEST_TYPE_LABELS: Record<GuestType, string> = {
+  gast: "Gast",
+  vip: "VIP",
+  pers: "Pers",
+  sponsor: "Sponsor",
+  overig: "Overig",
+};
+
+export const GUEST_RSVP_STATUSES = ["uitgenodigd", "bevestigd", "afgemeld"] as const;
+export type GuestRsvpStatus = (typeof GUEST_RSVP_STATUSES)[number];
+
+export const GUEST_RSVP_STATUS_LABELS: Record<GuestRsvpStatus, string> = {
+  uitgenodigd: "Uitgenodigd",
+  bevestigd: "Bevestigd",
+  afgemeld: "Afgemeld",
+};
+
+export interface EventGuest {
+  id: string;
+  project_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  guest_type: GuestType | string;
+  rsvp_status: GuestRsvpStatus | string;
+  plus_ones: number;
+  notes: string;
+  badge_token: string;
+  checked_in_at: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface Organization {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  logo_url: string | null;
+  plan: string;
+  subscription_status: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  trial_ends_at: string | null;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;

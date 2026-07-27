@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { TeamMember } from "@/lib/types";
+import type { Organization, TeamMember } from "@/lib/types";
 import { TEAM_ROLE_LABELS } from "@/lib/types";
 import { TeamRoleSelect } from "./role-select";
 import {
@@ -24,13 +24,14 @@ import {
   updateTeamMemberAccess,
   removeTeamMember,
 } from "./actions";
+import { updateOrganizationName } from "./organization-actions";
 
 export default async function TeamPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; checkout?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, checkout } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -53,6 +54,12 @@ export default async function TeamPage({
   const admin = createAdminClient();
   const { data: ownerAuthUser } = await admin.auth.admin.getUserById(ownerId);
   const ownerEmail = ownerAuthUser?.user?.email ?? "—";
+
+  const { data: organization } = await admin
+    .from("organizations")
+    .select("*")
+    .eq("owner_user_id", ownerId)
+    .maybeSingle<Organization>();
 
   const { data: projects } = await admin
     .from("projects")
@@ -85,6 +92,53 @@ export default async function TeamPage({
 
         {error && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
+        )}
+        {checkout === "success" && (
+          <p className="rounded-md bg-green-100 p-3 text-sm text-green-800">
+            Bedankt! Je abonnement wordt geactiveerd zodra Stripe de betaling bevestigt.
+          </p>
+        )}
+
+        {organization && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Organisatie & abonnement</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-wrap items-center gap-3 text-sm">
+                <span className="rounded-full bg-muted px-3 py-1 font-medium capitalize">
+                  Plan: {organization.plan}
+                </span>
+                <span className="rounded-full bg-muted px-3 py-1 font-medium capitalize">
+                  Status: {organization.subscription_status}
+                </span>
+                {organization.trial_ends_at && (
+                  <span className="text-muted-foreground">
+                    Proefperiode tot {new Date(organization.trial_ends_at).toLocaleDateString("nl-NL")}
+                  </span>
+                )}
+                {isOwner && organization.subscription_status !== "active" && (
+                  <a
+                    href="/api/stripe/checkout"
+                    className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground hover:opacity-90"
+                  >
+                    Upgraden
+                  </a>
+                )}
+              </div>
+              {isOwner && (
+                <form action={updateOrganizationName} className="flex items-end gap-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="org-name">Organisatienaam</Label>
+                    <Input id="org-name" name="name" defaultValue={organization.name} className="w-64" required />
+                  </div>
+                  <Button type="submit" size="sm">
+                    Opslaan
+                  </Button>
+                </form>
+              )}
+            </CardContent>
+          </Card>
         )}
 
         {isAdmin && (

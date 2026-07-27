@@ -139,6 +139,27 @@ export default async function ProjectPage({
   const totalQuoteKg = (quotes ?? []).reduce((sum, q) => sum + (q.co2_kg ?? 0), 0);
   const projectCo2 = computeCo2Total(flightCount ?? 0, totalKm, totalQuoteKg);
 
+  const { count: accreditedCrewCount } = await supabase
+    .from("crew_members")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", id)
+    .eq("accredited", true);
+  const { count: checkedInCrewCount } = await supabase
+    .from("crew_members")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", id)
+    .eq("accredited", true)
+    .not("checked_in_at", "is", null);
+  const { count: totalGuestCount } = await supabase
+    .from("event_guests")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", id);
+  const { count: checkedInGuestCount } = await supabase
+    .from("event_guests")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", id)
+    .not("checked_in_at", "is", null);
+
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
@@ -531,6 +552,34 @@ export default async function ProjectPage({
                   } (${doc.original_filename})`}
                 />
               ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {((accreditedCrewCount ?? 0) > 0 || (totalGuestCount ?? 0) > 0) && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Inchecken</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Live status via de badge-QR (crew) en gasten-badges — bijwerken door de pagina te
+                verversen.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-muted-foreground">Crew ingecheckt</dt>
+                  <dd className="text-xl font-semibold">
+                    {checkedInCrewCount ?? 0}/{accreditedCrewCount ?? 0}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Gasten ingecheckt</dt>
+                  <dd className="text-xl font-semibold">
+                    {checkedInGuestCount ?? 0}/{totalGuestCount ?? 0}
+                  </dd>
+                </div>
+              </dl>
             </CardContent>
           </Card>
         )}
