@@ -8,6 +8,8 @@ import { getTeamOwnerId } from "@/lib/server/team";
 // Geen I/L/O/0/1 — voorkomt verwarring als een klant het Event ID moet overtypen.
 const EVENT_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
+const TRIAL_PROJECT_LIMIT = 3;
+
 function generateEventCode(length = 6): string {
   let code = "";
   for (let i = 0; i < length; i++) {
@@ -30,6 +32,27 @@ export async function createProject(formData: FormData) {
   if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
+
+  // Proefaccounts zijn beperkt in aantal projecten; organizations bestaat mogelijk nog niet
+  // (migratie nog niet gedraaid) — dan telt organization als null en wordt hier niets geblokkeerd.
+  const { data: organization } = await supabase
+    .from("organizations")
+    .select("plan")
+    .eq("owner_user_id", ownerId)
+    .maybeSingle();
+  if (organization?.plan === "trial") {
+    const { count } = await supabase
+      .from("projects")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", ownerId);
+    if ((count ?? 0) >= TRIAL_PROJECT_LIMIT) {
+      redirect(
+        `/projects?error=${encodeURIComponent(
+          `Je proefperiode is beperkt tot ${TRIAL_PROJECT_LIMIT} projecten. Upgrade je abonnement op /team om meer aan te maken.`
+        )}`
+      );
+    }
+  }
 
   // Loopt via een security-definer RPC i.p.v. een rechtstreekse insert — zie
   // migrations_create_project_secure_rpc.sql voor de reden (bevestigde RLS-evaluatie-anomalie
