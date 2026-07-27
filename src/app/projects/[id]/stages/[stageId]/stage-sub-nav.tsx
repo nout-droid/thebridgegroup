@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 const TABS = [
   { key: "overview", label: "Overzicht" },
@@ -15,7 +17,7 @@ function tabHref(projectId: string, stageId: string, key: StageTabKey) {
   return key === "overview" ? base : `${base}/${key}`;
 }
 
-export function StageSubNav({
+export async function StageSubNav({
   projectId,
   stageId,
   stageName,
@@ -26,6 +28,13 @@ export function StageSubNav({
   stageName: string;
   active: StageTabKey;
 }) {
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [
+    "Terug naar project",
+    stageName,
+    ...TABS.map((tab) => tab.label),
+  ]);
+
   return (
     <div className="border-b bg-muted/30">
       <div className="mx-auto max-w-5xl px-6 pt-4">
@@ -33,10 +42,10 @@ export function StageSubNav({
           href={`/projects/${projectId}`}
           className="text-sm text-muted-foreground hover:underline"
         >
-          &larr; Terug naar project
+          &larr; {t("Terug naar project")}
         </Link>
         <h1 className="mt-1 font-heading text-2xl font-extrabold uppercase tracking-tight">
-          {stageName}
+          {t(stageName)}
         </h1>
         <nav className="mt-3 flex gap-1 overflow-x-auto">
           {TABS.map((tab) => (
@@ -50,7 +59,7 @@ export function StageSubNav({
                   : "border-transparent text-muted-foreground hover:text-foreground"
               )}
             >
-              {tab.label}
+              {t(tab.label)}
             </Link>
           ))}
         </nav>

@@ -2,21 +2,27 @@ import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
+import { AppLangToggle } from "@/components/app-lang-toggle";
 import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export async function Nav() {
   const supabase = await createClient();
 
-  const [flightResult, kmResult, quoteResult] = await Promise.all([
+  const [flightResult, kmResult, quoteResult, lang] = await Promise.all([
     supabase.from("crew_members").select("id", { count: "exact", head: true }).eq("needs_flight", true),
     supabase.from("categories").select("estimated_km"),
     supabase.from("quotes").select("co2_kg"),
+    getAppLang(),
   ]);
 
   const totalKm = (kmResult.data ?? []).reduce((sum, row) => sum + (row.estimated_km ?? 0), 0);
   const totalQuoteKg = (quoteResult.data ?? []).reduce((sum, row) => sum + (row.co2_kg ?? 0), 0);
   const co2 = computeCo2Total(flightResult.count ?? 0, totalKm, totalQuoteKg);
+
+  const t = await createTranslator(lang, ["Projecten", "Leveranciers", "Team", "Uitloggen"]);
 
   return (
     <header className="border-b border-black bg-black text-white">
@@ -30,13 +36,13 @@ export async function Nav() {
             The Bridge — Productie
           </Link>
           <Link href="/projects" className="text-white/70 transition-colors hover:text-white">
-            Projecten
+            {t("Projecten")}
           </Link>
           <Link href="/suppliers" className="text-white/70 transition-colors hover:text-white">
-            Leveranciers
+            {t("Leveranciers")}
           </Link>
           <Link href="/team" className="text-white/70 transition-colors hover:text-white">
-            Team
+            {t("Team")}
           </Link>
           <Link href="/co2" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
             CO2
@@ -45,16 +51,19 @@ export async function Nav() {
             </span>
           </Link>
         </nav>
-        <form action={signOut}>
-          <Button
-            type="submit"
-            variant="ghost"
-            size="sm"
-            className="text-white/70 hover:bg-white/10 hover:text-white"
-          >
-            Uitloggen
-          </Button>
-        </form>
+        <div className="flex items-center gap-3">
+          <AppLangToggle lang={lang} dark />
+          <form action={signOut}>
+            <Button
+              type="submit"
+              variant="ghost"
+              size="sm"
+              className="text-white/70 hover:bg-white/10 hover:text-white"
+            >
+              {t("Uitloggen")}
+            </Button>
+          </form>
+        </div>
       </div>
     </header>
   );
