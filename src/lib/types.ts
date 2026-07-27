@@ -151,6 +151,133 @@ export interface SharedCo2 {
   quote_kg: number;
 }
 
+export const CLIENT_REQUEST_CATEGORIES = [
+  "catering",
+  "materieel",
+  "comms",
+  "stroom",
+  "hotel",
+  "vlucht",
+  "overig",
+] as const;
+export type ClientRequestCategory = (typeof CLIENT_REQUEST_CATEGORIES)[number];
+
+export interface ClientRequest {
+  id: string;
+  category: ClientRequestCategory | string;
+  description: string;
+  quantity: number;
+  requested_date: string | null;
+  notes: string;
+  status: "new" | "acknowledged" | "done";
+  created_at: string;
+}
+
+export interface SharedCatering {
+  id: string;
+  order_date: string;
+  party: string;
+  crew_lunch: number;
+  veggie_lunch: number;
+  crew_dinner: number;
+  veggie_dinner: number;
+  night_snacks: number;
+  notes: string;
+  supplier_name: string | null;
+}
+
+export interface SharedEquipment {
+  id: string;
+  machine_type: string;
+  quantity: number;
+  accessories: string;
+  reservation_date: string | null;
+  duration: string;
+  supplier_name: string | null;
+}
+
+export interface SharedComms {
+  id: string;
+  kind: string;
+  user_name: string;
+  device_type: string;
+  channels: string;
+  supplier_name: string | null;
+}
+
+export interface SharedPower {
+  id: string;
+  stage_name: string | null;
+  description: string;
+  quantity: number;
+  position: string;
+  notes: string;
+  supplier_name: string | null;
+}
+
+export interface SharedScheduleItem {
+  id: string;
+  stage_name: string | null;
+  activity_date: string;
+  activity_time: string;
+  activity: string;
+  notes: string;
+  suppliers: string[];
+}
+
+export interface SharedArtistRider {
+  id: string;
+  artist_name: string;
+  rider_received: boolean;
+  notes: string;
+  own_light_operator: boolean;
+  own_audio_operator: boolean;
+  rider_link: string;
+}
+
+export interface SharedOpenQuestion {
+  id: string;
+  question: string;
+  answer: string;
+  pending: boolean;
+}
+
+export interface SharedMeetingNote {
+  id: string;
+  note: string;
+  created_at: string;
+}
+
+export interface SharedFlight {
+  id: string;
+  name: string;
+  role: string;
+  flight_departure_airport: string;
+  flight_destination: string;
+  flight_departure_at: string | null;
+  flight_return_at: string | null;
+}
+
+export interface SharedHotelGuest {
+  id: string;
+  name: string;
+  role: string;
+}
+
+export interface SharedProduction {
+  catering: SharedCatering[];
+  equipment: SharedEquipment[];
+  comms: SharedComms[];
+  power: SharedPower[];
+  schedule: SharedScheduleItem[];
+  artist_riders: SharedArtistRider[];
+  open_questions: SharedOpenQuestion[];
+  meeting_notes: SharedMeetingNote[];
+  flights: SharedFlight[];
+  hotel: SharedHotelGuest[];
+  client_requests: ClientRequest[];
+}
+
 export interface ActivityLogEntry {
   id: string;
   project_id: string;

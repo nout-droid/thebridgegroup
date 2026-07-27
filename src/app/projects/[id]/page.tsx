@@ -10,13 +10,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { computeClientPrice, type ActivityLogEntry, type Category, type Quote, type Stage } from "@/lib/types";
+import {
+  computeClientPrice,
+  type ActivityLogEntry,
+  type Category,
+  type ClientRequest,
+  type Quote,
+  type Stage,
+} from "@/lib/types";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { computeRentalDays } from "@/lib/rental-days";
 import { computeCo2Total } from "@/lib/co2";
 import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
 import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
+import { updateClientRequestStatus } from "./client-requests-actions";
 import { ShareLinkBox } from "./share-link-box";
 import { SupplierDocumentReview } from "./supplier-document-review";
 import { SupplierProjectDocumentReview } from "./supplier-project-document-review";
@@ -32,6 +40,22 @@ const BUDGET_APPROVAL_LABELS: Record<string, string> = {
   approved: "Goedgekeurd",
   changes_requested: "Aanpassing gevraagd",
   rejected: "Geweigerd",
+};
+
+const CLIENT_REQUEST_CATEGORY_LABELS: Record<string, string> = {
+  catering: "Catering",
+  materieel: "Materieel",
+  comms: "Comms & Portofoons",
+  stroom: "Stroom",
+  hotel: "Hotel",
+  vlucht: "Vlucht",
+  overig: "Overig",
+};
+
+const CLIENT_REQUEST_STATUS_LABELS: Record<string, string> = {
+  new: "Nieuw",
+  acknowledged: "In behandeling",
+  done: "Afgehandeld",
 };
 
 function relativeTime(iso: string) {
@@ -170,6 +194,13 @@ export default async function ProjectPage({
     .order("created_at", { ascending: false })
     .returns<ActivityLogEntry[]>();
 
+  const { data: clientRequests } = await supabase
+    .from("client_requests")
+    .select("*")
+    .eq("project_id", id)
+    .order("created_at", { ascending: false })
+    .returns<ClientRequest[]>();
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -230,6 +261,62 @@ export default async function ProjectPage({
                       Gezien
                     </Button>
                   </form>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {clientRequests && clientRequests.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Klantverzoeken</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Zelf ingediend door de klant in het portaal — dit valt{" "}
+                <span className="font-medium text-foreground">niet</span> in de begroting hierboven,
+                behandel het los.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {clientRequests.map((request) => (
+                <div
+                  key={request.id}
+                  className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm"
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="border-primary text-primary">
+                        Klantinvoer
+                      </Badge>
+                      <Badge variant="secondary">
+                        {CLIENT_REQUEST_CATEGORY_LABELS[request.category] ?? request.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {CLIENT_REQUEST_STATUS_LABELS[request.status]}
+                      </span>
+                    </div>
+                    <p>
+                      {request.quantity}× {request.description}
+                      {request.requested_date && ` · ${request.requested_date}`}
+                    </p>
+                    {request.notes && (
+                      <p className="text-xs text-muted-foreground">{request.notes}</p>
+                    )}
+                  </div>
+                  {request.status !== "done" && (
+                    <form
+                      action={updateClientRequestStatus.bind(
+                        null,
+                        project.id,
+                        request.id,
+                        request.status === "new" ? "acknowledged" : "done"
+                      )}
+                    >
+                      <Button type="submit" size="sm" variant="ghost">
+                        {request.status === "new" ? "In behandeling nemen" : "Afgehandeld"}
+                      </Button>
+                    </form>
+                  )}
                 </div>
               ))}
             </CardContent>

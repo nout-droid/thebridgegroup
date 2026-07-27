@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
 import { useTranslator, type Translator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,14 +21,21 @@ import {
 } from "@/components/ui/table";
 import {
   CATEGORY_STATUS_LABELS,
+  CLIENT_REQUEST_CATEGORIES,
+  type ClientRequest,
+  type ClientRequestCategory,
   type IntakeChecklistPhoto,
   type SharedCategory,
   type SharedCo2,
   type SharedIntakeChecklist,
   type SharedMedia,
+  type SharedProduction,
   type SharedProject,
   type SharedRider,
+  type SharedRundowns,
 } from "@/lib/types";
+import { addSecondsToTime } from "@/lib/rundown-time";
+import { pickDefaultShowDate } from "@/lib/show-dates";
 import { computeCo2Total, FLIGHT_CO2_KG, KM_CO2_KG_PER_KM } from "@/lib/co2";
 import { toEmbedUrl } from "@/lib/video-embed";
 import { Footer } from "@/components/footer";
@@ -86,6 +94,59 @@ const STATIC_LABELS = [
   "Leveranciers (opgegeven)",
   `Vuistregels: ${FLIGHT_CO2_KG} kg per vlucht (gemiddelde retourvlucht, korte/middellange afstand), ${KM_CO2_KG_PER_KM} kg per km wegtransport.`,
   ...Object.values(CATEGORY_STATUS_LABELS),
+  "Productie",
+  "Rundown",
+  "Catering",
+  "Materieel",
+  "Comms & Portofoons",
+  "Stroom",
+  "Draaiboek",
+  "Artiestenriders",
+  "Open vragen & notulen",
+  "Vluchten",
+  "Hotel",
+  "Datum",
+  "Aantal",
+  "Toelichting",
+  "Nog niets bekend.",
+  "Notulen",
+  "Vraag",
+  "Antwoord",
+  "Nog open",
+  "Beantwoord",
+  "Rider aanwezig",
+  "Nog geen rider",
+  "Eigen lichtoperator",
+  "Eigen audio-operator",
+  "Rider-link",
+  "Positie",
+  "Devisie",
+  "Toestel",
+  "Kanalen",
+  "Naam",
+  "Rol",
+  "Heen",
+  "Terug",
+  "Vertrekluchthaven",
+  "Bestemming",
+  "Jouw verzoeken",
+  "Nieuw verzoek indienen",
+  "Klantinvoer — dit valt niet in ons budget, we nemen het los met je door.",
+  "Categorie",
+  "Omschrijving",
+  "Gewenste datum",
+  "Extra toelichting",
+  "bv. 20 vega lunches op zaterdag",
+  "Verzoek versturen",
+  "Verzoek verstuurd.",
+  "Nog geen verzoeken ingediend.",
+  "Nieuw",
+  "In behandeling",
+  "Afgehandeld",
+  "Projectbreed",
+  "Nog geen cues voor deze rundown.",
+  "Laden…",
+  "Geen rundown beschikbaar voor dit project.",
 ];
 
 const BUDGET_STATUS_LABELS: Record<string, string> = {
@@ -95,7 +156,28 @@ const BUDGET_STATUS_LABELS: Record<string, string> = {
   rejected: "Geweigerd",
 };
 
-function collectDynamicTexts(data: SharedProject, rider: SharedRider | null): string[] {
+const CLIENT_REQUEST_CATEGORY_LABELS: Record<ClientRequestCategory, string> = {
+  catering: "Catering",
+  materieel: "Materieel",
+  comms: "Comms & Portofoons",
+  stroom: "Stroom",
+  hotel: "Hotel",
+  vlucht: "Vlucht",
+  overig: "Overig",
+};
+
+const CLIENT_REQUEST_STATUS_LABELS: Record<string, string> = {
+  new: "Nieuw",
+  acknowledged: "In behandeling",
+  done: "Afgehandeld",
+};
+
+function collectDynamicTexts(
+  data: SharedProject,
+  rider: SharedRider | null,
+  production: SharedProduction | null,
+  rundowns: SharedRundowns | null
+): string[] {
   const texts = new Set<string>();
   texts.add(data.project.name);
   if (data.project.client_name) texts.add(data.project.client_name);
@@ -119,6 +201,73 @@ function collectDynamicTexts(data: SharedProject, rider: SharedRider | null): st
       texts.add(section.title);
       if (!section.editable_by_client && section.content) texts.add(section.content);
       for (const item of section.items) texts.add(item.description);
+    }
+  }
+
+  if (production) {
+    for (const c of production.catering) {
+      if (c.party) texts.add(c.party);
+      if (c.notes) texts.add(c.notes);
+      if (c.supplier_name) texts.add(c.supplier_name);
+    }
+    for (const e of production.equipment) {
+      if (e.machine_type) texts.add(e.machine_type);
+      if (e.accessories) texts.add(e.accessories);
+      if (e.supplier_name) texts.add(e.supplier_name);
+    }
+    for (const c of production.comms) {
+      if (c.user_name) texts.add(c.user_name);
+      if (c.device_type) texts.add(c.device_type);
+      if (c.supplier_name) texts.add(c.supplier_name);
+    }
+    for (const p of production.power) {
+      if (p.stage_name) texts.add(p.stage_name);
+      if (p.description) texts.add(p.description);
+      if (p.notes) texts.add(p.notes);
+      if (p.supplier_name) texts.add(p.supplier_name);
+    }
+    for (const s of production.schedule) {
+      if (s.stage_name) texts.add(s.stage_name);
+      if (s.activity) texts.add(s.activity);
+      if (s.notes) texts.add(s.notes);
+      s.suppliers.forEach((name) => texts.add(name));
+    }
+    for (const a of production.artist_riders) {
+      if (a.artist_name) texts.add(a.artist_name);
+      if (a.notes) texts.add(a.notes);
+    }
+    for (const q of production.open_questions) {
+      if (q.question) texts.add(q.question);
+      if (q.answer) texts.add(q.answer);
+    }
+    for (const n of production.meeting_notes) {
+      if (n.note) texts.add(n.note);
+    }
+    for (const f of production.flights) {
+      if (f.name) texts.add(f.name);
+      if (f.role) texts.add(f.role);
+      if (f.flight_departure_airport) texts.add(f.flight_departure_airport);
+      if (f.flight_destination) texts.add(f.flight_destination);
+    }
+    for (const h of production.hotel) {
+      if (h.name) texts.add(h.name);
+      if (h.role) texts.add(h.role);
+    }
+    for (const r of production.client_requests) {
+      if (r.description) texts.add(r.description);
+      if (r.notes) texts.add(r.notes);
+    }
+  }
+
+  if (rundowns) {
+    for (const scope of rundowns.scopes) {
+      if (scope.stage_name) texts.add(scope.stage_name);
+      for (const rundown of scope.rundowns) {
+        for (const item of rundown.items) {
+          texts.add(item.name);
+          for (const instr of item.instructions) texts.add(instr.instruction);
+        }
+      }
     }
   }
 
@@ -712,13 +861,445 @@ function Co2Panel({ co2, t }: { co2: SharedCo2; t: Translator }) {
   );
 }
 
+function ClientRequestForm({
+  token,
+  t,
+  onSubmitted,
+}: {
+  token: string;
+  t: Translator;
+  onSubmitted: (request: ClientRequest) => void;
+}) {
+  const [category, setCategory] = useState<ClientRequestCategory>("catering");
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [requestedDate, setRequestedDate] = useState("");
+  const [notes, setNotes] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function submit() {
+    if (!description.trim()) return;
+    setSubmitting(true);
+    const supabase = createClient();
+    const { data: id } = await supabase.rpc("add_client_request", {
+      p_share_token: token,
+      p_category: category,
+      p_description: description.trim(),
+      p_quantity: Number(quantity) || 1,
+      p_requested_date: requestedDate || null,
+      p_notes: notes.trim(),
+    });
+    setSubmitting(false);
+    if (id) {
+      onSubmitted({
+        id,
+        category,
+        description: description.trim(),
+        quantity: Number(quantity) || 1,
+        requested_date: requestedDate || null,
+        notes: notes.trim(),
+        status: "new",
+        created_at: new Date().toISOString(),
+      });
+      setDescription("");
+      setQuantity("1");
+      setRequestedDate("");
+      setNotes("");
+      setSent(true);
+    }
+  }
+
+  return (
+    <Card className="border-2 border-primary">
+      <CardHeader>
+        <CardTitle className="text-base">{t("Nieuw verzoek indienen")}</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          {t("Klantinvoer — dit valt niet in ons budget, we nemen het los met je door.")}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">{t("Categorie")}</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as ClientRequestCategory)}
+              className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+            >
+              {CLIENT_REQUEST_CATEGORIES.map((key) => (
+                <option key={key} value={key}>
+                  {t(CLIENT_REQUEST_CATEGORY_LABELS[key])}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">{t("Gewenste datum")}</label>
+            <Input
+              type="date"
+              value={requestedDate}
+              onChange={(e) => setRequestedDate(e.target.value)}
+              className="h-9"
+            />
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-muted-foreground">{t("Omschrijving")}</label>
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder={t("bv. 20 vega lunches op zaterdag")}
+            className="h-9"
+          />
+        </div>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">{t("Aantal")}</label>
+            <Input
+              type="number"
+              min={1}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="h-9"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">{t("Extra toelichting")}</label>
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} className="h-9" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button type="button" size="sm" onClick={submit} disabled={submitting || !description.trim()}>
+            {t("Verzoek versturen")}
+          </Button>
+          {sent && <span className="text-xs text-muted-foreground">{t("Verzoek verstuurd.")}</span>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ProductionPanel({
+  token,
+  production,
+  t,
+  onRequestSubmitted,
+}: {
+  token: string;
+  production: SharedProduction;
+  t: Translator;
+  onRequestSubmitted: (request: ClientRequest) => void;
+}) {
+  return (
+    <div className="space-y-6">
+      <ClientRequestForm token={token} t={t} onSubmitted={onRequestSubmitted} />
+
+      {production.client_requests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Jouw verzoeken")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {production.client_requests.map((r) => (
+                <li key={r.id} className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm">
+                  <div>
+                    <span className="font-medium">
+                      {t(CLIENT_REQUEST_CATEGORY_LABELS[r.category as ClientRequestCategory] ?? r.category)}
+                    </span>{" "}
+                    — {t(r.description)}
+                    {r.requested_date && ` · ${r.requested_date}`}
+                  </div>
+                  <Badge variant="secondary">{t(CLIENT_REQUEST_STATUS_LABELS[r.status] ?? r.status)}</Badge>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.catering.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Catering")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("Datum")}</TableHead>
+                  <TableHead>Lunch</TableHead>
+                  <TableHead>Diner</TableHead>
+                  <TableHead>{t("Leverancier")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {production.catering.map((c) => (
+                  <TableRow key={c.id}>
+                    <TableCell>{c.order_date}</TableCell>
+                    <TableCell>
+                      {c.crew_lunch + c.veggie_lunch} ({c.veggie_lunch} veg)
+                    </TableCell>
+                    <TableCell>
+                      {c.crew_dinner + c.veggie_dinner} ({c.veggie_dinner} veg)
+                    </TableCell>
+                    <TableCell>{c.supplier_name ? t(c.supplier_name) : "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.equipment.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Materieel")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {production.equipment.map((e) => (
+                <li key={e.id} className="rounded-md border p-2">
+                  {e.quantity}× {t(e.machine_type)}
+                  {e.reservation_date && ` · ${e.reservation_date}`}
+                  {e.supplier_name && ` · ${t(e.supplier_name)}`}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.comms.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Comms & Portofoons")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {production.comms.map((c) => (
+                <li key={c.id} className="rounded-md border p-2">
+                  {t(c.user_name)} — {t(c.device_type)}
+                  {c.channels && ` · ${c.channels}`}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.power.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Stroom")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {production.power.map((p) => (
+                <li key={p.id} className="rounded-md border p-2">
+                  {p.stage_name && `[${t(p.stage_name)}] `}
+                  {p.quantity}× {t(p.description)}
+                  {p.position && ` · ${t(p.position)}`}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.schedule.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Draaiboek")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {production.schedule.map((s) => (
+                <li key={s.id} className="rounded-md border p-2">
+                  <span className="text-muted-foreground">
+                    {s.activity_date} {s.activity_time}
+                  </span>{" "}
+                  {s.stage_name && `[${t(s.stage_name)}] `}
+                  {t(s.activity)}
+                  {s.suppliers.length > 0 && ` · ${s.suppliers.map((n) => t(n)).join(", ")}`}
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {production.artist_riders.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Artiestenriders")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-1.5 text-sm">
+              {production.artist_riders.map((a) => (
+                <li key={a.id} className="rounded-md border p-2">
+                  <p className="font-medium">{t(a.artist_name)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {a.rider_received ? t("Rider aanwezig") : t("Nog geen rider")}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {(production.open_questions.length > 0 || production.meeting_notes.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Open vragen & notulen")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {production.open_questions.map((q) => (
+              <div key={q.id} className="rounded-md border p-2 text-sm">
+                <p className="font-medium">{t(q.question)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {q.pending ? t("Nog open") : `${t("Antwoord")}: ${t(q.answer)}`}
+                </p>
+              </div>
+            ))}
+            {production.meeting_notes.map((n) => (
+              <p key={n.id} className="text-sm text-muted-foreground">
+                {t(n.note)}
+              </p>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {(production.flights.length > 0 || production.hotel.length > 0) && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">
+              {t("Vluchten")} / {t("Hotel")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {production.flights.map((f) => (
+              <div key={f.id} className="rounded-md border p-2 text-sm">
+                <p className="font-medium">
+                  {t(f.name)} {f.role && `— ${t(f.role)}`}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {t(f.flight_departure_airport)} → {t(f.flight_destination)}
+                </p>
+              </div>
+            ))}
+            {production.hotel.map((h) => (
+              <p key={h.id} className="text-sm">
+                {t(h.name)} {h.role && `— ${t(h.role)}`}
+              </p>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function RundownPanel({ rundowns, t }: { rundowns: SharedRundowns; t: Translator }) {
+  const [selectedScope, setSelectedScope] = useState<string>("project");
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  const scopeKey = (stageId: string | null) => stageId ?? "project";
+  const scope =
+    rundowns.scopes.find((s) => scopeKey(s.stage_id) === selectedScope) ?? rundowns.scopes[0] ?? null;
+  const availableDates = (scope?.rundowns ?? []).map((r) => r.show_date);
+  const activeDate =
+    selectedDate && availableDates.includes(selectedDate) ? selectedDate : pickDefaultShowDate(availableDates);
+  const rundown = scope?.rundowns.find((r) => r.show_date === activeDate) ?? null;
+
+  let cursor = rundown?.start_time ?? "00:00:00";
+  const rows = (rundown?.items ?? []).map((item) => {
+    const start = cursor;
+    const end = addSecondsToTime(cursor, item.duration_seconds);
+    cursor = end;
+    return { item, start, end };
+  });
+
+  if (!rundowns.scopes.length) {
+    return <p className="text-sm text-muted-foreground">{t("Geen rundown beschikbaar voor dit project.")}</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2">
+        {rundowns.scopes.map((s) => (
+          <Button
+            key={scopeKey(s.stage_id)}
+            size="sm"
+            variant={selectedScope === scopeKey(s.stage_id) ? "default" : "outline"}
+            onClick={() => setSelectedScope(scopeKey(s.stage_id))}
+          >
+            {s.stage_name ? t(s.stage_name) : t("Projectbreed")}
+          </Button>
+        ))}
+      </div>
+      {availableDates.length > 1 && (
+        <div className="flex flex-wrap gap-1.5">
+          {availableDates.map((d) => (
+            <Button
+              key={d}
+              size="sm"
+              variant={activeDate === d ? "default" : "outline"}
+              className="h-7 text-xs capitalize"
+              onClick={() => setSelectedDate(d)}
+            >
+              {new Date(`${d}T00:00:00`).toLocaleDateString("nl-NL", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+              })}
+            </Button>
+          ))}
+        </div>
+      )}
+      <Card>
+        <CardContent className="space-y-2 pt-4">
+          {!rows.length && <p className="text-sm text-muted-foreground">{t("Nog geen cues voor deze rundown.")}</p>}
+          {rows.map(({ item, start, end }) => (
+            <div
+              key={item.id}
+              className={cn(
+                "rounded-md border p-3 text-sm",
+                item.id === rundown?.current_item_id && "ring-2 ring-primary bg-primary/5"
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">
+                  {item.cue_number && <span className="text-muted-foreground">#{item.cue_number} — </span>}
+                  {t(item.name)}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {start} &ndash; {end}
+                </p>
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export function ShareView({ token }: { token: string }) {
   const [data, setData] = useState<SharedProject | null>(null);
   const [rider, setRider] = useState<SharedRider | null>(null);
   const [checklist, setChecklist] = useState<SharedIntakeChecklist | null>(null);
   const [co2, setCo2] = useState<SharedCo2 | null>(null);
+  const [production, setProduction] = useState<SharedProduction | null>(null);
+  const [rundowns, setRundowns] = useState<SharedRundowns | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<"budget" | "rider" | "checklist" | "co2">("budget");
+  const [activeTab, setActiveTab] = useState<
+    "budget" | "rider" | "checklist" | "co2" | "production" | "rundown"
+  >("budget");
 
   useEffect(() => {
     const supabase = createClient();
@@ -742,6 +1323,10 @@ export function ShareView({ token }: { token: string }) {
       if (!cancelled && checklistData) setChecklist(checklistData as SharedIntakeChecklist);
       const { data: co2Data } = await supabase.rpc("get_shared_co2", { p_share_token: token });
       if (!cancelled && co2Data) setCo2(co2Data as SharedCo2);
+      const { data: productionData } = await supabase.rpc("get_shared_production", { p_token: token });
+      if (!cancelled && productionData) setProduction(productionData as SharedProduction);
+      const { data: rundownData } = await supabase.rpc("get_shared_rundowns", { p_token: token });
+      if (!cancelled && rundownData) setRundowns(rundownData as SharedRundowns);
       setData(data as SharedProject);
     }
 
@@ -753,7 +1338,10 @@ export function ShareView({ token }: { token: string }) {
     };
   }, [token]);
 
-  const dynamicTexts = useMemo(() => (data ? collectDynamicTexts(data, rider) : []), [data, rider]);
+  const dynamicTexts = useMemo(
+    () => (data ? collectDynamicTexts(data, rider, production, rundowns) : []),
+    [data, rider, production, rundowns]
+  );
   const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts);
 
   if (error) {
@@ -863,6 +1451,32 @@ export function ShareView({ token }: { token: string }) {
               {t("CO2")}
             </button>
           )}
+          {production && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("production")}
+              className={`px-3 py-2 text-sm font-medium ${
+                activeTab === "production"
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {t("Productie")}
+            </button>
+          )}
+          {rundowns && rundowns.scopes.some((s) => s.rundowns.length > 0) && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("rundown")}
+              className={`px-3 py-2 text-sm font-medium ${
+                activeTab === "rundown"
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {t("Rundown")}
+            </button>
+          )}
         </div>
 
         {activeTab === "rider" && rider && rider.sections.length > 0 ? (
@@ -918,6 +1532,19 @@ export function ShareView({ token }: { token: string }) {
           />
         ) : activeTab === "co2" && co2 ? (
           <Co2Panel co2={co2} t={t} />
+        ) : activeTab === "production" && production ? (
+          <ProductionPanel
+            token={token}
+            production={production}
+            t={t}
+            onRequestSubmitted={(request) =>
+              setProduction((prev) =>
+                prev ? { ...prev, client_requests: [request, ...prev.client_requests] } : prev
+              )
+            }
+          />
+        ) : activeTab === "rundown" && rundowns ? (
+          <RundownPanel rundowns={rundowns} t={t} />
         ) : (
           <>
             <MediaGallery media={data.media} t={t} />
