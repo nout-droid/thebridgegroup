@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
@@ -8,31 +9,26 @@ import { Footer } from "@/components/footer";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 
-const STATIC_LABELS = ["The Bridge AV Group", "Wachtwoord", "Inloggen", "Bezig met inloggen…"];
+const STATIC_LABELS = [
+  "The Bridge AV Group",
+  "Log in om je projecten te beheren.",
+  "E-mail",
+  "Wachtwoord",
+  "Bezig met inloggen…",
+  "Inloggen",
+  "Wachtwoord vergeten?",
+];
 
-export function PortalLogin({
-  description,
-  idLabel,
-  idName,
-  idPlaceholder,
-  passwordLabel = "Wachtwoord",
-  error,
+export function LoginView({
   action,
-  children,
+  error,
+  message,
 }: {
-  description: string;
-  idLabel: string;
-  idName: string;
-  idPlaceholder: string;
-  passwordLabel?: string;
-  error?: string;
   action: (formData: FormData) => void | Promise<void>;
-  children?: React.ReactNode;
+  error?: string;
+  message?: string;
 }) {
-  const { lang, setLang, t } = useTranslator(
-    [...STATIC_LABELS, description, idLabel, passwordLabel, error ?? ""],
-    []
-  );
+  const { lang, setLang, t } = useTranslator([...STATIC_LABELS, error ?? "", message ?? ""], []);
 
   return (
     <div
@@ -48,45 +44,59 @@ export function PortalLogin({
         <h1 className="text-center font-heading text-2xl font-extrabold uppercase tracking-tight text-primary">
           {t("The Bridge AV Group")}
         </h1>
-        <p className="mb-8 text-center text-sm text-white/60">{t(description)}</p>
+        <p className="mb-6 text-center text-sm text-white/70">
+          {t("Log in om je projecten te beheren.")}
+        </p>
 
         {error && (
           <p className="mb-4 w-full rounded-md bg-destructive/20 p-3 text-center text-sm text-destructive">
             {t(error)}
           </p>
         )}
+        {message && (
+          <p className="mb-4 w-full rounded-md bg-white/10 p-3 text-center text-sm text-white/70">
+            {t(message)}
+          </p>
+        )}
 
         <form action={action} className="w-full space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor={idName} className="text-white/80">
-              {t(idLabel)}
+            <Label htmlFor="signin-email" className="text-white/80">
+              {t("E-mail")}
             </Label>
             <Input
-              id={idName}
-              name={idName}
+              id="signin-email"
+              name="email"
+              type="email"
               required
-              autoFocus
-              className="border-white/20 bg-white/5 text-white uppercase placeholder:text-white/30"
-              placeholder={idPlaceholder}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-white/80">
-              {t(passwordLabel)}
-            </Label>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              required
+              autoComplete="email"
               className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
             />
           </div>
-          {children}
+          <div className="space-y-1.5">
+            <Label htmlFor="signin-password" className="text-white/80">
+              {t("Wachtwoord")}
+            </Label>
+            <Input
+              id="signin-password"
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
+            />
+          </div>
           <SubmitButton className="w-full" pendingText={t("Bezig met inloggen…")}>
             {t("Inloggen")}
           </SubmitButton>
         </form>
+
+        <Link
+          href="/login/reset-password"
+          className="mt-4 block text-center text-sm text-white/60 underline-offset-4 hover:text-white hover:underline"
+        >
+          {t("Wachtwoord vergeten?")}
+        </Link>
       </div>
       <Footer variant="dark" />
     </div>
