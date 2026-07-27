@@ -21,8 +21,38 @@ import { pickDefaultShowDate } from "@/lib/show-dates";
 import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
+import { useTranslator } from "@/hooks/use-translator";
+import { LanguageToggle } from "@/components/language-toggle";
 
 const POLL_INTERVAL_MS = 5000;
+
+const STATIC_LABELS = [
+  "Laden…",
+  "Crew live",
+  "Projectbreed",
+  "Weergave-voorkeuren",
+  "Zichtbare devisies",
+  "Lettergrootte",
+  "Show rundown",
+  "Open klok",
+  "LIVE",
+  "Totaal opgelopen: +",
+  "Nog geen cues voor deze rundown.",
+  "Over tijd: ",
+  "Resterend: ",
+  "Notes",
+  "Zichtbaar voor alle devisies en de showcaller.",
+  "Devisie",
+  "Note",
+  "bv. Micro 3 valt uit",
+  "Plaatsen",
+  "Geen notes voor de zichtbare devisies.",
+  "Nog geen notes.",
+  "klein",
+  "normaal",
+  "groot",
+  ...DIVISIONS,
+];
 
 const FONT_SCALES = {
   klein: 0.875,
@@ -130,10 +160,24 @@ export function CrewRundownView({
     if (result) setData(result as SharedRundowns);
   }
 
+  const dynamicTexts = data
+    ? [
+        data.project.name,
+        ...data.scopes.map((s) => s.stage_name).filter((n): n is string => !!n),
+        ...data.scopes.flatMap((s) =>
+          s.rundowns.flatMap((r) =>
+            r.items.flatMap((i) => [i.name, ...i.instructions.map((instr) => instr.instruction)])
+          )
+        ),
+        ...data.notes.map((n) => n.note),
+      ]
+    : [];
+  const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
+
   if (!data) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-black text-white">
-        <p className="text-sm text-white/60">Laden&hellip;</p>
+        <p className="text-sm text-white/60">{t("Laden…")}</p>
       </div>
     );
   }
@@ -175,9 +219,12 @@ export function CrewRundownView({
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ zoom: FONT_SCALES[fontScale] }}>
-      <header className="flex items-center gap-2 bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-primary">
-        <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-        {data.project.name} &mdash; Crew live
+      <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
+        <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
+          <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
+          {t(data.project.name)} &mdash; {t("Crew live")}
+        </div>
+        <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </header>
 
       <div className="mx-auto w-full max-w-3xl space-y-6 px-6 py-8">
@@ -190,7 +237,7 @@ export function CrewRundownView({
               className={selectedScope === scopeKey(s.stage_id) ? "" : OUTLINE_DARK}
               onClick={() => setSelectedScope(scopeKey(s.stage_id))}
             >
-              {s.stage_name ?? "Projectbreed"}
+              {s.stage_name ? t(s.stage_name) : t("Projectbreed")}
             </Button>
           ))}
         </div>
@@ -217,11 +264,11 @@ export function CrewRundownView({
 
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
-            <CardTitle className="text-base text-white">Weergave-voorkeuren</CardTitle>
+            <CardTitle className="text-base text-white">{t("Weergave-voorkeuren")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-white/70">Zichtbare devisies</Label>
+              <Label className="text-xs text-white/70">{t("Zichtbare devisies")}</Label>
               <div className="flex flex-wrap gap-1.5">
                 {DIVISIONS.map((d) => (
                   <Button
@@ -232,13 +279,13 @@ export function CrewRundownView({
                     className={cn("h-7 text-xs", visibleDivisions.includes(d) ? "" : OUTLINE_DARK)}
                     onClick={() => toggleDivision(d)}
                   >
-                    {d}
+                    {t(d)}
                   </Button>
                 ))}
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-white/70">Lettergrootte</Label>
+              <Label className="text-xs text-white/70">{t("Lettergrootte")}</Label>
               <div className="flex gap-1.5">
                 {(Object.keys(FONT_SCALES) as FontScaleKey[]).map((key) => (
                   <Button
@@ -249,7 +296,7 @@ export function CrewRundownView({
                     className={cn("h-7 text-xs capitalize", fontScale === key ? "" : OUTLINE_DARK)}
                     onClick={() => changeFontScale(key)}
                   >
-                    {key}
+                    {t(key)}
                   </Button>
                 ))}
               </div>
@@ -260,7 +307,7 @@ export function CrewRundownView({
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <CardTitle className="text-base text-white">Show rundown</CardTitle>
+              <CardTitle className="text-base text-white">{t("Show rundown")}</CardTitle>
               <div className="flex items-center gap-2">
                 <Button
                   size="sm"
@@ -275,17 +322,18 @@ export function CrewRundownView({
                     />
                   }
                 >
-                  Open klok
+                  {t("Open klok")}
                 </Button>
                 {rundown?.is_live && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
                     <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
-                    LIVE
+                    {t("LIVE")}
                   </span>
                 )}
                 {totalOvertimeSeconds > 0 && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-2.5 py-1 text-xs font-semibold text-orange-300">
-                    Totaal opgelopen: +{formatDuration(totalOvertimeSeconds)}
+                    {t("Totaal opgelopen: +")}
+                    {formatDuration(totalOvertimeSeconds)}
                   </span>
                 )}
               </div>
@@ -293,7 +341,7 @@ export function CrewRundownView({
           </CardHeader>
           <CardContent className="space-y-2">
             {!rows.length && (
-              <p className="text-sm text-white/60">Nog geen cues voor deze rundown.</p>
+              <p className="text-sm text-white/60">{t("Nog geen cues voor deze rundown.")}</p>
             )}
             {rows.map(({ item, start, end }) => {
               const isCurrent = item.id === rundown?.current_item_id;
@@ -311,7 +359,7 @@ export function CrewRundownView({
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-medium">
                       {item.cue_number && <span className="text-white/60">#{item.cue_number} — </span>}
-                      {item.name}
+                      {t(item.name)}
                     </p>
                     <p className="text-xs text-white/60">
                       {start} &ndash; {end}
@@ -321,7 +369,7 @@ export function CrewRundownView({
                     <ul className="mt-1 space-y-0.5">
                       {visibleInstructions.map((instr) => (
                         <li key={instr.id} className="text-xs text-white/60">
-                          <span className="font-semibold">{instr.division}</span> — {instr.instruction}
+                          <span className="font-semibold">{t(instr.division)}</span> — {t(instr.instruction)}
                         </li>
                       ))}
                     </ul>
@@ -333,7 +381,7 @@ export function CrewRundownView({
                         remainingSeconds < 0 ? "text-red-400" : "text-primary"
                       )}
                     >
-                      {remainingSeconds < 0 ? "Over tijd: " : "Resterend: "}
+                      {remainingSeconds < 0 ? t("Over tijd: ") : t("Resterend: ")}
                       {formatDuration(remainingSeconds)}
                     </p>
                   )}
@@ -351,19 +399,20 @@ export function CrewRundownView({
           audioAlert={division === "Audio"}
           onSent={refetchChat}
           dark
+          t={t}
         />
 
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
-            <CardTitle className="text-base text-white">Notes</CardTitle>
+            <CardTitle className="text-base text-white">{t("Notes")}</CardTitle>
             <p className="text-sm text-white/60">
-              Zichtbaar voor alle devisies en de showcaller.
+              {t("Zichtbaar voor alle devisies en de showcaller.")}
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-wrap items-end gap-2">
               <div className="space-y-1">
-                <Label className="text-xs text-white/70">Devisie</Label>
+                <Label className="text-xs text-white/70">{t("Devisie")}</Label>
                 <Select value={division} onValueChange={(v) => setDivision(v ?? DIVISIONS[0])}>
                   <SelectTrigger className="h-9 w-40 border-white/20 bg-white/5 text-sm text-white">
                     <SelectValue />
@@ -371,35 +420,37 @@ export function CrewRundownView({
                   <SelectContent>
                     {DIVISIONS.map((d) => (
                       <SelectItem key={d} value={d}>
-                        {d}
+                        {t(d)}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex-1 space-y-1">
-                <Label className="text-xs text-white/70">Note</Label>
+                <Label className="text-xs text-white/70">{t("Note")}</Label>
                 <Input
                   value={noteText}
                   onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="bv. Micro 3 valt uit"
+                  placeholder={t("bv. Micro 3 valt uit")}
                   className="h-9 border-white/20 bg-white/5 text-sm text-white placeholder:text-white/30"
                 />
               </div>
               <Button size="sm" onClick={submitNote} disabled={submitting || !noteText.trim()}>
-                Plaatsen
+                {t("Plaatsen")}
               </Button>
             </div>
 
             <ul className="space-y-1.5">
               {visibleNotes.map((note) => (
                 <li key={note.id} className="rounded-md border border-white/10 p-2 text-sm">
-                  <span className="font-medium">{note.division}:</span> {note.note}
+                  <span className="font-medium">{t(note.division)}:</span> {t(note.note)}
                 </li>
               ))}
               {!visibleNotes.length && (
                 <p className="text-sm text-white/60">
-                  {data.notes.length ? "Geen notes voor de zichtbare devisies." : "Nog geen notes."}
+                  {data.notes.length
+                    ? t("Geen notes voor de zichtbare devisies.")
+                    : t("Nog geen notes.")}
                 </p>
               )}
             </ul>

@@ -14,6 +14,8 @@ function lastSeenKey(token: string) {
   return `rundown-chat-last-seen-${token}`;
 }
 
+const identity = (text: string) => text;
+
 export function RundownChat({
   token,
   stageId,
@@ -22,6 +24,7 @@ export function RundownChat({
   audioAlert,
   onSent,
   dark = false,
+  t = identity,
 }: {
   token: string;
   stageId: string | null;
@@ -30,6 +33,7 @@ export function RundownChat({
   audioAlert: boolean;
   onSent: () => void;
   dark?: boolean;
+  t?: (text: string) => string;
 }) {
   const [messageText, setMessageText] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -108,7 +112,7 @@ export function RundownChat({
       onClick={markAllSeen}
       className="fixed inset-x-0 top-0 z-50 flex animate-pulse items-center justify-center gap-2 bg-red-600 px-4 py-3 text-sm font-semibold text-white shadow-lg"
     >
-      Nieuw bericht in de chat — tik om te bekijken
+      {t("Nieuw bericht in de chat — tik om te bekijken")}
     </button>
   );
 
@@ -120,7 +124,7 @@ export function RundownChat({
           <div className="flex items-center gap-2">
             <CardTitle className={cn("text-base", dark && "text-white")}>Chat</CardTitle>
             {!audioAlert && unreadCount > 0 && (
-              <Badge variant="secondary">{unreadCount} nieuw</Badge>
+              <Badge variant="secondary">{unreadCount} {t("nieuw")}</Badge>
             )}
           </div>
         </CardHeader>
@@ -129,7 +133,7 @@ export function RundownChat({
             <Input
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Typ een bericht…"
+              placeholder={t("Typ een bericht…")}
               className={cn(
                 "h-9 flex-1 text-sm",
                 dark && "border-white/20 bg-white/5 text-white placeholder:text-white/30"
@@ -142,18 +146,18 @@ export function RundownChat({
               }}
             />
             <Button size="sm" onClick={submitMessage} disabled={submitting || !messageText.trim()}>
-              Versturen
+              {t("Versturen")}
             </Button>
           </div>
           <ul className="max-h-64 space-y-1.5 overflow-y-auto">
             {orderedMessages.map((m) => (
               <li key={m.id} className={cn("rounded-md border p-2 text-sm", dark && "border-white/10")}>
-                <span className="font-medium">{m.sender}:</span> {m.message}
+                <span className="font-medium">{m.sender}:</span> {t(m.message)}
               </li>
             ))}
             {!orderedMessages.length && (
               <p className={cn("text-sm", dark ? "text-white/60" : "text-muted-foreground")}>
-                Nog geen berichten.
+                {t("Nog geen berichten.")}
               </p>
             )}
           </ul>
