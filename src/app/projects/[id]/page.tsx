@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { computeClientPrice, type ActivityLogEntry, type Category, type Quote, type Stage } from "@/lib/types";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { computeRentalDays } from "@/lib/rental-days";
+import { computeCo2Total } from "@/lib/co2";
 import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
 import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
@@ -103,6 +104,16 @@ export default async function ProjectPage({
     const price = cost !== null && cost !== undefined ? computeClientPrice(category, cost) : 0;
     stageSubtotals.set(category.stage_id, (stageSubtotals.get(category.stage_id) ?? 0) + price);
   }
+
+  const { count: flightCount } = await supabase
+    .from("crew_members")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", id)
+    .eq("needs_flight", true);
+
+  const totalKm = (categories ?? []).reduce((sum, c) => sum + (c.estimated_km ?? 0), 0);
+  const totalQuoteKg = (quotes ?? []).reduce((sum, q) => sum + (q.co2_kg ?? 0), 0);
+  const projectCo2 = computeCo2Total(flightCount ?? 0, totalKm, totalQuoteKg);
 
   const headersList = await headers();
   const host = headersList.get("host");
@@ -436,6 +447,38 @@ export default async function ProjectPage({
             </CardContent>
           </Card>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">CO2 &mdash; dit project</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold text-primary">
+              🌱 {Math.round(projectCo2.totalKg).toLocaleString("nl-NL")} kg
+            </p>
+            <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
+              <div>
+                <dt className="text-muted-foreground">Vluchten (crew)</dt>
+                <dd className="font-medium">
+                  {Math.round(projectCo2.flightKg).toLocaleString("nl-NL")} kg
+                </dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Transport (km-stelposten)</dt>
+                <dd className="font-medium">{Math.round(projectCo2.kmKg).toLocaleString("nl-NL")} kg</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Leveranciers (opgegeven)</dt>
+                <dd className="font-medium">
+                  {Math.round(projectCo2.quoteKg).toLocaleString("nl-NL")} kg
+                </dd>
+              </div>
+            </dl>
+            <Link href="/co2" className="mt-3 inline-block text-sm text-primary hover:underline">
+              Bekijk alle projecten &rarr;
+            </Link>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
