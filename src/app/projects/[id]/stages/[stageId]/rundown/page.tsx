@@ -24,29 +24,34 @@ export default async function StageRundownPage({
   const { date } = await searchParams;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-  const stage = await getStageOrNotFound(supabase, id, stageId);
+  // project/stage/lang hebben alleen `id`/`stageId` nodig (geen onderlinge
+  // afhankelijkheid) — parallel opvragen i.p.v. na elkaar.
+  const [project, stage, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    getStageOrNotFound(supabase, id, stageId),
+    getAppLang(),
+  ]);
 
   const showDates = computeShowDates(project);
   const showDate = date && showDates.includes(date) ? date : pickDefaultShowDate(showDates);
 
   const rundownId = await getOrCreateRundown(supabase, id, stageId, showDate);
 
-  const { data: rundown } = rundownId
-    ? await supabase.from("rundowns").select("*").eq("id", rundownId).maybeSingle<Rundown>()
-    : { data: null };
+  // `rundown` en `items` hangen alleen van `rundownId` af, niet van elkaar — parallel
+  // opvragen i.p.v. na elkaar.
+  const [{ data: rundown }, { data: items }] = rundownId
+    ? await Promise.all([
+        supabase.from("rundowns").select("*").eq("id", rundownId).maybeSingle<Rundown>(),
+        supabase
+          .from("rundown_items")
+          .select("*, instructions:rundown_item_instructions(*)")
+          .eq("rundown_id", rundownId)
+          .order("sort_order", { ascending: true })
+          .order("sort_order", { foreignTable: "rundown_item_instructions", ascending: true })
+          .returns<RundownItem[]>(),
+      ])
+    : [{ data: null }, { data: [] as RundownItem[] }];
 
-  const { data: items } = rundownId
-    ? await supabase
-        .from("rundown_items")
-        .select("*, instructions:rundown_item_instructions(*)")
-        .eq("rundown_id", rundownId)
-        .order("sort_order", { ascending: true })
-        .order("sort_order", { foreignTable: "rundown_item_instructions", ascending: true })
-        .returns<RundownItem[]>()
-    : { data: [] as RundownItem[] };
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, RUNDOWN_LIVE_LABELS);
 
   const rundownLiveLabels: RundownLiveLabels = {

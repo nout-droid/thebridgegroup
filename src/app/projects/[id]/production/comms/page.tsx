@@ -18,39 +18,36 @@ export default async function ProductionCommsPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-
-  const { data: assignments } = await supabase
-    .from("comms_assignments")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<CommsAssignment[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const { data: crewMembers } = await supabase
-    .from("crew_members")
-    .select("*")
-    .eq("project_id", id)
-    .order("name", { ascending: true })
-    .returns<CrewMember[]>();
-
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: assignments }, { data: suppliers }, { data: crewMembers }, { data: stages }, lang] =
+    await Promise.all([
+      getProjectOrNotFound(supabase, id),
+      supabase
+        .from("comms_assignments")
+        .select("*")
+        .eq("project_id", id)
+        .order("sort_order", { ascending: true })
+        .returns<CommsAssignment[]>(),
+      supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+      supabase
+        .from("crew_members")
+        .select("*")
+        .eq("project_id", id)
+        .order("name", { ascending: true })
+        .returns<CrewMember[]>(),
+      supabase
+        .from("stages")
+        .select("*")
+        .eq("project_id", id)
+        .order("sort_order", { ascending: true })
+        .returns<Stage[]>(),
+      getAppLang(),
+    ]);
 
   const intercomAssignments = (assignments ?? []).filter((a) => a.kind === "intercom");
   const portofoonAssignments = (assignments ?? []).filter((a) => a.kind === "portofoon");
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, COMMS_CARD_LABELS);
   const labels: CommsCardLabels = {
     title: t("Comms & Portofoons"),

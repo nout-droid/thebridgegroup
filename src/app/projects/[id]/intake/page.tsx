@@ -22,25 +22,30 @@ export default async function ProjectIntakePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // project/checklistId/lang hebben alleen `id` nodig (geen onderlinge afhankelijkheid)
+  // — parallel opvragen i.p.v. na elkaar.
+  const [project, checklistId, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    ensureIntakeChecklist(supabase, id),
+    getAppLang(),
+  ]);
 
-  const checklistId = await ensureIntakeChecklist(supabase, id);
-
-  const { data: answers } = checklistId
-    ? await supabase
-        .from("intake_checklist_answers")
-        .select("*")
-        .eq("checklist_id", checklistId)
-        .returns<IntakeChecklistAnswer[]>()
-    : { data: [] as IntakeChecklistAnswer[] };
-
-  const { data: photoRows } = checklistId
-    ? await supabase
-        .from("intake_checklist_photos")
-        .select("*")
-        .eq("checklist_id", checklistId)
-        .order("created_at", { ascending: true })
-    : { data: [] };
+  // `answers` en `photoRows` hangen alleen van `checklistId` af, niet van elkaar —
+  // parallel opvragen i.p.v. na elkaar.
+  const [{ data: answers }, { data: photoRows }] = checklistId
+    ? await Promise.all([
+        supabase
+          .from("intake_checklist_answers")
+          .select("*")
+          .eq("checklist_id", checklistId)
+          .returns<IntakeChecklistAnswer[]>(),
+        supabase
+          .from("intake_checklist_photos")
+          .select("*")
+          .eq("checklist_id", checklistId)
+          .order("created_at", { ascending: true }),
+      ])
+    : [{ data: [] as IntakeChecklistAnswer[] }, { data: [] }];
 
   const photos: IntakeChecklistPhotoWithUrl[] = await Promise.all(
     (photoRows ?? []).map(async (photo) => ({
@@ -52,7 +57,6 @@ export default async function ProjectIntakePage({
     }))
   );
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, INTAKE_CHECKLIST_CARD_LABELS);
 
   return (

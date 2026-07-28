@@ -16,16 +16,19 @@ export default async function ProjectMediaPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben geen onderlinge afhankelijkheid — parallel opvragen i.p.v. na
+  // elkaar.
+  const [project, { data: media }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("project_media")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<ProjectMedia[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: media } = await supabase
-    .from("project_media")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<ProjectMedia[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, PROJECT_MEDIA_CARD_LABELS);
 
   return (

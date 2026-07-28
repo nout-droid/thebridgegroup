@@ -17,23 +17,25 @@ export default async function ProductionArtistsPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: artists }, { data: artistCrewMembers }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("artist_riders")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<ArtistRider[]>(),
+    supabase
+      .from("crew_members")
+      .select("*")
+      .eq("project_id", id)
+      .not("artist_rider_id", "is", null)
+      .returns<CrewMember[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: artists } = await supabase
-    .from("artist_riders")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<ArtistRider[]>();
-
-  const { data: artistCrewMembers } = await supabase
-    .from("crew_members")
-    .select("*")
-    .eq("project_id", id)
-    .not("artist_rider_id", "is", null)
-    .returns<CrewMember[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, ARTIST_CARD_LABELS);
 
   return (

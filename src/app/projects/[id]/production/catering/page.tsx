@@ -17,22 +17,20 @@ export default async function ProductionCateringPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: orders }, { data: suppliers }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("catering_orders")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<CateringOrder[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: orders } = await supabase
-    .from("catering_orders")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<CateringOrder[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, CATERING_CARD_LABELS);
 
   return (

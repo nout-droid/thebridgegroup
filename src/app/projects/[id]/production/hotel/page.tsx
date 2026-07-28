@@ -21,37 +21,35 @@ export default async function ProductionHotelPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-
-  const { data: hotelMembers } = await supabase
-    .from("crew_members")
-    .select("*")
-    .eq("project_id", id)
-    .eq("needs_hotel", true)
-    .order("sort_order", { ascending: true })
-    .returns<CrewMember[]>();
-
-  const { data: flightMembers } = await supabase
-    .from("crew_members")
-    .select("*")
-    .eq("project_id", id)
-    .eq("needs_flight", true)
-    .order("sort_order", { ascending: true })
-    .returns<CrewMember[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const { data: costCategories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("project_id", id)
-    .is("stage_id", null)
-    .in("name", ["Hotel", "Vluchten"])
-    .returns<Category[]>();
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: hotelMembers }, { data: flightMembers }, { data: suppliers }, { data: costCategories }, lang] =
+    await Promise.all([
+      getProjectOrNotFound(supabase, id),
+      supabase
+        .from("crew_members")
+        .select("*")
+        .eq("project_id", id)
+        .eq("needs_hotel", true)
+        .order("sort_order", { ascending: true })
+        .returns<CrewMember[]>(),
+      supabase
+        .from("crew_members")
+        .select("*")
+        .eq("project_id", id)
+        .eq("needs_flight", true)
+        .order("sort_order", { ascending: true })
+        .returns<CrewMember[]>(),
+      supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+      supabase
+        .from("categories")
+        .select("*")
+        .eq("project_id", id)
+        .is("stage_id", null)
+        .in("name", ["Hotel", "Vluchten"])
+        .returns<Category[]>(),
+      getAppLang(),
+    ]);
 
   const hotelCategory = costCategories?.find((c) => c.name === "Hotel") ?? null;
   const flightCategory = costCategories?.find((c) => c.name === "Vluchten") ?? null;
@@ -68,7 +66,6 @@ export default async function ProductionHotelPage({
     ? pickQuote((costQuotes ?? []).filter((q) => q.category_id === flightCategory.id))
     : null;
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, HOTEL_FLIGHTS_CARD_LABELS);
 
   return (

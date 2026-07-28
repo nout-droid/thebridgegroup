@@ -79,33 +79,42 @@ export default async function TeamPage({
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
   const isOwner = ownerId === user.id;
+  const admin = createAdminClient();
 
-  const { data: members } = await supabase
-    .from("team_members")
-    .select("*")
-    .eq("owner_user_id", ownerId)
-    .order("created_at", { ascending: true })
-    .returns<TeamMember[]>();
+  // Deze queries hebben alleen `ownerId` nodig (geen onderlinge afhankelijkheid) — in
+  // één keer parallel opvragen i.p.v. na elkaar, anders wacht de pagina op 5 losse
+  // round-trips na elkaar.
+  const [
+    { data: members },
+    { data: ownerAuthUser },
+    { data: organization },
+    { data: projects },
+    lang,
+  ] = await Promise.all([
+    supabase
+      .from("team_members")
+      .select("*")
+      .eq("owner_user_id", ownerId)
+      .order("created_at", { ascending: true })
+      .returns<TeamMember[]>(),
+    admin.auth.admin.getUserById(ownerId),
+    admin
+      .from("organizations")
+      .select("*")
+      .eq("owner_user_id", ownerId)
+      .maybeSingle<Organization>(),
+    admin
+      .from("projects")
+      .select("id, name")
+      .eq("user_id", ownerId)
+      .order("name", { ascending: true })
+      .returns<{ id: string; name: string }[]>(),
+    getAppLang(),
+  ]);
 
   const viewerMembership = members?.find((m) => m.member_user_id === user.id);
   const isAdmin = isOwner || viewerMembership?.role === "admin";
-
-  const admin = createAdminClient();
-  const { data: ownerAuthUser } = await admin.auth.admin.getUserById(ownerId);
   const ownerEmail = ownerAuthUser?.user?.email ?? "—";
-
-  const { data: organization } = await admin
-    .from("organizations")
-    .select("*")
-    .eq("owner_user_id", ownerId)
-    .maybeSingle<Organization>();
-
-  const { data: projects } = await admin
-    .from("projects")
-    .select("id, name")
-    .eq("user_id", ownerId)
-    .order("name", { ascending: true })
-    .returns<{ id: string; name: string }[]>();
 
   const memberIds = (members ?? []).map((m) => m.id);
   const { data: accessRows } = memberIds.length
@@ -123,7 +132,6 @@ export default async function TeamPage({
     accessByMember.set(row.team_member_id, set);
   }
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, TEAM_PAGE_LABELS);
 
   return (

@@ -18,29 +18,26 @@ export default async function ProductionPowerPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: requests }, { data: stages }, { data: suppliers }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("power_requests")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<PowerRequest[]>(),
+    supabase
+      .from("stages")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Stage[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: requests } = await supabase
-    .from("power_requests")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<PowerRequest[]>();
-
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, POWER_CARD_LABELS);
   const labels: PowerCardLabels = {
     title: t("Stroom"),

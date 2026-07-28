@@ -57,21 +57,25 @@ export default async function ClientsPage({
   if (!user) return null;
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
-
-  const { data: accounts } = await supabase
-    .from("client_accounts")
-    .select("*")
-    .eq("owner_user_id", ownerId)
-    .order("created_at", { ascending: false })
-    .returns<ClientAccount[]>();
-
   const admin = createAdminClient();
-  const { data: projects } = await admin
-    .from("projects")
-    .select("id, name")
-    .eq("user_id", ownerId)
-    .order("name", { ascending: true })
-    .returns<{ id: string; name: string }[]>();
+
+  // Deze queries hebben alleen `ownerId` nodig (geen onderlinge afhankelijkheid) — in
+  // één keer parallel opvragen i.p.v. na elkaar.
+  const [{ data: accounts }, { data: projects }, lang] = await Promise.all([
+    supabase
+      .from("client_accounts")
+      .select("*")
+      .eq("owner_user_id", ownerId)
+      .order("created_at", { ascending: false })
+      .returns<ClientAccount[]>(),
+    admin
+      .from("projects")
+      .select("id, name")
+      .eq("user_id", ownerId)
+      .order("name", { ascending: true })
+      .returns<{ id: string; name: string }[]>(),
+    getAppLang(),
+  ]);
 
   const accountIds = (accounts ?? []).map((a) => a.id);
   const { data: linkRows } = accountIds.length
@@ -89,7 +93,6 @@ export default async function ClientsPage({
     linksByAccount.set(row.client_account_id, set);
   }
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, CLIENTS_PAGE_LABELS);
 
   return (

@@ -49,15 +49,16 @@ export default async function SupplierRiderPage({
   }
 
   const admin = createAdminClient();
-  const { data: supplier } = await admin
-    .from("suppliers")
-    .select("id, name")
-    .eq("id", supplierId)
-    .maybeSingle();
+
+  // Beide queries hangen alleen af van `supplierId` (auth is hierboven al bevestigd) en
+  // niet van elkaar — parallel opvragen i.p.v. na elkaar.
+  const [{ data: supplier }, projects] = await Promise.all([
+    admin.from("suppliers").select("id, name").eq("id", supplierId).maybeSingle(),
+    getSupplierProjects(supplierId),
+  ]);
 
   if (!supplier) notFound();
 
-  const projects = await getSupplierProjects(supplierId);
   const selectedProject = projects.find((p) => p.id === projectParam) ?? projects[0] ?? null;
 
   let projectWideSections: RiderSection[] = [];
@@ -71,12 +72,25 @@ export default async function SupplierRiderPage({
       .maybeSingle();
 
     if (rider) {
-      const { data: riderSections } = await admin
-        .from("rider_sections")
-        .select("*")
-        .eq("rider_id", rider.id)
-        .order("sort_order", { ascending: true })
-        .returns<RiderSection[]>();
+      // riderSections hangt af van `rider.id`; quoteCategoryRows hangt alleen af van
+      // `supplierId`/`selectedProject.id` (al bekend) — onderling onafhankelijk, dus parallel.
+      const [{ data: riderSections }, { data: quoteCategoryRows }] = await Promise.all([
+        admin
+          .from("rider_sections")
+          .select("*")
+          .eq("rider_id", rider.id)
+          .order("sort_order", { ascending: true })
+          .returns<RiderSection[]>(),
+        // Alleen de podia/areas waar deze leverancier daadwerkelijk voor is aangevraagd (via een
+        // offerte-categorie met stage_id) — zelfde "werkt aan" afleiding als getSupplierProjects,
+        // zodat een leverancier nooit rider-content van een ander podium te zien krijgt.
+        admin
+          .from("quotes")
+          .select("category:categories!inner(stage_id, project_id)")
+          .eq("supplier_id", supplierId)
+          .eq("category.project_id", selectedProject.id)
+          .returns<{ category: { stage_id: string | null; project_id: string } | null }[]>(),
+      ]);
 
       const { data: riderSectionItems } = riderSections?.length
         ? await admin
@@ -95,15 +109,6 @@ export default async function SupplierRiderPage({
         items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
       }));
 
-      // Alleen de podia/areas waar deze leverancier daadwerkelijk voor is aangevraagd (via een
-      // offerte-categorie met stage_id) — zelfde "werkt aan" afleiding als getSupplierProjects,
-      // zodat een leverancier nooit rider-content van een ander podium te zien krijgt.
-      const { data: quoteCategoryRows } = await admin
-        .from("quotes")
-        .select("category:categories!inner(stage_id, project_id)")
-        .eq("supplier_id", supplierId)
-        .eq("category.project_id", selectedProject.id)
-        .returns<{ category: { stage_id: string | null; project_id: string } | null }[]>();
       const relevantStageIds = new Set(
         (quoteCategoryRows ?? [])
           .map((row) => row.category?.stage_id)

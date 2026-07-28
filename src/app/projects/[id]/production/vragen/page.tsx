@@ -17,23 +17,25 @@ export default async function ProductionQuestionsPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: questions }, { data: notes }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("open_questions")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<OpenQuestion[]>(),
+    supabase
+      .from("meeting_notes")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<MeetingNote[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: questions } = await supabase
-    .from("open_questions")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<OpenQuestion[]>();
-
-  const { data: notes } = await supabase
-    .from("meeting_notes")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<MeetingNote[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, QUESTIONS_CARD_LABELS);
 
   return (

@@ -17,22 +17,20 @@ export default async function ProductionCrewPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben geen onderlinge afhankelijkheid — parallel opvragen i.p.v. na
+  // elkaar.
+  const [project, { data: members }, { data: suppliers }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("crew_members")
+      .select("*, supplier:suppliers(*)")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<CrewMember[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: members } = await supabase
-    .from("crew_members")
-    .select("*, supplier:suppliers(*)")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<CrewMember[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, CREW_CARD_LABELS);
 
   return (

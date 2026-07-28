@@ -26,9 +26,13 @@ export default async function ProjectEvaluationPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-
-  const evaluationId = await ensureEvaluation(supabase, id);
+  // Deze hebben geen onderlinge afhankelijkheid (allebei alleen `id` nodig) — parallel
+  // opvragen i.p.v. na elkaar.
+  const [project, evaluationId, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    ensureEvaluation(supabase, id),
+    getAppLang(),
+  ]);
 
   const { data: evaluation } = evaluationId
     ? await supabase
@@ -38,7 +42,6 @@ export default async function ProjectEvaluationPage({
         .maybeSingle<{ content: string; updated_at: string }>()
     : { data: null };
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, EVALUATION_PAGE_LABELS);
 
   return (

@@ -56,30 +56,29 @@ export default async function SupplierPortalDashboard({
   }
 
   const admin = createAdminClient();
-  const { data: supplier } = await admin
-    .from("suppliers")
-    .select("id, name")
-    .eq("id", supplierId)
-    .maybeSingle();
+
+  // Alle drie hangen alleen af van `supplierId` (auth is hierboven al bevestigd) en niet van
+  // elkaar — parallel opvragen i.p.v. na elkaar.
+  const [{ data: supplier }, { data: quotes }, { data: pendingDocuments }] = await Promise.all([
+    admin.from("suppliers").select("id, name").eq("id", supplierId).maybeSingle(),
+    admin
+      .from("quotes")
+      .select(
+        "id, cost_price, status, created_at, category:categories(name, project:projects(id, name)), documents:quote_documents(*)"
+      )
+      .eq("supplier_id", supplierId)
+      .order("created_at", { ascending: false })
+      .returns<RawQuoteRow[]>(),
+    admin
+      .from("quote_documents")
+      .select("*, project:projects(id, name)")
+      .eq("supplier_id", supplierId)
+      .is("quote_id", null)
+      .order("created_at", { ascending: false })
+      .returns<RawPendingDocumentRow[]>(),
+  ]);
 
   if (!supplier) notFound();
-
-  const { data: quotes } = await admin
-    .from("quotes")
-    .select(
-      "id, cost_price, status, created_at, category:categories(name, project:projects(id, name)), documents:quote_documents(*)"
-    )
-    .eq("supplier_id", supplierId)
-    .order("created_at", { ascending: false })
-    .returns<RawQuoteRow[]>();
-
-  const { data: pendingDocuments } = await admin
-    .from("quote_documents")
-    .select("*, project:projects(id, name)")
-    .eq("supplier_id", supplierId)
-    .is("quote_id", null)
-    .order("created_at", { ascending: false })
-    .returns<RawPendingDocumentRow[]>();
 
   const allDocuments = [
     ...(quotes ?? []).flatMap((q) => q.documents ?? []),

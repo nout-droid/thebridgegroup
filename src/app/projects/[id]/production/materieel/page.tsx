@@ -18,29 +18,26 @@ export default async function ProductionEquipmentPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: reservations }, { data: suppliers }, { data: stages }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("equipment_reservations")
+      .select("*, supplier:suppliers(*)")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<EquipmentReservation[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    supabase
+      .from("stages")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Stage[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: reservations } = await supabase
-    .from("equipment_reservations")
-    .select("*, supplier:suppliers(*)")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<EquipmentReservation[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, EQUIPMENT_CARD_LABELS);
   const labels: EquipmentCardLabels = {
     title: t("Materieel reservering"),

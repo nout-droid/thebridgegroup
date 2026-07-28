@@ -17,9 +17,13 @@ export default async function ProjectRiderPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-
-  const riderId = await ensureRiderWithDefaults(supabase, id);
+  // project/riderId/lang hebben alleen `id` nodig (geen onderlinge afhankelijkheid) —
+  // parallel opvragen i.p.v. na elkaar.
+  const [project, riderId, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    ensureRiderWithDefaults(supabase, id),
+    getAppLang(),
+  ]);
 
   const { data: riderSections } = riderId
     ? await supabase
@@ -48,7 +52,6 @@ export default async function ProjectRiderPage({
     items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
   }));
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, ["Rider (projectbreed)", ...RIDER_CARD_LABELS]);
 
   return (

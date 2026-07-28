@@ -47,17 +47,44 @@ export default async function ProjectDocumentsPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht de pagina op 7 losse round-trips naar Supabase.
+  const [
+    project,
+    lang,
+    { data: ownDocs },
+    { data: categories },
+    { data: unsplitQuoteDocuments },
+    { data: guestDocuments },
+    { data: checklist },
+  ] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    getAppLang(),
+    supabase
+      .from("project_documents")
+      .select("id, title, storage_path, created_at")
+      .eq("project_id", id),
+    supabase.from("categories").select("id, name").eq("project_id", id),
+    supabase
+      .from("quote_documents")
+      .select("id, storage_path, original_filename, created_at, supplier:suppliers(name)")
+      .eq("project_id", id)
+      .is("quote_id", null),
+    supabase
+      .from("guest_documents")
+      .select("id, title, storage_path, created_at")
+      .eq("project_id", id),
+    supabase
+      .from("intake_checklists")
+      .select("id")
+      .eq("project_id", id)
+      .maybeSingle<{ id: string }>(),
+  ]);
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, DOCUMENTS_PAGE_LABELS);
 
   const rows: DocRow[] = [];
 
-  const { data: ownDocs } = await supabase
-    .from("project_documents")
-    .select("id, title, storage_path, created_at")
-    .eq("project_id", id);
   for (const doc of ownDocs ?? []) {
     rows.push({
       id: doc.id,
@@ -69,10 +96,6 @@ export default async function ProjectDocumentsPage({
     });
   }
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("id, name")
-    .eq("project_id", id);
   const categoryMap = new Map((categories ?? []).map((c) => [c.id, c.name]));
   const categoryIds = (categories ?? []).map((c) => c.id);
 
@@ -112,11 +135,6 @@ export default async function ProjectDocumentsPage({
     }
   }
 
-  const { data: unsplitQuoteDocuments } = await supabase
-    .from("quote_documents")
-    .select("id, storage_path, original_filename, created_at, supplier:suppliers(name)")
-    .eq("project_id", id)
-    .is("quote_id", null);
   for (const doc of unsplitQuoteDocuments ?? []) {
     const supplierName =
       (Array.isArray(doc.supplier) ? doc.supplier[0]?.name : (doc.supplier as { name: string } | null)?.name) ?? "";
@@ -130,10 +148,6 @@ export default async function ProjectDocumentsPage({
     });
   }
 
-  const { data: guestDocuments } = await supabase
-    .from("guest_documents")
-    .select("id, title, storage_path, created_at")
-    .eq("project_id", id);
   for (const doc of guestDocuments ?? []) {
     rows.push({
       id: doc.id,
@@ -145,11 +159,6 @@ export default async function ProjectDocumentsPage({
     });
   }
 
-  const { data: checklist } = await supabase
-    .from("intake_checklists")
-    .select("id")
-    .eq("project_id", id)
-    .maybeSingle<{ id: string }>();
   if (checklist) {
     const { data: photos } = await supabase
       .from("intake_checklist_photos")

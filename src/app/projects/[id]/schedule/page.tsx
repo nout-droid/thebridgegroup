@@ -17,23 +17,21 @@ export default async function ProjectSchedulePage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Geen van deze heeft elkaars resultaat nodig — alleen `id` — dus in één keer
+  // parallel opvragen i.p.v. 4 losse round-trips na elkaar.
+  const [project, { data: scheduleItems }, { data: suppliers }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("schedule_items")
+      .select("*, suppliers:schedule_item_suppliers(*, supplier:suppliers(*))")
+      .eq("project_id", id)
+      .is("stage_id", null)
+      .order("sort_order", { foreignTable: "schedule_item_suppliers", ascending: true })
+      .returns<ScheduleItem[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getAppLang(),
+  ]);
 
-  const { data: scheduleItems } = await supabase
-    .from("schedule_items")
-    .select("*, suppliers:schedule_item_suppliers(*, supplier:suppliers(*))")
-    .eq("project_id", id)
-    .is("stage_id", null)
-    .order("sort_order", { foreignTable: "schedule_item_suppliers", ascending: true })
-    .returns<ScheduleItem[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, SCHEDULE_CARD_LABELS);
   const labels: ScheduleCardLabels = {
     title: t("Draaiboek"),

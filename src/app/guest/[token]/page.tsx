@@ -50,13 +50,16 @@ export default async function GuestPage({
 
   if (!project) notFound();
 
-  const orgName = await getOrganizationName(project.user_id);
-
-  const { data: documents } = await admin
-    .from("guest_documents")
-    .select("*")
-    .eq("project_id", project.id)
-    .order("created_at", { ascending: false });
+  // Beide hangen alleen af van `project` (hierboven al opgehaald) en niet van elkaar —
+  // parallel opvragen i.p.v. na elkaar.
+  const [orgName, { data: documents }] = await Promise.all([
+    getOrganizationName(project.user_id),
+    admin
+      .from("guest_documents")
+      .select("*")
+      .eq("project_id", project.id)
+      .order("created_at", { ascending: false }),
+  ]);
 
   const documentsWithUrls = await Promise.all(
     (documents ?? []).map(async (doc) => ({

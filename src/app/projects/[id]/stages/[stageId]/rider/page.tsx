@@ -18,10 +18,14 @@ export default async function StageRiderPage({
   const { id, stageId } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-  const stage = await getStageOrNotFound(supabase, id, stageId);
-
-  const riderId = await ensureRiderWithDefaults(supabase, id);
+  // project/stage/riderId/lang hebben alleen `id`/`stageId` nodig (geen onderlinge
+  // afhankelijkheid) — parallel opvragen i.p.v. na elkaar.
+  const [project, stage, riderId, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    getStageOrNotFound(supabase, id, stageId),
+    ensureRiderWithDefaults(supabase, id),
+    getAppLang(),
+  ]);
   if (riderId) {
     await ensureStageRiderSections(supabase, riderId, stageId);
   }
@@ -55,7 +59,6 @@ export default async function StageRiderPage({
   const projectWideSections = sectionsWithItems.filter((s) => !s.stage_id);
   const stageSections = sectionsWithItems.filter((s) => s.stage_id === stageId);
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [
     `Rider — ${stage.name}`,
     "Projectbrede onderdelen (alleen-lezen, wijzig via Rider in het hoofdmenu)",

@@ -32,25 +32,28 @@ export default async function SuppliersPage({
   const { error } = await searchParams;
   const supabase = await createClient();
 
-  const headersList = await headers();
+  // headers() en de suppliers-query hebben geen onderlinge afhankelijkheid — parallel
+  // opvragen i.p.v. na elkaar.
+  const [headersList, { data: suppliers }] = await Promise.all([
+    headers(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+  ]);
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const supplierPortalUrl = `${protocol}://${host}/supplier-portal`;
 
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
+  // Per leverancier het aantal catalogusartikelen tellen — deze tellingen zijn onderling
+  // onafhankelijk, dus parallel i.p.v. één voor één na elkaar (N sequentiële round-trips).
   const catalogCounts = new Map<string, number>();
-  for (const supplier of suppliers ?? []) {
-    const { count } = await supabase
-      .from("catalog_articles")
-      .select("id", { count: "exact", head: true })
-      .eq("supplier_id", supplier.id);
-    catalogCounts.set(supplier.id, count ?? 0);
-  }
+  await Promise.all(
+    (suppliers ?? []).map(async (supplier) => {
+      const { count } = await supabase
+        .from("catalog_articles")
+        .select("id", { count: "exact", head: true })
+        .eq("supplier_id", supplier.id);
+      catalogCounts.set(supplier.id, count ?? 0);
+    })
+  );
 
   return (
     <div className="flex min-h-screen flex-col">

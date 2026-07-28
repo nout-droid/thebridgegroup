@@ -18,36 +18,33 @@ export default async function ProductionPlanningPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: positions }, { data: suppliers }, { data: stages }, { data: linkedMembers }, lang] =
+    await Promise.all([
+      getProjectOrNotFound(supabase, id),
+      supabase
+        .from("crew_positions")
+        .select("*")
+        .eq("project_id", id)
+        .order("sort_order", { ascending: true })
+        .returns<CrewPosition[]>(),
+      supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+      supabase
+        .from("stages")
+        .select("*")
+        .eq("project_id", id)
+        .order("name", { ascending: true })
+        .returns<Stage[]>(),
+      supabase
+        .from("crew_members")
+        .select("*")
+        .eq("project_id", id)
+        .not("crew_position_id", "is", null)
+        .returns<CrewMember[]>(),
+      getAppLang(),
+    ]);
 
-  const { data: positions } = await supabase
-    .from("crew_positions")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<CrewPosition[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
-
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("name", { ascending: true })
-    .returns<Stage[]>();
-
-  const { data: linkedMembers } = await supabase
-    .from("crew_members")
-    .select("*")
-    .eq("project_id", id)
-    .not("crew_position_id", "is", null)
-    .returns<CrewMember[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, CREW_PLANNING_CARD_LABELS);
   const labels: CrewPlanningCardLabels = {
     title: t("Crew Planning per podium/area"),

@@ -28,15 +28,16 @@ export default async function ProjectsPage({
 }) {
   const { error: pageError } = await searchParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
 
-  const { data: projects } = await supabase
-    .from("projects")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .returns<Project[]>();
+  const [
+    {
+      data: { user },
+    },
+    { data: projects },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase.from("projects").select("*").order("created_at", { ascending: false }).returns<Project[]>(),
+  ]);
 
   const access = user ? await getOrgAccess(await getTeamOwnerId(supabase, user.id)) : null;
   const showAccessBanner = access && access.status !== "active" && access.status !== "no_org" && access.message;

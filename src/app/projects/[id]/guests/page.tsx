@@ -18,28 +18,30 @@ export default async function ProjectGuestsPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Geen van deze heeft elkaars resultaat nodig — alleen `id` — dus in één keer
+  // parallel opvragen i.p.v. 5 losse round-trips na elkaar.
+  const [project, { data: guestDocuments }, { data: guests }, headersList, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    supabase
+      .from("guest_documents")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .returns<GuestDocument[]>(),
+    supabase
+      .from("event_guests")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .returns<EventGuest[]>(),
+    headers(),
+    getAppLang(),
+  ]);
 
-  const { data: guestDocuments } = await supabase
-    .from("guest_documents")
-    .select("*")
-    .eq("project_id", id)
-    .order("created_at", { ascending: false })
-    .returns<GuestDocument[]>();
-
-  const { data: guests } = await supabase
-    .from("event_guests")
-    .select("*")
-    .eq("project_id", id)
-    .order("created_at", { ascending: false })
-    .returns<EventGuest[]>();
-
-  const headersList = await headers();
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
 
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [...GUEST_LIST_CARD_LABELS, ...GUEST_DOCUMENTS_CARD_LABELS]);
 
   return (

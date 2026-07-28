@@ -26,41 +26,45 @@ export default async function ProjectRundownPage({
   const { date } = await searchParams;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
+  // Geen van deze heeft elkaars resultaat nodig — alleen `id` — dus in één keer
+  // parallel opvragen i.p.v. 4 losse round-trips na elkaar.
+  const [project, headersList, { data: stages }, lang] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    headers(),
+    supabase
+      .from("stages")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Stage[]>(),
+    getAppLang(),
+  ]);
 
   const showDates = computeShowDates(project);
   const showDate = date && showDates.includes(date) ? date : pickDefaultShowDate(showDates);
 
-  const headersList = await headers();
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const crewPortalUrl = `${protocol}://${host}/crew-portal`;
   const showcallerPortalUrl = `${protocol}://${host}/showcaller-portal`;
 
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
-
   const rundownId = await getOrCreateRundown(supabase, id, null, showDate);
 
-  const { data: rundown } = rundownId
-    ? await supabase.from("rundowns").select("*").eq("id", rundownId).maybeSingle<Rundown>()
-    : { data: null };
+  // `rundown` en `items` hangen alleen van `rundownId` af, niet van elkaar — parallel
+  // opvragen i.p.v. na elkaar.
+  const [{ data: rundown }, { data: items }] = rundownId
+    ? await Promise.all([
+        supabase.from("rundowns").select("*").eq("id", rundownId).maybeSingle<Rundown>(),
+        supabase
+          .from("rundown_items")
+          .select("*, instructions:rundown_item_instructions(*)")
+          .eq("rundown_id", rundownId)
+          .order("sort_order", { ascending: true })
+          .order("sort_order", { foreignTable: "rundown_item_instructions", ascending: true })
+          .returns<RundownItem[]>(),
+      ])
+    : [{ data: null }, { data: [] as RundownItem[] }];
 
-  const { data: items } = rundownId
-    ? await supabase
-        .from("rundown_items")
-        .select("*, instructions:rundown_item_instructions(*)")
-        .eq("rundown_id", rundownId)
-        .order("sort_order", { ascending: true })
-        .order("sort_order", { foreignTable: "rundown_item_instructions", ascending: true })
-        .returns<RundownItem[]>()
-    : { data: [] as RundownItem[] };
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [...RUNDOWN_ACCESS_CARD_LABELS, ...RUNDOWN_LIVE_LABELS]);
 
   const rundownLiveLabels: RundownLiveLabels = {

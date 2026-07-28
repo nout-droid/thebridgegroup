@@ -1,5 +1,6 @@
 import "server-only";
 import type { AppLang } from "./lang";
+import { TRANSLATION_OVERRIDES } from "../translation-overrides";
 
 export type Translator = (text: string) => string;
 
@@ -17,7 +18,11 @@ async function translateBatch(texts: string[]): Promise<string[]> {
   if (!apiKey) return texts;
 
   const missing = texts.filter((text) => text && !cache.has(text));
-  if (missing.length) {
+  for (const text of missing) {
+    if (text in TRANSLATION_OVERRIDES) cache.set(text, TRANSLATION_OVERRIDES[text]);
+  }
+  const stillMissing = missing.filter((text) => !cache.has(text));
+  if (stillMissing.length) {
     try {
       const baseUrl = apiKey.endsWith(":fx") ? "https://api-free.deepl.com" : "https://api.deepl.com";
       const response = await fetch(`${baseUrl}/v2/translate`, {
@@ -26,7 +31,7 @@ async function translateBatch(texts: string[]): Promise<string[]> {
           Authorization: `DeepL-Auth-Key ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: missing, target_lang: "EN" }),
+        body: JSON.stringify({ text: stillMissing, target_lang: "EN" }),
         cache: "no-store",
       });
       if (response.ok) {
@@ -34,7 +39,7 @@ async function translateBatch(texts: string[]): Promise<string[]> {
         const translations: string[] = (data.translations ?? []).map(
           (item: { text: string }) => item.text
         );
-        missing.forEach((text, i) => cache.set(text, translations[i] ?? text));
+        stillMissing.forEach((text, i) => cache.set(text, translations[i] ?? text));
       }
     } catch {
       // Vertalen mislukt (netwerk/key-probleem) — gewoon Nederlands tonen i.p.v. de pagina

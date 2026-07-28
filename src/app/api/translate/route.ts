@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { TRANSLATION_OVERRIDES } from "@/lib/translation-overrides";
 
 export async function POST(request: NextRequest) {
   const apiKey = process.env.DEEPL_API_KEY;
@@ -12,25 +13,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ translations: [] });
   }
 
-  const baseUrl = apiKey.endsWith(":fx") ? "https://api-free.deepl.com" : "https://api.deepl.com";
+  const toTranslate = texts.filter((text: string) => !(text in TRANSLATION_OVERRIDES));
 
-  const response = await fetch(`${baseUrl}/v2/translate`, {
-    method: "POST",
-    headers: {
-      Authorization: `DeepL-Auth-Key ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ text: texts, target_lang: "EN" }),
-  });
+  let translations: string[] = [];
+  if (toTranslate.length) {
+    const baseUrl = apiKey.endsWith(":fx") ? "https://api-free.deepl.com" : "https://api.deepl.com";
 
-  if (!response.ok) {
-    return NextResponse.json({ error: `Vertalen mislukt (${response.status})` }, { status: 502 });
+    const response = await fetch(`${baseUrl}/v2/translate`, {
+      method: "POST",
+      headers: {
+        Authorization: `DeepL-Auth-Key ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text: toTranslate, target_lang: "EN" }),
+    });
+
+    if (!response.ok) {
+      return NextResponse.json({ error: `Vertalen mislukt (${response.status})` }, { status: 502 });
+    }
+
+    const data = await response.json();
+    translations = (data.translations ?? []).map((item: { text: string }) => item.text);
   }
 
-  const data = await response.json();
-  const translations: string[] = (data.translations ?? []).map(
-    (item: { text: string }) => item.text
-  );
+  const translationByText = new Map(toTranslate.map((text: string, i: number) => [text, translations[i]]));
+  const result = texts.map((text: string) => translationByText.get(text) ?? TRANSLATION_OVERRIDES[text]);
 
-  return NextResponse.json({ translations });
+  return NextResponse.json({ translations: result });
 }
