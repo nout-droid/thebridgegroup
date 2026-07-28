@@ -1360,8 +1360,8 @@ export function ShareView({ token }: { token: string }) {
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
         <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt={data.project.organization_name} width={28} height={21} />
-          {t(data.project.organization_name)}
+          <Image src="/logo.png" alt={data.project.organization_name || "The Bridge AV Group"} width={28} height={21} />
+          {t(data.project.organization_name || "The Bridge AV Group")}
         </div>
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </header>
