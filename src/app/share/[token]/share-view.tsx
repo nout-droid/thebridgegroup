@@ -22,6 +22,7 @@ import {
 import {
   CATEGORY_STATUS_LABELS,
   CLIENT_REQUEST_CATEGORIES,
+  type BudgetAccess,
   type ClientRequest,
   type ClientRequestCategory,
   type IntakeChecklistPhoto,
@@ -62,6 +63,7 @@ const STATIC_LABELS = [
   "Status",
   "Materiaal-specificatie",
   "Totaalbudget",
+  "Je ziet hier de prijs per onderdeel. Inkoopprijs, marge en leverancier zijn intern.",
   "Laden...",
   "Nog geen onderdelen.",
   "Deze begroting kon niet gevonden worden.",
@@ -340,19 +342,34 @@ function MediaGallery({ media, t }: { media: SharedMedia[]; t: Translator }) {
   );
 }
 
-function CategoryTable({ categories, t }: { categories: SharedCategory[]; t: Translator }) {
+function CategoryTable({
+  categories,
+  t,
+  budgetAccess,
+}: {
+  categories: SharedCategory[];
+  t: Translator;
+  budgetAccess: BudgetAccess;
+}) {
   if (!categories.length) {
     return <p className="text-sm text-muted-foreground">{t("Nog geen onderdelen.")}</p>;
   }
+
+  const open = budgetAccess === "open";
+  const colSpan = open ? 6 : 3;
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead>{t("Onderdeel")}</TableHead>
-          <TableHead>{t("Leverancier")}</TableHead>
-          <TableHead>{t("Inkoopprijs")}</TableHead>
-          <TableHead>{t("Marge")}</TableHead>
+          {open && (
+            <>
+              <TableHead>{t("Leverancier")}</TableHead>
+              <TableHead>{t("Inkoopprijs")}</TableHead>
+              <TableHead>{t("Marge")}</TableHead>
+            </>
+          )}
           <TableHead>{t("Prijs")}</TableHead>
           <TableHead>{t("Status")}</TableHead>
         </TableRow>
@@ -362,15 +379,21 @@ function CategoryTable({ categories, t }: { categories: SharedCategory[]; t: Tra
           <Fragment key={category.id}>
             <TableRow>
               <TableCell className="font-medium">{t(category.name)}</TableCell>
-              <TableCell>{category.supplier_name ? t(category.supplier_name) : "—"}</TableCell>
-              <TableCell>
-                {category.cost_price != null ? `€ ${category.cost_price.toFixed(2)}` : "—"}
-              </TableCell>
-              <TableCell>
-                {category.margin_type === "percentage"
-                  ? `${category.margin_value}%`
-                  : `€ ${category.margin_value.toFixed(2)}`}
-              </TableCell>
+              {open && (
+                <>
+                  <TableCell>{category.supplier_name ? t(category.supplier_name) : "—"}</TableCell>
+                  <TableCell>
+                    {category.cost_price != null ? `€ ${category.cost_price.toFixed(2)}` : "—"}
+                  </TableCell>
+                  <TableCell>
+                    {category.margin_value == null
+                      ? "—"
+                      : category.margin_type === "percentage"
+                        ? `${category.margin_value}%`
+                        : `€ ${category.margin_value.toFixed(2)}`}
+                  </TableCell>
+                </>
+              )}
               <TableCell>
                 {category.client_price != null ? `€ ${category.client_price.toFixed(2)}` : "—"}
               </TableCell>
@@ -378,9 +401,9 @@ function CategoryTable({ categories, t }: { categories: SharedCategory[]; t: Tra
                 <Badge variant="secondary">{t(CATEGORY_STATUS_LABELS[category.status])}</Badge>
               </TableCell>
             </TableRow>
-            {category.line_items.length > 0 && (
+            {open && category.line_items.length > 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="bg-muted/30">
+                <TableCell colSpan={colSpan} className="bg-muted/30">
                   <p className="mb-1 text-xs font-medium text-muted-foreground">
                     {t("Materiaal-specificatie")}
                   </p>
@@ -548,6 +571,8 @@ function RiderPanel({
 
 function EditableChecklistSection({
   token,
+  clientAccountId,
+  canEdit,
   sectionKey,
   titleText,
   guidance,
@@ -559,6 +584,8 @@ function EditableChecklistSection({
   onPhotoDeleted,
 }: {
   token: string;
+  clientAccountId: string | null;
+  canEdit: boolean;
   sectionKey: string;
   titleText: string;
   guidance: string[];
@@ -583,6 +610,7 @@ function EditableChecklistSection({
       p_share_token: token,
       p_section_key: sectionKey,
       p_content: value,
+      p_client_account_id: clientAccountId,
     });
     setSaving(false);
     if (ok) {
@@ -608,6 +636,38 @@ function EditableChecklistSection({
   async function deletePhoto(photoId: string) {
     await deleteIntakeChecklistPhotoByClient(token, photoId);
     onPhotoDeleted(photoId);
+  }
+
+  if (!canEdit) {
+    return (
+      <div className="space-y-1 rounded-md border p-3">
+        <p className="font-medium">{titleText}</p>
+        {guidance.length > 0 && (
+          <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
+            {guidance.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+        <p className="whitespace-pre-wrap text-sm text-muted-foreground">{content || "—"}</p>
+        {photos.length > 0 && (
+          <ul className="space-y-1 border-t pt-2">
+            {photos.map((photo) => (
+              <li key={photo.id} className="text-sm">
+                <a
+                  href={`/share/${token}/intake-photos/${photo.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  {photo.original_filename}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -686,6 +746,8 @@ function EditableChecklistSection({
 
 function ChecklistPanel({
   token,
+  clientAccountId,
+  canEdit,
   checklist,
   lang,
   t,
@@ -694,6 +756,8 @@ function ChecklistPanel({
   onPhotoDeleted,
 }: {
   token: string;
+  clientAccountId: string | null;
+  canEdit: boolean;
   checklist: SharedIntakeChecklist;
   lang: "nl" | "en";
   t: Translator;
@@ -716,6 +780,8 @@ function ChecklistPanel({
             <EditableChecklistSection
               key={section.key}
               token={token}
+              clientAccountId={clientAccountId}
+              canEdit={canEdit}
               sectionKey={section.key}
               titleText={lang === "en" ? section.title_en : section.title_nl}
               guidance={lang === "en" ? section.guidance_en : section.guidance_nl}
@@ -874,10 +940,12 @@ function Co2Panel({ co2, t }: { co2: SharedCo2; t: Translator }) {
 
 function ClientRequestForm({
   token,
+  clientAccountId,
   t,
   onSubmitted,
 }: {
   token: string;
+  clientAccountId: string | null;
   t: Translator;
   onSubmitted: (request: ClientRequest) => void;
 }) {
@@ -900,6 +968,7 @@ function ClientRequestForm({
       p_quantity: Number(quantity) || 1,
       p_requested_date: requestedDate || null,
       p_notes: notes.trim(),
+      p_client_account_id: clientAccountId,
     });
     setSubmitting(false);
     if (id) {
@@ -1070,11 +1139,15 @@ function PdfDownloadLink({ token, path, t }: { token: string; path: string; t: T
 
 function ProductionPanel({
   token,
+  clientAccountId,
+  canSubmitRequests,
   production,
   t,
   onRequestSubmitted,
 }: {
   token: string;
+  clientAccountId: string | null;
+  canSubmitRequests: boolean;
   production: SharedProduction;
   t: Translator;
   onRequestSubmitted: (request: ClientRequest) => void;
@@ -1115,7 +1188,14 @@ function ProductionPanel({
 
   return (
     <div className="space-y-4">
-      <ClientRequestForm token={token} t={t} onSubmitted={onRequestSubmitted} />
+      {canSubmitRequests && (
+        <ClientRequestForm
+          token={token}
+          clientAccountId={clientAccountId}
+          t={t}
+          onSubmitted={onRequestSubmitted}
+        />
+      )}
 
       {production.client_requests.length > 0 && (
         <Card>
@@ -1514,7 +1594,17 @@ function RundownPanel({ rundowns, t }: { rundowns: SharedRundowns; t: Translator
   );
 }
 
-export function ShareView({ token }: { token: string }) {
+export function ShareView({
+  token,
+  clientAccountId = null,
+  canEditChecklist = true,
+  canSubmitRequests = true,
+}: {
+  token: string;
+  clientAccountId?: string | null;
+  canEditChecklist?: boolean;
+  canSubmitRequests?: boolean;
+}) {
   const [data, setData] = useState<SharedProject | null>(null);
   const [rider, setRider] = useState<SharedRider | null>(null);
   const [checklist, setChecklist] = useState<SharedIntakeChecklist | null>(null);
@@ -1531,7 +1621,10 @@ export function ShareView({ token }: { token: string }) {
     let cancelled = false;
 
     async function load() {
-      const { data, error } = await supabase.rpc("get_shared_project", { p_token: token });
+      const { data, error } = await supabase.rpc("get_shared_project", {
+        p_token: token,
+        p_client_account_id: clientAccountId,
+      });
       if (cancelled) return;
       if (error || !data?.project) {
         setError("Deze begroting kon niet gevonden worden.");
@@ -1567,7 +1660,7 @@ export function ShareView({ token }: { token: string }) {
     () => (data ? collectDynamicTexts(data, rider, production, rundowns) : []),
     [data, rider, production, rundowns]
   );
-  const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts);
+  const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts, "en");
 
   if (error) {
     return <p className="p-6 text-sm text-muted-foreground">{error}</p>;
@@ -1725,6 +1818,8 @@ export function ShareView({ token }: { token: string }) {
         ) : activeTab === "checklist" && checklist ? (
           <ChecklistPanel
             token={token}
+            clientAccountId={clientAccountId}
+            canEdit={canEditChecklist}
             checklist={checklist}
             lang={lang}
             t={t}
@@ -1760,6 +1855,8 @@ export function ShareView({ token }: { token: string }) {
         ) : activeTab === "production" && production ? (
           <ProductionPanel
             token={token}
+            clientAccountId={clientAccountId}
+            canSubmitRequests={canSubmitRequests}
             production={production}
             t={t}
             onRequestSubmitted={(request) =>
@@ -1774,13 +1871,19 @@ export function ShareView({ token }: { token: string }) {
           <>
             <MediaGallery media={data.media} t={t} />
 
+            {data.project.budget_access === "closed" && (
+              <p className="text-xs text-muted-foreground">
+                {t("Je ziet hier de prijs per onderdeel. Inkoopprijs, marge en leverancier zijn intern.")}
+              </p>
+            )}
+
             {data.stages.map((stage) => (
               <Card key={stage.id}>
                 <CardHeader>
                   <CardTitle className="text-base">{t(stage.name)}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <CategoryTable categories={stage.categories} t={t} />
+                  <CategoryTable categories={stage.categories} t={t} budgetAccess={data.project.budget_access} />
                 </CardContent>
               </Card>
             ))}
@@ -1792,7 +1895,7 @@ export function ShareView({ token }: { token: string }) {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <CategoryTable categories={data.project_wide_categories} t={t} />
+                <CategoryTable categories={data.project_wide_categories} t={t} budgetAccess={data.project.budget_access} />
               </CardContent>
             </Card>
 

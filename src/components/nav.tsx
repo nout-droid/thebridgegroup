@@ -28,7 +28,7 @@ export async function Nav() {
   const totalQuoteKg = (quoteResult.data ?? []).reduce((sum, row) => sum + (row.co2_kg ?? 0), 0);
   const co2 = computeCo2Total(flightResult.count ?? 0, totalKm, totalQuoteKg);
 
-  const t = await createTranslator(lang, ["Projecten", "Leveranciers", "Team", "Uitloggen"]);
+  const t = await createTranslator(lang, ["Projecten", "Leveranciers", "Klanten", "Team", "Uitloggen"]);
 
   return (
     <header className="border-b border-black bg-black text-white">
@@ -46,6 +46,9 @@ export async function Nav() {
           </Link>
           <Link href="/suppliers" className="text-white/70 transition-colors hover:text-white">
             {t("Leveranciers")}
+          </Link>
+          <Link href="/clients" className="text-white/70 transition-colors hover:text-white">
+            {t("Klanten")}
           </Link>
           <Link href="/team" className="text-white/70 transition-colors hover:text-white">
             {t("Team")}

@@ -74,6 +74,28 @@ export interface Organization {
   created_at: string;
 }
 
+export type BudgetAccess = "closed" | "open";
+
+export interface ClientAccount {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  email: string;
+  budget_access: BudgetAccess;
+  can_edit_checklist: boolean;
+  can_submit_requests: boolean;
+  created_at: string;
+}
+
+export interface ClientAccountProject {
+  id: string;
+  name: string;
+  client_name: string;
+  event_date: string | null;
+  status: string;
+  share_token: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;
@@ -691,8 +713,8 @@ export interface SharedCategory {
   name: string;
   sort_order: number;
   status: CategoryStatus;
-  margin_type: MarginType;
-  margin_value: number;
+  margin_type: MarginType | null;
+  margin_value: number | null;
   cost_price: number | null;
   supplier_name: string | null;
   client_price: number | null;
@@ -721,6 +743,7 @@ export interface SharedProject {
     budget_approval_status: "pending" | "approved" | "changes_requested" | "rejected";
     budget_approval_comment: string | null;
     organization_name: string;
+    budget_access: BudgetAccess;
   };
   project_wide_categories: SharedCategory[];
   stages: SharedStage[];
