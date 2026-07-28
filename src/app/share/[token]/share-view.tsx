@@ -29,10 +29,13 @@ import {
   type SharedCo2,
   type SharedIntakeChecklist,
   type SharedMedia,
+  type SharedCatering,
+  type SharedEquipment,
   type SharedProduction,
   type SharedProject,
   type SharedRider,
   type SharedRundowns,
+  type SharedScheduleItem,
 } from "@/lib/types";
 import { addSecondsToTime } from "@/lib/rundown-time";
 import { pickDefaultShowDate } from "@/lib/show-dates";
@@ -147,6 +150,14 @@ const STATIC_LABELS = [
   "Nog geen cues voor deze rundown.",
   "Laden…",
   "Geen rundown beschikbaar voor dit project.",
+  "Download PDF",
+  "Totalen per dag",
+  "Totaal lunch",
+  "Totaal diner",
+  "waarvan vega",
+  "Totaal materieel",
+  "Vluchten & Hotel",
+  "Nog niets bekend.",
 ];
 
 const BUDGET_STATUS_LABELS: Record<string, string> = {
@@ -980,6 +991,83 @@ function ClientRequestForm({
   );
 }
 
+interface CateringDailyTotal {
+  date: string;
+  lunch: number;
+  lunchVeg: number;
+  dinner: number;
+  dinnerVeg: number;
+  nightSnacks: number;
+}
+
+function cateringTotalsPerDate(entries: SharedCatering[]): CateringDailyTotal[] {
+  const byDate = new Map<string, CateringDailyTotal>();
+  for (const c of entries) {
+    const entry = byDate.get(c.order_date) ?? {
+      date: c.order_date,
+      lunch: 0,
+      lunchVeg: 0,
+      dinner: 0,
+      dinnerVeg: 0,
+      nightSnacks: 0,
+    };
+    entry.lunch += c.crew_lunch + c.veggie_lunch;
+    entry.lunchVeg += c.veggie_lunch;
+    entry.dinner += c.crew_dinner + c.veggie_dinner;
+    entry.dinnerVeg += c.veggie_dinner;
+    entry.nightSnacks += c.night_snacks;
+    byDate.set(c.order_date, entry);
+  }
+  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+function equipmentTotalsPerDate(entries: SharedEquipment[]): { date: string; quantity: number }[] {
+  const byDate = new Map<string, number>();
+  for (const e of entries) {
+    if (!e.reservation_date) continue;
+    byDate.set(e.reservation_date, (byDate.get(e.reservation_date) ?? 0) + e.quantity);
+  }
+  return [...byDate.entries()]
+    .map(([date, quantity]) => ({ date, quantity }))
+    .sort((a, b) => (a.date < b.date ? -1 : 1));
+}
+
+function groupScheduleByDate(entries: SharedScheduleItem[]): { date: string; items: SharedScheduleItem[] }[] {
+  const groups: { date: string; items: SharedScheduleItem[] }[] = [];
+  for (const item of entries) {
+    const last = groups[groups.length - 1];
+    if (last && last.date === item.activity_date) last.items.push(item);
+    else groups.push({ date: item.activity_date, items: [item] });
+  }
+  return groups;
+}
+
+const PRODUCTION_SECTIONS = [
+  { key: "catering", label: "Catering" },
+  { key: "equipment", label: "Materieel" },
+  { key: "comms", label: "Comms & Portofoons" },
+  { key: "power", label: "Stroom" },
+  { key: "schedule", label: "Draaiboek" },
+  { key: "artist_riders", label: "Artiestenriders" },
+  { key: "questions", label: "Open vragen & notulen" },
+  { key: "travel", label: "Vluchten & Hotel" },
+] as const;
+
+type ProductionSectionKey = (typeof PRODUCTION_SECTIONS)[number]["key"];
+
+function PdfDownloadLink({ token, path, t }: { token: string; path: string; t: Translator }) {
+  return (
+    <a
+      href={`/share/${token}/production/${path}/pdf`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-sm text-primary underline"
+    >
+      {t("Download PDF")}
+    </a>
+  );
+}
+
 function ProductionPanel({
   token,
   production,
@@ -991,8 +1079,42 @@ function ProductionPanel({
   t: Translator;
   onRequestSubmitted: (request: ClientRequest) => void;
 }) {
+  const availableSections = PRODUCTION_SECTIONS.filter((section) => {
+    switch (section.key) {
+      case "catering":
+        return production.catering.length > 0;
+      case "equipment":
+        return production.equipment.length > 0;
+      case "comms":
+        return production.comms.length > 0;
+      case "power":
+        return production.power.length > 0;
+      case "schedule":
+        return production.schedule.length > 0;
+      case "artist_riders":
+        return production.artist_riders.length > 0;
+      case "questions":
+        return production.open_questions.length > 0 || production.meeting_notes.length > 0;
+      case "travel":
+        return production.flights.length > 0 || production.hotel.length > 0;
+      default:
+        return false;
+    }
+  });
+
+  const [activeSection, setActiveSection] = useState<ProductionSectionKey | null>(
+    availableSections[0]?.key ?? null
+  );
+  const section = activeSection && availableSections.some((s) => s.key === activeSection)
+    ? activeSection
+    : availableSections[0]?.key ?? null;
+
+  const cateringDaily = useMemo(() => cateringTotalsPerDate(production.catering), [production.catering]);
+  const equipmentDaily = useMemo(() => equipmentTotalsPerDate(production.equipment), [production.equipment]);
+  const scheduleGroups = useMemo(() => groupScheduleByDate(production.schedule), [production.schedule]);
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <ClientRequestForm token={token} t={t} onSubmitted={onRequestSubmitted} />
 
       {production.client_requests.length > 0 && (
@@ -1019,186 +1141,289 @@ function ProductionPanel({
         </Card>
       )}
 
-      {production.catering.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Catering")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t("Datum")}</TableHead>
-                  <TableHead>Lunch</TableHead>
-                  <TableHead>Diner</TableHead>
-                  <TableHead>{t("Leverancier")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {production.catering.map((c) => (
-                  <TableRow key={c.id}>
-                    <TableCell>{c.order_date}</TableCell>
-                    <TableCell>
-                      {c.crew_lunch + c.veggie_lunch} ({c.veggie_lunch} veg)
-                    </TableCell>
-                    <TableCell>
-                      {c.crew_dinner + c.veggie_dinner} ({c.veggie_dinner} veg)
-                    </TableCell>
-                    <TableCell>{c.supplier_name ? t(c.supplier_name) : "—"}</TableCell>
-                  </TableRow>
+      {availableSections.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{t("Nog niets bekend.")}</p>
+      ) : (
+        <>
+          <div className="flex flex-wrap gap-1 border-b pb-2">
+            {availableSections.map((s) => (
+              <button
+                key={s.key}
+                type="button"
+                onClick={() => setActiveSection(s.key)}
+                className={cn(
+                  "whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  section === s.key
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:bg-muted"
+                )}
+              >
+                {t(s.label)}
+              </button>
+            ))}
+          </div>
+
+          {section === "catering" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Catering")}</CardTitle>
+                  <PdfDownloadLink token={token} path="catering" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("Totalen per dag")}</p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("Datum")}</TableHead>
+                        <TableHead>{t("Totaal lunch")}</TableHead>
+                        <TableHead>{t("Totaal diner")}</TableHead>
+                        <TableHead>Night snacks</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cateringDaily.map((d) => (
+                        <TableRow key={d.date}>
+                          <TableCell className="font-medium">{d.date}</TableCell>
+                          <TableCell>
+                            {d.lunch} ({d.lunchVeg} {t("waarvan vega")})
+                          </TableCell>
+                          <TableCell>
+                            {d.dinner} ({d.dinnerVeg} {t("waarvan vega")})
+                          </TableCell>
+                          <TableCell>{d.nightSnacks}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                <div>
+                  <p className="mb-1.5 text-xs font-medium text-muted-foreground">Detail</p>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>{t("Datum")}</TableHead>
+                        <TableHead>Lunch</TableHead>
+                        <TableHead>Diner</TableHead>
+                        <TableHead>{t("Leverancier")}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {production.catering.map((c) => (
+                        <TableRow key={c.id}>
+                          <TableCell>{c.order_date}</TableCell>
+                          <TableCell>
+                            {c.crew_lunch + c.veggie_lunch} ({c.veggie_lunch} veg)
+                          </TableCell>
+                          <TableCell>
+                            {c.crew_dinner + c.veggie_dinner} ({c.veggie_dinner} veg)
+                          </TableCell>
+                          <TableCell>{c.supplier_name ? t(c.supplier_name) : "—"}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {section === "equipment" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Materieel")}</CardTitle>
+                  <PdfDownloadLink token={token} path="materieel" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {equipmentDaily.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">{t("Totalen per dag")}</p>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("Datum")}</TableHead>
+                          <TableHead>{t("Totaal materieel")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {equipmentDaily.map((d) => (
+                          <TableRow key={d.date}>
+                            <TableCell className="font-medium">{d.date}</TableCell>
+                            <TableCell>{d.quantity}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+                <ul className="space-y-1.5 text-sm">
+                  {production.equipment.map((e) => (
+                    <li key={e.id} className="rounded-md border p-2">
+                      {e.quantity}× {t(e.machine_type)}
+                      {e.reservation_date && ` · ${e.reservation_date}`}
+                      {e.supplier_name && ` · ${t(e.supplier_name)}`}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {section === "comms" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Comms & Portofoons")}</CardTitle>
+                  <PdfDownloadLink token={token} path="comms" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {production.comms.map((c) => (
+                    <li key={c.id} className="rounded-md border p-2">
+                      {t(c.user_name)} — {t(c.device_type)}
+                      {c.channels && ` · ${c.channels}`}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {section === "power" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Stroom")}</CardTitle>
+                  <PdfDownloadLink token={token} path="power" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {production.power.map((p) => (
+                    <li key={p.id} className="rounded-md border p-2">
+                      {p.stage_name && `[${t(p.stage_name)}] `}
+                      {p.quantity}× {t(p.description)}
+                      {p.position && ` · ${t(p.position)}`}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {section === "schedule" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Draaiboek")}</CardTitle>
+                  <PdfDownloadLink token={token} path="schedule" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {scheduleGroups.map((group) => (
+                  <div key={group.date}>
+                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {group.date}
+                    </p>
+                    <ul className="space-y-1.5 text-sm">
+                      {group.items.map((s) => (
+                        <li key={s.id} className="rounded-md border p-2">
+                          <span className="text-muted-foreground">{s.activity_time}</span>{" "}
+                          {s.stage_name && `[${t(s.stage_name)}] `}
+                          {t(s.activity)}
+                          {s.suppliers.length > 0 && ` · ${s.suppliers.map((n) => t(n)).join(", ")}`}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+              </CardContent>
+            </Card>
+          )}
 
-      {production.equipment.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Materieel")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5 text-sm">
-              {production.equipment.map((e) => (
-                <li key={e.id} className="rounded-md border p-2">
-                  {e.quantity}× {t(e.machine_type)}
-                  {e.reservation_date && ` · ${e.reservation_date}`}
-                  {e.supplier_name && ` · ${t(e.supplier_name)}`}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+          {section === "artist_riders" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("Artiestenriders")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {production.artist_riders.map((a) => (
+                    <li key={a.id} className="rounded-md border p-2">
+                      <p className="font-medium">{t(a.artist_name)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {a.rider_received ? t("Rider aanwezig") : t("Nog geen rider")}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
 
-      {production.comms.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Comms & Portofoons")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5 text-sm">
-              {production.comms.map((c) => (
-                <li key={c.id} className="rounded-md border p-2">
-                  {t(c.user_name)} — {t(c.device_type)}
-                  {c.channels && ` · ${c.channels}`}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {production.power.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Stroom")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5 text-sm">
-              {production.power.map((p) => (
-                <li key={p.id} className="rounded-md border p-2">
-                  {p.stage_name && `[${t(p.stage_name)}] `}
-                  {p.quantity}× {t(p.description)}
-                  {p.position && ` · ${t(p.position)}`}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {production.schedule.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Draaiboek")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5 text-sm">
-              {production.schedule.map((s) => (
-                <li key={s.id} className="rounded-md border p-2">
-                  <span className="text-muted-foreground">
-                    {s.activity_date} {s.activity_time}
-                  </span>{" "}
-                  {s.stage_name && `[${t(s.stage_name)}] `}
-                  {t(s.activity)}
-                  {s.suppliers.length > 0 && ` · ${s.suppliers.map((n) => t(n)).join(", ")}`}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {production.artist_riders.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Artiestenriders")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-1.5 text-sm">
-              {production.artist_riders.map((a) => (
-                <li key={a.id} className="rounded-md border p-2">
-                  <p className="font-medium">{t(a.artist_name)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {a.rider_received ? t("Rider aanwezig") : t("Nog geen rider")}
+          {section === "questions" && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t("Open vragen & notulen")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {production.open_questions.map((q) => (
+                  <div key={q.id} className="rounded-md border p-2 text-sm">
+                    <p className="font-medium">{t(q.question)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {q.pending ? t("Nog open") : `${t("Antwoord")}: ${t(q.answer)}`}
+                    </p>
+                  </div>
+                ))}
+                {production.meeting_notes.map((n) => (
+                  <p key={n.id} className="text-sm text-muted-foreground">
+                    {t(n.note)}
                   </p>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
-      {(production.open_questions.length > 0 || production.meeting_notes.length > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("Open vragen & notulen")}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {production.open_questions.map((q) => (
-              <div key={q.id} className="rounded-md border p-2 text-sm">
-                <p className="font-medium">{t(q.question)}</p>
-                <p className="text-xs text-muted-foreground">
-                  {q.pending ? t("Nog open") : `${t("Antwoord")}: ${t(q.answer)}`}
-                </p>
-              </div>
-            ))}
-            {production.meeting_notes.map((n) => (
-              <p key={n.id} className="text-sm text-muted-foreground">
-                {t(n.note)}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {(production.flights.length > 0 || production.hotel.length > 0) && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">
-              {t("Vluchten")} / {t("Hotel")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {production.flights.map((f) => (
-              <div key={f.id} className="rounded-md border p-2 text-sm">
-                <p className="font-medium">
-                  {t(f.name)} {f.role && `— ${t(f.role)}`}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t(f.flight_departure_airport)} → {t(f.flight_destination)}
-                </p>
-              </div>
-            ))}
-            {production.hotel.map((h) => (
-              <p key={h.id} className="text-sm">
-                {t(h.name)} {h.role && `— ${t(h.role)}`}
-              </p>
-            ))}
-          </CardContent>
-        </Card>
+          {section === "travel" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Vluchten & Hotel")}</CardTitle>
+                  <div className="flex gap-3">
+                    {production.flights.length > 0 && (
+                      <PdfDownloadLink token={token} path="flight" t={t} />
+                    )}
+                    {production.hotel.length > 0 && (
+                      <PdfDownloadLink token={token} path="hotel" t={t} />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {production.flights.map((f) => (
+                  <div key={f.id} className="rounded-md border p-2 text-sm">
+                    <p className="font-medium">
+                      {t(f.name)} {f.role && `— ${t(f.role)}`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t(f.flight_departure_airport)} → {t(f.flight_destination)}
+                    </p>
+                  </div>
+                ))}
+                {production.hotel.map((h) => (
+                  <p key={h.id} className="text-sm">
+                    {t(h.name)} {h.role && `— ${t(h.role)}`}
+                  </p>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );
