@@ -80,7 +80,7 @@ create policy "owner can insert organization" on public.organizations
 -- (enige) klant meteen een werkende organisatienaam/plan heeft, zonder dat er iets verandert
 -- aan wat ze nu al zien.
 insert into public.organizations (owner_user_id, name, plan, subscription_status, trial_ends_at)
-select distinct p.user_id, 'The Bridge AV Group', 'pro', 'active', null
+select distinct p.user_id, 'The Bridge AV Group', 'pro', 'active', null::timestamptz
 from public.projects p
 where not exists (
   select 1 from public.organizations o where o.owner_user_id = p.user_id
