@@ -161,6 +161,9 @@ export async function confirmSupplierProjectDocument(
       .maybeSingle();
     if (!quote) continue;
 
+    // Een nieuw document voor dezelfde (categorie, leverancier) is een herziene offerte, geen
+    // aanvulling — anders telt cost_price straks de oude én de nieuwe regels bij elkaar op.
+    await supabase.from("quote_line_items").delete().eq("quote_id", quote.id);
     await supabase.from("quote_line_items").insert(
       groupLines.map((line) => ({
         quote_id: quote.id,

@@ -158,22 +158,112 @@ export default async function ProjectPage({
   const { error: pageError } = await searchParams;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-  const canViewBudget = await checkCanViewBudget(supabase, id);
+  interface PendingDocumentRow {
+    id: string;
+    original_filename: string;
+    created_at: string;
+    quote: {
+      id: string;
+      supplier: { name: string } | null;
+      category: { name: string; project_id: string } | null;
+    } | null;
+  }
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Category[]>();
+  interface PendingProjectDocumentRow {
+    id: string;
+    original_filename: string;
+    created_at: string;
+    supplier_id: string;
+    supplier: { name: string } | null;
+  }
 
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
+  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
+  // elkaar, anders wacht elke pageload op 10+ losse round-trips naar Supabase.
+  const [
+    project,
+    canViewBudget,
+    { data: categories },
+    { data: stages },
+    { count: flightCount },
+    { count: accreditedCrewCount },
+    { count: checkedInCrewCount },
+    { count: totalGuestCount },
+    { count: checkedInGuestCount },
+    { data: allPendingDocuments },
+    { data: pendingProjectDocuments },
+    { data: activity },
+    { data: clientRequests },
+    headersList,
+    lang,
+  ] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    checkCanViewBudget(supabase, id),
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Category[]>(),
+    supabase
+      .from("stages")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Stage[]>(),
+    supabase
+      .from("crew_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("needs_flight", true),
+    supabase
+      .from("crew_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("accredited", true),
+    supabase
+      .from("crew_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("accredited", true)
+      .not("checked_in_at", "is", null),
+    supabase.from("event_guests").select("id", { count: "exact", head: true }).eq("project_id", id),
+    supabase
+      .from("event_guests")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .not("checked_in_at", "is", null),
+    supabase
+      .from("quote_documents")
+      .select(
+        "id, original_filename, created_at, quote:quotes(id, supplier:suppliers(name), category:categories(name, project_id))"
+      )
+      .eq("uploaded_by", "supplier")
+      .is("confirmed_at", null)
+      .not("quote_id", "is", null)
+      .returns<PendingDocumentRow[]>(),
+    supabase
+      .from("quote_documents")
+      .select("id, original_filename, created_at, supplier_id, supplier:suppliers(name)")
+      .eq("uploaded_by", "supplier")
+      .is("confirmed_at", null)
+      .eq("project_id", id)
+      .returns<PendingProjectDocumentRow[]>(),
+    supabase
+      .from("activity_log")
+      .select("*")
+      .eq("project_id", id)
+      .is("acknowledged_at", null)
+      .order("created_at", { ascending: false })
+      .returns<ActivityLogEntry[]>(),
+    supabase
+      .from("client_requests")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .returns<ClientRequest[]>(),
+    headers(),
+    getAppLang(),
+  ]);
 
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
@@ -207,100 +297,18 @@ export default async function ProjectPage({
     stageSubtotals.set(category.stage_id, (stageSubtotals.get(category.stage_id) ?? 0) + price);
   }
 
-  const { count: flightCount } = await supabase
-    .from("crew_members")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", id)
-    .eq("needs_flight", true);
-
   const totalKm = (categories ?? []).reduce((sum, c) => sum + (c.estimated_km ?? 0), 0);
   const totalQuoteKg = (quotes ?? []).reduce((sum, q) => sum + (q.co2_kg ?? 0), 0);
   const projectCo2 = computeCo2Total(flightCount ?? 0, totalKm, totalQuoteKg);
 
-  const { count: accreditedCrewCount } = await supabase
-    .from("crew_members")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", id)
-    .eq("accredited", true);
-  const { count: checkedInCrewCount } = await supabase
-    .from("crew_members")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", id)
-    .eq("accredited", true)
-    .not("checked_in_at", "is", null);
-  const { count: totalGuestCount } = await supabase
-    .from("event_guests")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", id);
-  const { count: checkedInGuestCount } = await supabase
-    .from("event_guests")
-    .select("id", { count: "exact", head: true })
-    .eq("project_id", id)
-    .not("checked_in_at", "is", null);
-
-  const headersList = await headers();
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const shareUrl = `${protocol}://${host}/share/${project.share_token}`;
   const portalUrl = `${protocol}://${host}/portal`;
 
-  interface PendingDocumentRow {
-    id: string;
-    original_filename: string;
-    created_at: string;
-    quote: {
-      id: string;
-      supplier: { name: string } | null;
-      category: { name: string; project_id: string } | null;
-    } | null;
-  }
-
-  const { data: allPendingDocuments } = await supabase
-    .from("quote_documents")
-    .select(
-      "id, original_filename, created_at, quote:quotes(id, supplier:suppliers(name), category:categories(name, project_id))"
-    )
-    .eq("uploaded_by", "supplier")
-    .is("confirmed_at", null)
-    .not("quote_id", "is", null)
-    .returns<PendingDocumentRow[]>();
-
   const pendingDocuments = (allPendingDocuments ?? []).filter(
     (d) => d.quote?.category?.project_id === id
   );
-
-  interface PendingProjectDocumentRow {
-    id: string;
-    original_filename: string;
-    created_at: string;
-    supplier_id: string;
-    supplier: { name: string } | null;
-  }
-
-  const { data: pendingProjectDocuments } = await supabase
-    .from("quote_documents")
-    .select("id, original_filename, created_at, supplier_id, supplier:suppliers(name)")
-    .eq("uploaded_by", "supplier")
-    .is("confirmed_at", null)
-    .eq("project_id", id)
-    .returns<PendingProjectDocumentRow[]>();
-
-  const { data: activity } = await supabase
-    .from("activity_log")
-    .select("*")
-    .eq("project_id", id)
-    .is("acknowledged_at", null)
-    .order("created_at", { ascending: false })
-    .returns<ActivityLogEntry[]>();
-
-  const { data: clientRequests } = await supabase
-    .from("client_requests")
-    .select("*")
-    .eq("project_id", id)
-    .order("created_at", { ascending: false })
-    .returns<ClientRequest[]>();
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [
     ...STATIC_LABELS,
     ...(stages ?? []).map((s) => s.name),

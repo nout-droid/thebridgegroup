@@ -36,21 +36,40 @@ export default async function StagePage({
   const { id, stageId } = await params;
   const supabase = await createClient();
 
-  const project = await getProjectOrNotFound(supabase, id);
-  const stage = await getStageOrNotFound(supabase, id, stageId);
+  // project/stage zijn onafhankelijk van elkaar — parallel opvragen i.p.v. na elkaar.
+  const [project, stage] = await Promise.all([
+    getProjectOrNotFound(supabase, id),
+    getStageOrNotFound(supabase, id, stageId),
+  ]);
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("stage_id", stageId)
-    .order("sort_order", { ascending: true })
-    .returns<Category[]>();
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
+  // De rest hangt alleen af van `project`/`stageId`, niet van elkaar — ook in één keer
+  // parallel opvragen i.p.v. 5+ losse round-trips na elkaar.
+  const [
+    { data: categories },
+    { data: suppliers },
+    conflictsBySupplier,
+    { data: materialListItems },
+    { data: rentalMultiplier },
+    lang,
+  ] = await Promise.all([
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("stage_id", stageId)
+      .order("sort_order", { ascending: true })
+      .returns<Category[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getSupplierConflicts(supabase, project),
+    supabase
+      .from("material_list_items")
+      .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
+      .eq("project_id", id)
+      .eq("stage_id", stageId)
+      .order("created_at", { ascending: true })
+      .returns<MaterialListItem[]>(),
+    supabase.rpc("rental_multiplier", { p_days: computeRentalDays(project) }),
+    getAppLang(),
+  ]);
 
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
@@ -73,22 +92,6 @@ export default async function StagePage({
     const chosen = quotesByCategory.get(category.id)?.find((q) => q.status === "gekozen");
     return chosen ? sum + computeClientPrice(category, chosen.cost_price) : sum;
   }, 0);
-
-  const conflictsBySupplier = await getSupplierConflicts(supabase, project);
-
-  const { data: materialListItems } = await supabase
-    .from("material_list_items")
-    .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
-    .eq("project_id", id)
-    .eq("stage_id", stageId)
-    .order("created_at", { ascending: true })
-    .returns<MaterialListItem[]>();
-
-  const { data: rentalMultiplier } = await supabase.rpc("rental_multiplier", {
-    p_days: computeRentalDays(project),
-  });
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [
     ...STAGE_PAGE_LABELS,
     ...CATEGORY_CARD_LABELS,

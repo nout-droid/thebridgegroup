@@ -160,21 +160,47 @@ export default async function ProjectBudgetPage({
   const supabase = await createClient();
 
   const project = await getProjectOrNotFound(supabase, id);
-  if (!(await checkCanViewBudget(supabase, id))) notFound();
 
-  const { data: stages } = await supabase
-    .from("stages")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Stage[]>();
+  // Deze queries hebben alleen `project`/`id` nodig (geen onderlinge afhankelijkheid) —
+  // in één keer parallel opvragen i.p.v. na elkaar, anders wacht de pagina op 6+ losse
+  // round-trips naar Supabase voor er iets gerenderd wordt.
+  const [
+    canViewBudget,
+    { data: stages },
+    { data: categories },
+    { data: suppliers },
+    conflictsBySupplier,
+    { data: materialListItems },
+    { data: rentalMultiplier },
+    lang,
+  ] = await Promise.all([
+    checkCanViewBudget(supabase, id),
+    supabase
+      .from("stages")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Stage[]>(),
+    supabase
+      .from("categories")
+      .select("*")
+      .eq("project_id", id)
+      .order("sort_order", { ascending: true })
+      .returns<Category[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getSupplierConflicts(supabase, project),
+    supabase
+      .from("material_list_items")
+      .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
+      .eq("project_id", id)
+      .is("stage_id", null)
+      .order("created_at", { ascending: true })
+      .returns<MaterialListItem[]>(),
+    supabase.rpc("rental_multiplier", { p_days: computeRentalDays(project) }),
+    getAppLang(),
+  ]);
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("project_id", id)
-    .order("sort_order", { ascending: true })
-    .returns<Category[]>();
+  if (!canViewBudget) notFound();
 
   const projectWideCategories = (categories ?? []).filter((c) => !c.stage_id);
   const categoriesByStage = new Map<string, Category[]>();
@@ -184,12 +210,6 @@ export default async function ProjectBudgetPage({
     list.push(category);
     categoriesByStage.set(category.stage_id, list);
   }
-
-  const { data: suppliers } = await supabase
-    .from("suppliers")
-    .select("*")
-    .order("name", { ascending: true })
-    .returns<Supplier[]>();
 
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
@@ -210,22 +230,6 @@ export default async function ProjectBudgetPage({
 
   const grandTotal = sumCategories(categories ?? [], quotesByCategory);
   const openCategories = (categories ?? []).filter((c) => c.status !== "bevestigd");
-
-  const conflictsBySupplier = await getSupplierConflicts(supabase, project);
-
-  const { data: materialListItems } = await supabase
-    .from("material_list_items")
-    .select("*, matched_article:catalog_articles(*, supplier:suppliers(*))")
-    .eq("project_id", id)
-    .is("stage_id", null)
-    .order("created_at", { ascending: true })
-    .returns<MaterialListItem[]>();
-
-  const { data: rentalMultiplier } = await supabase.rpc("rental_multiplier", {
-    p_days: computeRentalDays(project),
-  });
-
-  const lang = await getAppLang();
   const t = await createTranslator(lang, [
     ...BUDGET_PAGE_LABELS,
     ...CATEGORY_CARD_LABELS,

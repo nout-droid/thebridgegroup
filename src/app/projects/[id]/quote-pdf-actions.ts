@@ -110,6 +110,9 @@ export async function confirmQuotePdfImportGroup(
   );
   if (!quoteId) return;
 
+  // Een nieuwe PDF voor dezelfde (categorie, leverancier) is een herziene offerte, geen
+  // aanvulling — anders telt cost_price straks de oude én de nieuwe regels bij elkaar op.
+  await supabase.from("quote_line_items").delete().eq("quote_id", quoteId);
   await supabase.from("quote_line_items").insert(
     lines.map((line) => ({
       quote_id: quoteId,
