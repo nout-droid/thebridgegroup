@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
+import { getOrganizationName } from "@/lib/server/organization";
 import { Footer } from "@/components/footer";
 import { GuestView } from "./guest-view";
 
@@ -43,11 +44,13 @@ export default async function GuestPage({
   const admin = createAdminClient();
   const { data: project } = await admin
     .from("projects")
-    .select("id, name, event_date")
+    .select("id, name, event_date, user_id")
     .eq("share_token", token)
     .maybeSingle();
 
   if (!project) notFound();
+
+  const orgName = await getOrganizationName(project.user_id);
 
   const { data: documents } = await admin
     .from("guest_documents")
@@ -68,6 +71,7 @@ export default async function GuestPage({
         projectName={project.name}
         eventDate={project.event_date}
         documents={documentsWithUrls}
+        organizationName={orgName}
       />
       <Footer />
     </>

@@ -720,6 +720,7 @@ export interface SharedProject {
     background_image_url: string | null;
     budget_approval_status: "pending" | "approved" | "changes_requested" | "rejected";
     budget_approval_comment: string | null;
+    organization_name: string;
   };
   project_wide_categories: SharedCategory[];
   stages: SharedStage[];

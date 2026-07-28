@@ -7,15 +7,21 @@ import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { getTeamOwnerId } from "@/lib/server/team";
+import { DEFAULT_ORGANIZATION_NAME, getOrganizationName } from "@/lib/server/organization";
 
 export async function Nav() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const [flightResult, kmResult, quoteResult, lang] = await Promise.all([
+  const [flightResult, kmResult, quoteResult, lang, orgName] = await Promise.all([
     supabase.from("crew_members").select("id", { count: "exact", head: true }).eq("needs_flight", true),
     supabase.from("categories").select("estimated_km"),
     supabase.from("quotes").select("co2_kg"),
     getAppLang(),
+    user ? getTeamOwnerId(supabase, user.id).then(getOrganizationName) : Promise.resolve(DEFAULT_ORGANIZATION_NAME),
   ]);
 
   const totalKm = (kmResult.data ?? []).reduce((sum, row) => sum + (row.estimated_km ?? 0), 0);
@@ -32,8 +38,8 @@ export async function Nav() {
             href="/projects"
             className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight text-primary normal-case"
           >
-            <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-            The Bridge — Productie
+            <Image src="/logo.png" alt={orgName} width={28} height={21} />
+            {orgName} &mdash; Productie
           </Link>
           <Link href="/projects" className="text-white/70 transition-colors hover:text-white">
             {t("Projecten")}

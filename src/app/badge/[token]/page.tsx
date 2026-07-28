@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getOrganizationName } from "@/lib/server/organization";
 import { checkInCrewMember } from "./actions";
 
 interface BadgeMemberRow {
@@ -53,9 +54,11 @@ export default async function BadgeScanPage({
 
   const { data: project } = await admin
     .from("projects")
-    .select("name")
+    .select("name, user_id")
     .eq("id", member.project_id)
     .maybeSingle();
+
+  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge AV Group";
 
   const areaName = member.crew_position?.stage?.name ?? "Alle areas";
   const accessDates = member.access_dates ?? [];
@@ -71,7 +74,7 @@ export default async function BadgeScanPage({
       }`}
     >
       <div className="text-center">
-        <p className="text-sm uppercase tracking-widest text-[#7dff43]">The Bridge AV Group</p>
+        <p className="text-sm uppercase tracking-widest text-[#7dff43]">{orgName}</p>
         <p className="mt-1 text-xs text-white/60">{project?.name}</p>
       </div>
 

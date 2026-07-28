@@ -16,10 +16,12 @@ export function GuestView({
   projectName,
   eventDate,
   documents,
+  organizationName,
 }: {
   projectName: string;
   eventDate: string | null;
   documents: GuestDocumentWithUrl[];
+  organizationName: string;
 }) {
   const dynamicTexts = [projectName, ...documents.map((d) => d.title)];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
@@ -28,8 +30,8 @@ export function GuestView({
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
         <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-          The Bridge AV Group
+          <Image src="/logo.png" alt={organizationName} width={28} height={21} />
+          {organizationName}
         </div>
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </header>

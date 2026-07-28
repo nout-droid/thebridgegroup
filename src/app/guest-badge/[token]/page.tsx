@@ -1,6 +1,7 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { GUEST_RSVP_STATUS_LABELS, GUEST_TYPE_LABELS, type GuestRsvpStatus, type GuestType } from "@/lib/types";
+import { getOrganizationName } from "@/lib/server/organization";
 import { checkInEventGuest } from "./actions";
 
 interface GuestBadgeRow {
@@ -41,9 +42,11 @@ export default async function GuestBadgeScanPage({
 
   const { data: project } = await admin
     .from("projects")
-    .select("name")
+    .select("name, user_id")
     .eq("id", guest.project_id)
     .maybeSingle();
+
+  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge AV Group";
 
   const declined = guest.rsvp_status === "afgemeld";
   const typeLabel = GUEST_TYPE_LABELS[guest.guest_type as GuestType] ?? guest.guest_type;
@@ -56,7 +59,7 @@ export default async function GuestBadgeScanPage({
       }`}
     >
       <div className="text-center">
-        <p className="text-sm uppercase tracking-widest text-[#7dff43]">The Bridge AV Group</p>
+        <p className="text-sm uppercase tracking-widest text-[#7dff43]">{orgName}</p>
         <p className="mt-1 text-xs text-white/60">{project?.name}</p>
       </div>
 

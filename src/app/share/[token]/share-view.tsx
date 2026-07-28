@@ -65,7 +65,7 @@ const STATIC_LABELS = [
   "Begroting",
   "Event rider",
   "Rider downloaden",
-  "Door The Bridge AV Group",
+  "Door de organisator",
   "Jouw invoer",
   "Opslaan",
   "Opgeslagen",
@@ -513,7 +513,7 @@ function RiderPanel({
                     {t(section.title)}
                   </p>
                   <span className="text-xs text-muted-foreground">
-                    {t("Door The Bridge AV Group")}
+                    {t("Door de organisator")}
                   </span>
                 </div>
                 <p className="whitespace-pre-wrap text-sm text-muted-foreground">
@@ -1360,8 +1360,8 @@ export function ShareView({ token }: { token: string }) {
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
         <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-          The Bridge AV Group
+          <Image src="/logo.png" alt={data.project.organization_name} width={28} height={21} />
+          {t(data.project.organization_name)}
         </div>
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </header>
