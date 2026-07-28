@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrigin } from "@/lib/server/origin";
 import { getTeamOwnerId } from "@/lib/server/team";
+import { syncSubscriptionSeats } from "@/lib/server/subscription";
+import { logAudit } from "@/lib/server/audit";
 import type { TeamRole } from "@/lib/types";
 
 async function isTeamAdmin(
@@ -75,6 +77,7 @@ export async function inviteTeamMember(formData: FormData) {
     );
   }
 
+  await syncSubscriptionSeats(ownerId);
   revalidatePath("/team");
 }
 
@@ -82,7 +85,27 @@ export async function updateTeamMemberRole(teamMemberId: string, formData: FormD
   const role = (formData.get("role") === "admin" ? "admin" : "member") as TeamRole;
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("owner_user_id, invited_email")
+    .eq("id", teamMemberId)
+    .maybeSingle();
+
   await supabase.from("team_members").update({ role }).eq("id", teamMemberId);
+
+  if (user && member?.owner_user_id) {
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId: member.owner_user_id,
+      actorLabel: user.email ?? "Onbekend",
+      action: "Rol gewijzigd",
+      details: member.invited_email ? `${member.invited_email} → ${role}` : role,
+    });
+  }
 
   revalidatePath("/team");
 }
@@ -107,7 +130,29 @@ export async function updateTeamMemberAccess(teamMemberId: string, formData: For
 
 export async function removeTeamMember(teamMemberId: string) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("owner_user_id, invited_email")
+    .eq("id", teamMemberId)
+    .maybeSingle();
+
   await supabase.from("team_members").delete().eq("id", teamMemberId);
+
+  if (member?.owner_user_id) await syncSubscriptionSeats(member.owner_user_id);
+
+  if (user && member?.owner_user_id) {
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId: member.owner_user_id,
+      actorLabel: user.email ?? "Onbekend",
+      action: "Teamlid verwijderd",
+      details: member.invited_email ?? "",
+    });
+  }
 
   revalidatePath("/team");
 }

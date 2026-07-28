@@ -10,6 +10,7 @@ import { generatePowerPdf } from "@/lib/generate-power-pdf";
 import { generateCateringPdf } from "@/lib/generate-catering-pdf";
 import { mergePdfBuffers } from "@/lib/merge-pdfs";
 import { computeNights } from "@/lib/nights";
+import { getOrgBranding } from "@/lib/server/organization";
 
 function formatDateTime(value: string | null): string {
   if (!value) return "";
@@ -36,13 +37,14 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("id", id)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
 
+  const branding = await getOrgBranding(project.user_id);
   const generatedAt = new Date();
   const buffers: Buffer[] = [];
 
@@ -69,18 +71,21 @@ export async function GET(
     : { data: [] };
   if (riderSections?.length) {
     buffers.push(
-      await generateRiderPdf({
-        projectName: project.name,
-        version: rider?.version ?? 1,
-        generatedAt,
-        sections: riderSections.map((section) => ({
-          title: section.title,
-          content: section.content,
-          items: (riderItems ?? [])
-            .filter((item) => item.section_id === section.id)
-            .map((item) => ({ description: item.description })),
-        })),
-      })
+      await generateRiderPdf(
+        {
+          projectName: project.name,
+          version: rider?.version ?? 1,
+          generatedAt,
+          sections: riderSections.map((section) => ({
+            title: section.title,
+            content: section.content,
+            items: (riderItems ?? [])
+              .filter((item) => item.section_id === section.id)
+              .map((item) => ({ description: item.description })),
+          })),
+        },
+        branding
+      )
     );
   }
 
@@ -102,7 +107,7 @@ export async function GET(
         nights: computeNights(dates),
       };
     });
-    buffers.push(await generateHotelRequestPdf({ projectName: project.name, generatedAt, entries }));
+    buffers.push(await generateHotelRequestPdf({ projectName: project.name, generatedAt, entries }, branding));
   }
 
   // Vluchten
@@ -116,20 +121,23 @@ export async function GET(
     .order("sort_order", { ascending: true });
   if (flightMembers?.length) {
     buffers.push(
-      await generateFlightRequestPdf({
-        projectName: project.name,
-        generatedAt,
-        entries: flightMembers.map((member) => ({
-          name: member.name,
-          passportNumber: member.passport_number,
-          departureAirport: member.flight_departure_airport,
-          destination: member.flight_destination,
-          departureAt: formatDateTime(member.flight_departure_at),
-          returnAt: formatDateTime(member.flight_return_at),
-          bookingNumber: member.flight_booking_number,
-          ticketNumber: member.flight_ticket_number,
-        })),
-      })
+      await generateFlightRequestPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: flightMembers.map((member) => ({
+            name: member.name,
+            passportNumber: member.passport_number,
+            departureAirport: member.flight_departure_airport,
+            destination: member.flight_destination,
+            departureAt: formatDateTime(member.flight_departure_at),
+            returnAt: formatDateTime(member.flight_return_at),
+            bookingNumber: member.flight_booking_number,
+            ticketNumber: member.flight_ticket_number,
+          })),
+        },
+        branding
+      )
     );
   }
 
@@ -144,23 +152,26 @@ export async function GET(
     .order("activity_time", { ascending: true });
   if (scheduleItems?.length) {
     buffers.push(
-      await generateSchedulePdf({
-        projectName: project.name,
-        generatedAt,
-        entries: scheduleItems.map((item) => ({
-          activity_date: item.activity_date,
-          activity_time: item.activity_time,
-          activity: item.activity,
-          priority: item.priority,
-          notes: item.notes,
-          supplier_names:
-            (item.suppliers as unknown as { supplier: { name: string } | null }[])
-              .map((s) => s.supplier?.name)
-              .filter((n): n is string => Boolean(n))
-              .join(", ") || null,
-          stage_name: name(item.stage),
-        })),
-      })
+      await generateSchedulePdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: scheduleItems.map((item) => ({
+            activity_date: item.activity_date,
+            activity_time: item.activity_time,
+            activity: item.activity,
+            priority: item.priority,
+            notes: item.notes,
+            supplier_names:
+              (item.suppliers as unknown as { supplier: { name: string } | null }[])
+                .map((s) => s.supplier?.name)
+                .filter((n): n is string => Boolean(n))
+                .join(", ") || null,
+            stage_name: name(item.stage),
+          })),
+        },
+        branding
+      )
     );
   }
 
@@ -172,19 +183,22 @@ export async function GET(
     .order("sort_order", { ascending: true });
   if (equipment?.length) {
     buffers.push(
-      await generateEquipmentPdf({
-        projectName: project.name,
-        generatedAt,
-        entries: equipment.map((item) => ({
-          machine_type: item.machine_type,
-          quantity: item.quantity,
-          accessories: item.accessories,
-          reservation_date: item.reservation_date,
-          duration: item.duration,
-          key_holder: item.key_holder,
-          supplier_name: name(item.supplier),
-        })),
-      })
+      await generateEquipmentPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: equipment.map((item) => ({
+            machine_type: item.machine_type,
+            quantity: item.quantity,
+            accessories: item.accessories,
+            reservation_date: item.reservation_date,
+            duration: item.duration,
+            key_holder: item.key_holder,
+            supplier_name: name(item.supplier),
+          })),
+        },
+        branding
+      )
     );
   }
 
@@ -203,12 +217,15 @@ export async function GET(
       crew_member_name: name(item.crew_member),
     });
     buffers.push(
-      await generateCommsPdf({
-        projectName: project.name,
-        generatedAt,
-        intercom: comms.filter((a) => a.kind === "intercom").map(toEntry),
-        portofoon: comms.filter((a) => a.kind === "portofoon").map(toEntry),
-      })
+      await generateCommsPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          intercom: comms.filter((a) => a.kind === "intercom").map(toEntry),
+          portofoon: comms.filter((a) => a.kind === "portofoon").map(toEntry),
+        },
+        branding
+      )
     );
   }
 
@@ -220,18 +237,21 @@ export async function GET(
     .order("sort_order", { ascending: true });
   if (power?.length) {
     buffers.push(
-      await generatePowerPdf({
-        projectName: project.name,
-        generatedAt,
-        entries: power.map((item) => ({
-          description: item.description,
-          quantity: item.quantity,
-          position: item.position,
-          notes: item.notes,
-          supplier_name: name(item.supplier),
-          stage_name: name(item.stage),
-        })),
-      })
+      await generatePowerPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: power.map((item) => ({
+            description: item.description,
+            quantity: item.quantity,
+            position: item.position,
+            notes: item.notes,
+            supplier_name: name(item.supplier),
+            stage_name: name(item.stage),
+          })),
+        },
+        branding
+      )
     );
   }
 
@@ -246,21 +266,24 @@ export async function GET(
     .order("sort_order", { ascending: true });
   if (catering?.length) {
     buffers.push(
-      await generateCateringPdf({
-        projectName: project.name,
-        generatedAt,
-        entries: catering.map((item) => ({
-          order_date: item.order_date,
-          party: item.party,
-          crew_lunch: item.crew_lunch,
-          veggie_lunch: item.veggie_lunch,
-          crew_dinner: item.crew_dinner,
-          veggie_dinner: item.veggie_dinner,
-          night_snacks: item.night_snacks,
-          notes: item.notes,
-          supplier_name: name(item.supplier),
-        })),
-      })
+      await generateCateringPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: catering.map((item) => ({
+            order_date: item.order_date,
+            party: item.party,
+            crew_lunch: item.crew_lunch,
+            veggie_lunch: item.veggie_lunch,
+            crew_dinner: item.crew_dinner,
+            veggie_dinner: item.veggie_dinner,
+            night_snacks: item.night_snacks,
+            notes: item.notes,
+            supplier_name: name(item.supplier),
+          })),
+        },
+        branding
+      )
     );
   }
 

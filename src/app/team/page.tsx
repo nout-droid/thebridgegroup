@@ -15,7 +15,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { Organization, TeamMember } from "@/lib/types";
+import type { AuditLogEntry, Organization, TeamMember } from "@/lib/types";
 import { TEAM_ROLE_LABELS } from "@/lib/types";
 import { TeamRoleSelect } from "./role-select";
 import {
@@ -24,7 +24,11 @@ import {
   updateTeamMemberAccess,
   removeTeamMember,
 } from "./actions";
-import { updateOrganizationName, deleteOrganizationAccount } from "./organization-actions";
+import {
+  updateOrganizationName,
+  updateOrganizationBranding,
+  deleteOrganizationAccount,
+} from "./organization-actions";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 
@@ -62,8 +66,29 @@ const TEAM_PAGE_LABELS = [
   ") ter bevestiging.",
   "Organisatienaam ter bevestiging",
   "Verwijder account definitief",
+  "Huisstijl (logo + kleur)",
+  "Je eigen logo en accentkleur verschijnen in de navigatie, portalen en gedownloade PDF's.",
+  "Logo",
+  "Accentkleur",
+  "Logboek",
+  "Wie deed wat, voor gevoelige acties zoals projectverwijdering en teamwijzigingen.",
+  "Actie",
+  "Details",
+  "Wanneer",
+  "Nog geen acties gelogd.",
   ...Object.values(TEAM_ROLE_LABELS),
 ];
+
+function relativeTime(iso: string) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diffMs / 60000);
+  if (minutes < 1) return "zojuist";
+  if (minutes < 60) return `${minutes} min geleden`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} uur geleden`;
+  const days = Math.floor(hours / 24);
+  return `${days} dag${days === 1 ? "" : "en"} geleden`;
+}
 
 export default async function TeamPage({
   searchParams,
@@ -89,6 +114,7 @@ export default async function TeamPage({
     { data: ownerAuthUser },
     { data: organization },
     { data: projects },
+    { data: auditLog },
     lang,
   ] = await Promise.all([
     supabase
@@ -109,6 +135,13 @@ export default async function TeamPage({
       .eq("user_id", ownerId)
       .order("name", { ascending: true })
       .returns<{ id: string; name: string }[]>(),
+    admin
+      .from("audit_log")
+      .select("*")
+      .eq("owner_user_id", ownerId)
+      .order("created_at", { ascending: false })
+      .limit(50)
+      .returns<AuditLogEntry[]>(),
     getAppLang(),
   ]);
 
@@ -169,7 +202,7 @@ export default async function TeamPage({
                 )}
                 {isOwner && organization.subscription_status !== "active" && (
                   <a
-                    href="/api/stripe/checkout"
+                    href="/pricing"
                     className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground hover:opacity-90"
                   >
                     {t("Upgraden")}
@@ -194,6 +227,43 @@ export default async function TeamPage({
                     {t("Opslaan")}
                   </Button>
                 </form>
+              )}
+              {isOwner && (
+                <div className="space-y-3 border-t pt-4">
+                  <Label>{t("Huisstijl (logo + kleur)")}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "Je eigen logo en accentkleur verschijnen in de navigatie, portalen en gedownloade PDF's."
+                    )}
+                  </p>
+                  <form action={updateOrganizationBranding} className="flex flex-wrap items-end gap-3">
+                    {organization.logo_url && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={organization.logo_url}
+                        alt={organization.name}
+                        className="h-10 w-10 rounded border object-contain"
+                      />
+                    )}
+                    <div className="space-y-1.5">
+                      <Label htmlFor="org-logo">{t("Logo")}</Label>
+                      <Input id="org-logo" name="logo" type="file" accept="image/*" className="w-56" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="org-brand-color">{t("Accentkleur")}</Label>
+                      <Input
+                        id="org-brand-color"
+                        name="brand_color"
+                        type="color"
+                        defaultValue={organization.brand_color ?? "#7CFC6E"}
+                        className="h-9 w-16 p-1"
+                      />
+                    </div>
+                    <Button type="submit" size="sm">
+                      {t("Opslaan")}
+                    </Button>
+                  </form>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -405,6 +475,44 @@ export default async function TeamPage({
                   </Button>
                 </form>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("Logboek")}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {t("Wie deed wat, voor gevoelige acties zoals projectverwijdering en teamwijzigingen.")}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("E-mail")}</TableHead>
+                    <TableHead>{t("Actie")}</TableHead>
+                    <TableHead>{t("Details")}</TableHead>
+                    <TableHead>{t("Wanneer")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(auditLog ?? []).map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell className="font-medium">{entry.actor_label}</TableCell>
+                      <TableCell>{entry.action}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{entry.details}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {relativeTime(entry.created_at)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {!auditLog?.length && (
+                <p className="mt-4 text-sm text-muted-foreground">{t("Nog geen acties gelogd.")}</p>
+              )}
             </CardContent>
           </Card>
         )}

@@ -4,21 +4,24 @@ import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } f
 import type { OrgBranding } from "./server/organization";
 import { resolveLogoBuffer } from "./pdf-branding";
 
-export interface CallsheetPdfItem {
-  description: string;
+export interface InvoicePdfLine {
+  categoryName: string;
+  clientPrice: number;
 }
 
-export interface CallsheetPdfSection {
-  title: string;
-  content: string;
-  items?: CallsheetPdfItem[];
+export interface InvoicePdfGroup {
+  // null = projectbrede categorieën (niet aan een podium gekoppeld)
+  stageName: string | null;
+  lines: InvoicePdfLine[];
 }
 
-export interface CallsheetPdfData {
+export interface InvoicePdfData {
   projectName: string;
-  version: number;
+  clientName: string | null;
+  eventDate: string | null;
   generatedAt: Date;
-  sections: CallsheetPdfSection[];
+  groups: InvoicePdfGroup[];
+  totalClientPrice: number;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -78,6 +81,17 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 9, color: "#555", marginTop: 6, lineHeight: 1.4, maxWidth: 420 },
   accentLine: { height: 3, marginHorizontal: 40, marginBottom: 16 },
   body: { paddingHorizontal: 40 },
+  summary: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    marginBottom: 20,
+    paddingBottom: 12,
+    borderBottom: 1,
+    borderBottomColor: "#eee",
+  },
+  summaryItem: { width: "33%", marginBottom: 8 },
+  summaryLabel: { fontSize: 8, textTransform: "uppercase", letterSpacing: 0.5, color: "#888" },
+  summaryValue: { fontSize: 11, fontWeight: 600, color: "#000", marginTop: 2 },
   section: { marginBottom: 16 },
   sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
   sectionAccent: { width: 4, height: 12, marginRight: 8 },
@@ -88,10 +102,27 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     color: "#000",
   },
-  sectionContent: { fontSize: 10, lineHeight: 1.5, color: "#333", marginLeft: 12 },
-  itemRow: { flexDirection: "row", marginLeft: 12, marginTop: 3 },
-  itemBullet: { width: 10, fontSize: 10, color: BRAND_BLUE },
-  itemText: { fontSize: 10, color: "#333", flex: 1 },
+  lineRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginLeft: 12,
+    marginTop: 3,
+    paddingBottom: 3,
+    borderBottom: 1,
+    borderBottomColor: "#f2f2f2",
+  },
+  lineText: { fontSize: 10, color: "#333", flex: 1 },
+  linePrice: { fontSize: 10, color: "#333", fontWeight: 500 },
+  totalRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    paddingTop: 12,
+    borderTop: 1,
+    borderTopColor: "#000",
+  },
+  totalLabel: { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#000" },
+  totalValue: { fontSize: 15, fontWeight: 700, color: "#000" },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -107,10 +138,23 @@ const styles = StyleSheet.create({
   },
 });
 
-export async function generateCallsheetPdf(data: CallsheetPdfData, branding: OrgBranding): Promise<Buffer> {
+function euro(value: number) {
+  return `€ ${value.toFixed(2)}`;
+}
+
+export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
   const logoBuffer = await resolveLogoBuffer(branding);
   const generatedAt = data.generatedAt.toLocaleString("nl-NL");
+  const eventDate = data.eventDate
+    ? new Date(data.eventDate).toLocaleDateString("nl-NL", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "—";
+  // Accentkleur is per-organisatie (huisstijl) — StyleSheet.create() moet daarom per render
+  // opnieuw met de juiste kleur, i.p.v. module-scope zoals de rest van `styles` hierboven.
   const brand = StyleSheet.create({
     text: { color: branding.brandColor },
     line: { backgroundColor: branding.brandColor },
@@ -124,37 +168,58 @@ export async function generateCallsheetPdf(data: CallsheetPdfData, branding: Org
             <Image src={logoBuffer} style={styles.logo} />
             <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
           </View>
-          <Text style={styles.headerMeta}>
-            Versie {data.version} — gegenereerd op {generatedAt}
-          </Text>
+          <Text style={styles.headerMeta}>gegenereerd op {generatedAt}</Text>
         </View>
 
         <View style={styles.titleBlock}>
           <Text style={styles.tagline}>We innovate your event</Text>
-          <Text style={styles.eyebrow}>Callsheet</Text>
+          <Text style={styles.eyebrow}>Offerte</Text>
           <Text style={styles.title}>{data.projectName}</Text>
           <Text style={styles.subtitle}>
-            Overzicht van de geselecteerde onderdelen voor externe verspreiding.
+            Deze offerte geeft een overzicht van de begrote kosten voor dit event.
           </Text>
         </View>
         <View style={[styles.accentLine, brand.line]} />
 
         <View style={styles.body}>
-          {data.sections.map((section, index) => (
+          <View style={styles.summary}>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Project</Text>
+              <Text style={styles.summaryValue}>{data.projectName}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Klant</Text>
+              <Text style={styles.summaryValue}>{data.clientName || "—"}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Event datum</Text>
+              <Text style={styles.summaryValue}>{eventDate}</Text>
+            </View>
+          </View>
+
+          {data.groups.map((group, index) => (
             <View key={index} style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={[styles.sectionAccent, brand.line]} />
-                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <Text style={styles.sectionTitle}>{group.stageName ?? "Projectbreed"}</Text>
               </View>
-              <Text style={styles.sectionContent}>{section.content || "—"}</Text>
-              {(section.items ?? []).map((item, itemIndex) => (
-                <View key={itemIndex} style={styles.itemRow}>
-                  <Text style={styles.itemBullet}>•</Text>
-                  <Text style={styles.itemText}>{item.description}</Text>
-                </View>
-              ))}
+              {group.lines.length === 0 ? (
+                <Text style={styles.lineText}>—</Text>
+              ) : (
+                group.lines.map((line, lineIndex) => (
+                  <View key={lineIndex} style={styles.lineRow}>
+                    <Text style={styles.lineText}>{line.categoryName}</Text>
+                    <Text style={styles.linePrice}>{euro(line.clientPrice)}</Text>
+                  </View>
+                ))
+              )}
             </View>
           ))}
+
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Totaal</Text>
+            <Text style={styles.totalValue}>{euro(data.totalClientPrice)}</Text>
+          </View>
         </View>
 
         <View style={styles.footer} fixed>

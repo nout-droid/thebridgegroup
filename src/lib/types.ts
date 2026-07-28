@@ -66,6 +66,7 @@ export interface Organization {
   owner_user_id: string;
   name: string;
   logo_url: string | null;
+  brand_color: string | null;
   plan: string;
   subscription_status: string;
   stripe_customer_id: string | null;
@@ -358,6 +359,15 @@ export interface ActivityLogEntry {
   description: string;
   acknowledged_at: string | null;
   notified_at: string | null;
+  created_at: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  owner_user_id: string;
+  actor_label: string;
+  action: string;
+  details: string;
   created_at: string;
 }
 

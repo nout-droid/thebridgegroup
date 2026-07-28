@@ -24,6 +24,7 @@ export async function POST(request: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const ownerUserId = session.metadata?.owner_user_id;
+    const tier = session.metadata?.tier;
     if (ownerUserId) {
       await admin
         .from("organizations")
@@ -32,7 +33,7 @@ export async function POST(request: Request) {
           stripe_subscription_id:
             typeof session.subscription === "string" ? session.subscription : null,
           subscription_status: "active",
-          plan: "pro",
+          plan: tier || "team",
         })
         .eq("owner_user_id", ownerUserId);
     }

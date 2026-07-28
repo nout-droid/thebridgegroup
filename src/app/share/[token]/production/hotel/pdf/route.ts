@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateHotelRequestPdf } from "@/lib/generate-hotel-request-pdf";
 import { computeNights } from "@/lib/nights";
+import { getOrgBranding } from "@/lib/server/organization";
 
 export async function GET(
   _request: Request,
@@ -12,12 +13,14 @@ export async function GET(
 
   const { data: project } = await admin
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("share_token", token)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: members } = await admin
     .from("crew_members")
@@ -37,11 +40,14 @@ export async function GET(
     };
   });
 
-  const pdfBuffer = await generateHotelRequestPdf({
-    projectName: project.name,
-    generatedAt: new Date(),
-    entries,
-  });
+  const pdfBuffer = await generateHotelRequestPdf(
+    {
+      projectName: project.name,
+      generatedAt: new Date(),
+      entries,
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

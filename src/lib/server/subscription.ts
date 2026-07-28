@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getStripeClient, isStripeConfigured } from "@/lib/stripe";
 import type { Organization } from "@/lib/types";
 
 export const TRIAL_PROJECT_LIMIT = 3;
@@ -86,4 +87,39 @@ export async function getOrgAccess(ownerId: string): Promise<OrgAccess> {
     trialEndsAt,
     message: "Je abonnement is niet meer actief. Upgrade je abonnement op /team om verder te kunnen werken.",
   };
+}
+
+// Houdt het aantal betaalde seats op de lopende Stripe-subscriptie gelijk aan de
+// daadwerkelijke teamgrootte (eigenaar + team_members) — de prijs is seat-based, dus zonder
+// dit zou een nieuw teamlid pas meetellen bij de volgende handmatige upgrade. Stil falen
+// (geen Stripe geconfigureerd, geen actief abonnement) — dit draait mee met acties die niet
+// mogen breken op een facturatie-bijwerking.
+export async function syncSubscriptionSeats(ownerId: string): Promise<void> {
+  if (!isStripeConfigured) return;
+
+  const admin = createAdminClient();
+  const { data: organization } = await admin
+    .from("organizations")
+    .select("stripe_subscription_id, subscription_status")
+    .eq("owner_user_id", ownerId)
+    .maybeSingle<Organization>();
+
+  if (!organization?.stripe_subscription_id || organization.subscription_status !== "active") return;
+
+  const { count } = await admin
+    .from("team_members")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_user_id", ownerId);
+  const seats = 1 + (count ?? 0); // eigenaar telt altijd mee als seat
+
+  try {
+    const stripe = getStripeClient()!;
+    const subscription = await stripe.subscriptions.retrieve(organization.stripe_subscription_id);
+    const item = subscription.items.data[0];
+    if (!item || item.quantity === seats) return;
+    await stripe.subscriptionItems.update(item.id, { quantity: seats });
+  } catch {
+    // Sync mislukt (netwerk/Stripe-probleem) — teamactie zelf blijft gewoon geslaagd, de
+    // volgende invite/verwijdering probeert opnieuw te syncen.
+  }
 }

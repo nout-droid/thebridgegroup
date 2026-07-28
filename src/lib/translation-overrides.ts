@@ -19,4 +19,8 @@ export const TRANSLATION_OVERRIDES: Record<string, string> = {
   // "vlucht nodig", als de vluchtelingen-/wegvluchten-betekenis en vertaalt naar "escape".
   Vlucht: "Flight",
   "Vlucht nodig": "Flight needed",
+
+  // "Actie" los (zonder verdere context, zoals een tabelkolomkop) wordt door DeepL soms als
+  // "promotion/deal" gelezen (reclame-actie) i.p.v. "action" (handeling).
+  Actie: "Action",
 };

@@ -1,8 +1,9 @@
 import "server-only";
 import path from "node:path";
-import fs from "node:fs";
 import QRCode from "qrcode";
 import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import type { OrgBranding } from "./server/organization";
+import { resolveLogoBuffer } from "./pdf-branding";
 
 export interface BadgePdfEntry {
   name: string;
@@ -16,7 +17,6 @@ export interface BadgePdfData {
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
-const LOGO_PATH = path.join(process.cwd(), "public/logo.png");
 
 let fontsRegistered = false;
 function registerFonts() {
@@ -32,7 +32,6 @@ function registerFonts() {
   fontsRegistered = true;
 }
 
-const PRIMARY_GREEN = "#7dff43";
 const BRAND_BLUE = "#046bd2";
 
 // Badge-formaat: 85 x 120mm (staand), omgerekend naar PDF-punten (1mm ≈ 2.8346pt).
@@ -47,7 +46,6 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: 1,
-    color: PRIMARY_GREEN,
   },
   body: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
   name: { fontSize: 20, fontWeight: 700, color: "#000", textAlign: "center" },
@@ -57,9 +55,13 @@ const styles = StyleSheet.create({
   footer: { fontSize: 6, color: "#999", textAlign: "center", paddingBottom: 10 },
 });
 
-export async function generateBadgePdf(data: BadgePdfData): Promise<Buffer> {
+export async function generateBadgePdf(data: BadgePdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
-  const logoBuffer = fs.readFileSync(LOGO_PATH);
+  const logoBuffer = await resolveLogoBuffer(branding);
+  const brand = StyleSheet.create({
+    text: { color: branding.brandColor },
+    line: { backgroundColor: branding.brandColor },
+  });
 
   const pages = await Promise.all(
     data.entries.map(async (entry) => {
@@ -68,7 +70,7 @@ export async function generateBadgePdf(data: BadgePdfData): Promise<Buffer> {
         <Page key={entry.badgeUrl} size={BADGE_SIZE} style={styles.page}>
           <View style={styles.header}>
             <Image src={logoBuffer} style={styles.logo} />
-            <Text style={styles.brand}>The Bridge Group B.V.</Text>
+            <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
           </View>
           <View style={styles.body}>
             <Text style={styles.name}>{entry.name || "Naam volgt"}</Text>

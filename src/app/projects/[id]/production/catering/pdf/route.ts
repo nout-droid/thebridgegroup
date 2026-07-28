@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateCateringPdf } from "@/lib/generate-catering-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 export async function GET(
   _request: Request,
@@ -18,12 +19,14 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("id", id)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: items } = await supabase
     .from("catering_orders")
@@ -46,11 +49,14 @@ export async function GET(
     supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
   }));
 
-  const pdfBuffer = await generateCateringPdf({
-    projectName: project.name,
-    generatedAt: new Date(),
-    entries,
-  });
+  const pdfBuffer = await generateCateringPdf(
+    {
+      projectName: project.name,
+      generatedAt: new Date(),
+      entries,
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

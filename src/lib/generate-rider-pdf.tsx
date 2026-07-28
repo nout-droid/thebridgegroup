@@ -1,7 +1,8 @@
 import "server-only";
 import path from "node:path";
-import fs from "node:fs";
 import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import type { OrgBranding } from "./server/organization";
+import { resolveLogoBuffer } from "./pdf-branding";
 
 export interface RiderPdfItem {
   description: string;
@@ -21,7 +22,6 @@ export interface RiderPdfData {
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
-const LOGO_PATH = path.join(process.cwd(), "public/logo.png");
 
 let fontsRegistered = false;
 function registerFonts() {
@@ -43,7 +43,6 @@ function registerFonts() {
   fontsRegistered = true;
 }
 
-const PRIMARY_GREEN = "#7dff43";
 const BRAND_BLUE = "#046bd2";
 
 const styles = StyleSheet.create({
@@ -63,7 +62,6 @@ const styles = StyleSheet.create({
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: 1.5,
-    color: PRIMARY_GREEN,
   },
   headerMeta: { fontSize: 8, color: "#ffffffaa", marginTop: 3 },
   titleBlock: { paddingHorizontal: 40, paddingTop: 24, paddingBottom: 12 },
@@ -78,11 +76,11 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontWeight: 700, color: "#000", marginTop: 2 },
   subtitle: { fontSize: 9, color: "#555", marginTop: 6, lineHeight: 1.4, maxWidth: 420 },
-  accentLine: { height: 3, backgroundColor: PRIMARY_GREEN, marginHorizontal: 40, marginBottom: 16 },
+  accentLine: { height: 3, marginHorizontal: 40, marginBottom: 16 },
   body: { paddingHorizontal: 40 },
   section: { marginBottom: 16 },
   sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  sectionAccent: { width: 4, height: 12, backgroundColor: PRIMARY_GREEN, marginRight: 8 },
+  sectionAccent: { width: 4, height: 12, marginRight: 8 },
   sectionTitle: {
     fontSize: 12,
     fontWeight: 600,
@@ -109,10 +107,16 @@ const styles = StyleSheet.create({
   },
 });
 
-export async function generateRiderPdf(data: RiderPdfData): Promise<Buffer> {
+export async function generateRiderPdf(data: RiderPdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
-  const logoBuffer = fs.readFileSync(LOGO_PATH);
+  const logoBuffer = await resolveLogoBuffer(branding);
   const generatedAt = data.generatedAt.toLocaleString("nl-NL");
+  // Accentkleur is per-organisatie (huisstijl) — StyleSheet.create() moet daarom per render
+  // opnieuw met de juiste kleur, i.p.v. module-scope zoals de rest van `styles` hierboven.
+  const brand = StyleSheet.create({
+    text: { color: branding.brandColor },
+    line: { backgroundColor: branding.brandColor },
+  });
 
   const doc = (
     <Document>
@@ -120,7 +124,7 @@ export async function generateRiderPdf(data: RiderPdfData): Promise<Buffer> {
         <View style={styles.header} fixed>
           <View style={styles.headerLeft}>
             <Image src={logoBuffer} style={styles.logo} />
-            <Text style={styles.brand}>The Bridge Group B.V.</Text>
+            <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
           </View>
           <Text style={styles.headerMeta}>
             Versie {data.version} — gegenereerd op {generatedAt}
@@ -136,13 +140,13 @@ export async function generateRiderPdf(data: RiderPdfData): Promise<Buffer> {
             aangegeven area(s) / stage(s) aanwezig is.
           </Text>
         </View>
-        <View style={styles.accentLine} />
+        <View style={[styles.accentLine, brand.line]} />
 
         <View style={styles.body}>
           {data.sections.map((section, index) => (
             <View key={index} style={styles.section}>
               <View style={styles.sectionHeader}>
-                <View style={styles.sectionAccent} />
+                <View style={[styles.sectionAccent, brand.line]} />
                 <Text style={styles.sectionTitle}>{section.title}</Text>
               </View>
               <Text style={styles.sectionContent}>{section.content || "—"}</Text>
@@ -157,7 +161,7 @@ export async function generateRiderPdf(data: RiderPdfData): Promise<Buffer> {
         </View>
 
         <View style={styles.footer} fixed>
-          <Text>The Bridge Group B.V. — thebridgeavgroup.com</Text>
+          <Text>{branding.name}</Text>
           <Text
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} / ${totalPages}`}
           />

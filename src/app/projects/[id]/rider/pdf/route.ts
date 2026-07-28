@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateRiderPdf } from "@/lib/generate-rider-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 export async function GET(
   _request: Request,
@@ -18,13 +19,15 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("id", id)
     .maybeSingle();
 
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: rider } = await supabase
     .from("riders")
@@ -50,18 +53,21 @@ export async function GET(
         .order("sort_order", { ascending: true })
     : { data: [] };
 
-  const pdfBuffer = await generateRiderPdf({
-    projectName: project.name,
-    version: rider?.version ?? 1,
-    generatedAt: new Date(),
-    sections: (sections ?? []).map((section) => ({
-      title: section.stage ? `[${section.stage.name}] ${section.title}` : section.title,
-      content: section.content,
-      items: (items ?? [])
-        .filter((item) => item.section_id === section.id)
-        .map((item) => ({ description: item.description })),
-    })),
-  });
+  const pdfBuffer = await generateRiderPdf(
+    {
+      projectName: project.name,
+      version: rider?.version ?? 1,
+      generatedAt: new Date(),
+      sections: (sections ?? []).map((section) => ({
+        title: section.stage ? `[${section.stage.name}] ${section.title}` : section.title,
+        content: section.content,
+        items: (items ?? [])
+          .filter((item) => item.section_id === section.id)
+          .map((item) => ({ description: item.description })),
+      })),
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

@@ -2817,6 +2817,25 @@ create policy "owner full access on activity_log" on public.activity_log
     exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
   );
 
+-- ========== LOGBOEK (audit log) ==========
+-- Wie deed wat voor gevoelige acties (projectverwijdering, teamwijzigingen,
+-- accountverwijdering) — zichtbaar voor eigenaar/beheerder op /team. Inserts lopen
+-- altijd via de admin/service-role client (geen insert-policy hieronder), dezelfde
+-- conventie als elders in deze codebase voor server-only logging.
+
+create table public.audit_log (
+  id uuid primary key default gen_random_uuid(),
+  owner_user_id uuid not null references auth.users(id) on delete cascade,
+  actor_label text not null,
+  action text not null,
+  details text not null default '',
+  created_at timestamptz not null default now()
+);
+create index audit_log_owner_user_id_idx on public.audit_log(owner_user_id);
+alter table public.audit_log enable row level security;
+create policy "team can view audit_log" on public.audit_log
+  for select using (public.is_team_member(owner_user_id));
+
 -- ========== BEGROTING-GOEDKEURING (klantportal) ==========
 -- Klant kan de hele begroting in één keer goedkeuren, een aanpassing vragen, of
 -- weigeren — bij de laatste twee met een toelichting. Los veld op projects, niet
@@ -3695,6 +3714,7 @@ create table if not exists public.organizations (
   owner_user_id uuid not null unique references auth.users(id) on delete cascade,
   name text not null default 'The Bridge AV Group',
   logo_url text,
+  brand_color text,
   plan text not null default 'trial',
   subscription_status text not null default 'trialing',
   stripe_customer_id text,
@@ -3718,6 +3738,26 @@ create policy "owner can update organization" on public.organizations
 drop policy if exists "owner can insert organization" on public.organizations;
 create policy "owner can insert organization" on public.organizations
   for insert with check (auth.uid() = owner_user_id);
+
+-- White-label logo-uploads per organisatie. Publieke bucket (net als project-media) omdat
+-- het logo ook zichtbaar moet zijn in klant-/leveranciers-/crew-portals en gedownloade PDF's,
+-- die geen ingelogde Supabase-sessie hebben. Pad-conventie: {owner_user_id}/... zodat de
+-- policy hieronder kan controleren of de ingelogde gebruiker bij die organisatie hoort.
+insert into storage.buckets (id, name, public)
+values ('org-logos', 'org-logos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "team manage org-logos" on storage.objects;
+create policy "team manage org-logos" on storage.objects
+  for all to authenticated
+  using (
+    bucket_id = 'org-logos'
+    and public.is_team_member(((storage.foldername(storage.objects.name))[1])::uuid)
+  )
+  with check (
+    bucket_id = 'org-logos'
+    and public.is_team_member(((storage.foldername(storage.objects.name))[1])::uuid)
+  );
 
 -- Backfill: elke bestaande projecteigenaar krijgt een organizations-rij zodat de huidige
 -- (enige) klant meteen een werkende organisatienaam/plan heeft, zonder dat er iets verandert

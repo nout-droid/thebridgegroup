@@ -3,8 +3,10 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { getOrgAccess } from "@/lib/server/subscription";
+import { logAudit } from "@/lib/server/audit";
 
 // Geen I/L/O/0/1 — voorkomt verwarring als een klant het Event ID moet overtypen.
 const EVENT_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -60,7 +62,29 @@ export async function createProject(formData: FormData) {
 
 export async function deleteProject(projectId: string) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: project } = await supabase
+    .from("projects")
+    .select("name")
+    .eq("id", projectId)
+    .maybeSingle();
+
   await supabase.from("projects").delete().eq("id", projectId);
+
+  if (user) {
+    const ownerId = await getTeamOwnerId(supabase, user.id);
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId,
+      actorLabel: user.email ?? "Onbekend",
+      action: "Project verwijderd",
+      details: project?.name ?? "",
+    });
+  }
+
   revalidatePath("/projects");
 }
 

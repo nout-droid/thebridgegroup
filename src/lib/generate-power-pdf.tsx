@@ -1,7 +1,8 @@
 import "server-only";
 import path from "node:path";
-import fs from "node:fs";
 import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import type { OrgBranding } from "./server/organization";
+import { resolveLogoBuffer } from "./pdf-branding";
 
 export interface PowerPdfEntry {
   stage_name: string | null;
@@ -19,7 +20,6 @@ export interface PowerPdfData {
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
-const LOGO_PATH = path.join(process.cwd(), "public/logo.png");
 
 let fontsRegistered = false;
 function registerFonts() {
@@ -35,7 +35,6 @@ function registerFonts() {
   fontsRegistered = true;
 }
 
-const PRIMARY_GREEN = "#7dff43";
 const BRAND_BLUE = "#046bd2";
 
 const styles = StyleSheet.create({
@@ -50,13 +49,13 @@ const styles = StyleSheet.create({
   },
   headerLeft: { flexDirection: "row", alignItems: "center", gap: 10 },
   logo: { width: 26, height: 20 },
-  brand: { fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1.5, color: PRIMARY_GREEN },
+  brand: { fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: 1.5 },
   headerMeta: { fontSize: 8, color: "#ffffffaa", marginTop: 3 },
   titleBlock: { paddingHorizontal: 40, paddingTop: 24, paddingBottom: 12 },
   eyebrow: { fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5, color: BRAND_BLUE },
   title: { fontSize: 20, fontWeight: 700, color: "#000", marginTop: 2 },
   subtitle: { fontSize: 9, color: "#555", marginTop: 6, lineHeight: 1.4, maxWidth: 420 },
-  accentLine: { height: 3, backgroundColor: PRIMARY_GREEN, marginHorizontal: 40, marginBottom: 16 },
+  accentLine: { height: 3, marginHorizontal: 40, marginBottom: 16 },
   body: { paddingHorizontal: 40 },
   table: { borderTop: 1, borderTopColor: "#eee" },
   tableRow: { flexDirection: "row", borderBottom: 1, borderBottomColor: "#eee", paddingVertical: 6 },
@@ -83,13 +82,23 @@ const styles = StyleSheet.create({
   },
 });
 
-export function buildPowerPage(data: PowerPdfData, logoBuffer: Buffer, generatedAt: string) {
+export function buildPowerPage(
+  data: PowerPdfData,
+  logoBuffer: Buffer,
+  generatedAt: string,
+  branding: OrgBranding
+) {
+  const brand = StyleSheet.create({
+    text: { color: branding.brandColor },
+    line: { backgroundColor: branding.brandColor },
+  });
+
   return (
     <Page size="A4" style={styles.page}>
       <View style={styles.header} fixed>
         <View style={styles.headerLeft}>
           <Image src={logoBuffer} style={styles.logo} />
-          <Text style={styles.brand}>The Bridge Group B.V.</Text>
+          <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
         </View>
         <Text style={styles.headerMeta}>gegenereerd op {generatedAt}</Text>
       </View>
@@ -99,7 +108,7 @@ export function buildPowerPage(data: PowerPdfData, logoBuffer: Buffer, generated
         <Text style={styles.title}>{data.projectName}</Text>
         <Text style={styles.subtitle}>Stroomaanvragen per podium: wat, hoeveel en op welke positie.</Text>
       </View>
-      <View style={styles.accentLine} />
+      <View style={[styles.accentLine, brand.line]} />
 
       <View style={styles.body}>
         <View style={styles.table}>
@@ -125,17 +134,17 @@ export function buildPowerPage(data: PowerPdfData, logoBuffer: Buffer, generated
       </View>
 
       <View style={styles.footer} fixed>
-        <Text>The Bridge Group B.V. — thebridgeavgroup.com</Text>
+        <Text>{branding.name}</Text>
         <Text render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} / ${totalPages}`} />
       </View>
     </Page>
   );
 }
 
-export async function generatePowerPdf(data: PowerPdfData): Promise<Buffer> {
+export async function generatePowerPdf(data: PowerPdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
-  const logoBuffer = fs.readFileSync(LOGO_PATH);
+  const logoBuffer = await resolveLogoBuffer(branding);
   const generatedAt = data.generatedAt.toLocaleString("nl-NL");
 
-  return renderToBuffer(<Document>{buildPowerPage(data, logoBuffer, generatedAt)}</Document>);
+  return renderToBuffer(<Document>{buildPowerPage(data, logoBuffer, generatedAt, branding)}</Document>);
 }

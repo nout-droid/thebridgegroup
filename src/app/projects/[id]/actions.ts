@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { parseMaterialListFile } from "@/lib/parse-material-list";
 import {
   categoryRevalidationPath,
@@ -13,6 +14,7 @@ import {
 import { catalogCategoryLabel } from "@/lib/types";
 import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
 import { getTeamOwnerId } from "@/lib/server/team";
+import { logAudit } from "@/lib/server/audit";
 import { computeRentalDays } from "@/lib/rental-days";
 
 export async function createCategory(
@@ -77,7 +79,25 @@ export async function updateCategory(projectId: string, categoryId: string, form
 export async function deleteCategory(projectId: string, categoryId: string) {
   const supabase = await createClient();
   const path = await categoryRevalidationPath(supabase, projectId, categoryId);
+
+  const [{ data: category }, { data: project }, { data: userData }] = await Promise.all([
+    supabase.from("categories").select("name").eq("id", categoryId).maybeSingle(),
+    supabase.from("projects").select("user_id").eq("id", projectId).maybeSingle(),
+    supabase.auth.getUser(),
+  ]);
+
   await supabase.from("categories").delete().eq("id", categoryId);
+
+  if (userData.user && project?.user_id) {
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId: project.user_id,
+      actorLabel: userData.user.email ?? "Onbekend",
+      action: "Categorie verwijderd",
+      details: category?.name ?? "",
+    });
+  }
+
   revalidatePath(`/projects/${projectId}`);
   revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);

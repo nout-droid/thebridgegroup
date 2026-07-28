@@ -43,6 +43,7 @@ interface Totals {
 }
 
 const BUDGET_PAGE_LABELS = [
+  "Offerte downloaden (PDF)",
   "Totaaloverzicht",
   "Totaal inkoop",
   "Totaal marge",
@@ -286,8 +287,16 @@ export default async function ProjectBudgetPage({
       <ProjectSubNav projectId={project.id} projectName={project.name} active="budget" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-6 py-8">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
             <CardTitle className="text-base">{t("Totaaloverzicht")}</CardTitle>
+            <a
+              href={`/projects/${project.id}/budget/invoice`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              {t("Offerte downloaden (PDF)")}
+            </a>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateFlightRequestPdf } from "@/lib/generate-flight-request-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 function formatDateTime(value: string | null): string {
   if (!value) return "";
@@ -23,12 +24,14 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("id", id)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: members } = await supabase
     .from("crew_members")
@@ -39,20 +42,23 @@ export async function GET(
     .eq("needs_flight", true)
     .order("sort_order", { ascending: true });
 
-  const pdfBuffer = await generateFlightRequestPdf({
-    projectName: project.name,
-    generatedAt: new Date(),
-    entries: (members ?? []).map((member) => ({
-      name: member.name,
-      passportNumber: member.passport_number,
-      departureAirport: member.flight_departure_airport,
-      destination: member.flight_destination,
-      departureAt: formatDateTime(member.flight_departure_at),
-      returnAt: formatDateTime(member.flight_return_at),
-      bookingNumber: member.flight_booking_number,
-      ticketNumber: member.flight_ticket_number,
-    })),
-  });
+  const pdfBuffer = await generateFlightRequestPdf(
+    {
+      projectName: project.name,
+      generatedAt: new Date(),
+      entries: (members ?? []).map((member) => ({
+        name: member.name,
+        passportNumber: member.passport_number,
+        departureAirport: member.flight_departure_airport,
+        destination: member.flight_destination,
+        departureAt: formatDateTime(member.flight_departure_at),
+        returnAt: formatDateTime(member.flight_return_at),
+        bookingNumber: member.flight_booking_number,
+        ticketNumber: member.flight_ticket_number,
+      })),
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

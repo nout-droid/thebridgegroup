@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 import { getTeamOwnerId } from "@/lib/server/team";
-import { DEFAULT_ORGANIZATION_NAME, getOrganizationName } from "@/lib/server/organization";
+import { DEFAULT_BRANDING, getOrgBranding } from "@/lib/server/organization";
 
 export async function Nav() {
   const supabase = await createClient();
@@ -16,19 +15,26 @@ export async function Nav() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [flightResult, kmResult, quoteResult, lang, orgName] = await Promise.all([
+  const [flightResult, kmResult, quoteResult, lang, branding] = await Promise.all([
     supabase.from("crew_members").select("id", { count: "exact", head: true }).eq("needs_flight", true),
     supabase.from("categories").select("estimated_km"),
     supabase.from("quotes").select("co2_kg"),
     getAppLang(),
-    user ? getTeamOwnerId(supabase, user.id).then(getOrganizationName) : Promise.resolve(DEFAULT_ORGANIZATION_NAME),
+    user ? getTeamOwnerId(supabase, user.id).then(getOrgBranding) : Promise.resolve(DEFAULT_BRANDING),
   ]);
 
   const totalKm = (kmResult.data ?? []).reduce((sum, row) => sum + (row.estimated_km ?? 0), 0);
   const totalQuoteKg = (quoteResult.data ?? []).reduce((sum, row) => sum + (row.co2_kg ?? 0), 0);
   const co2 = computeCo2Total(flightResult.count ?? 0, totalKm, totalQuoteKg);
 
-  const t = await createTranslator(lang, ["Projecten", "Leveranciers", "Klanten", "Team", "Uitloggen"]);
+  const t = await createTranslator(lang, [
+    "Projecten",
+    "Kalender",
+    "Leveranciers",
+    "Klanten",
+    "Team",
+    "Uitloggen",
+  ]);
 
   return (
     <header className="border-b border-black bg-black text-white">
@@ -36,13 +42,18 @@ export async function Nav() {
         <nav className="flex items-center gap-6 text-sm uppercase tracking-wide">
           <Link
             href="/projects"
-            className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight text-primary normal-case"
+            className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight normal-case"
+            style={{ color: branding.brandColor }}
           >
-            <Image src="/logo.png" alt={orgName} width={28} height={21} />
-            {orgName} &mdash; Productie
+            {/* eslint-disable-next-line @next/next/no-img-element -- org-uploaded logo, unknown domain */}
+            <img src={branding.logoUrl} alt={branding.name} width={28} height={21} className="object-contain" />
+            {branding.name} &mdash; Productie
           </Link>
           <Link href="/projects" className="text-white/70 transition-colors hover:text-white">
             {t("Projecten")}
+          </Link>
+          <Link href="/calendar" className="text-white/70 transition-colors hover:text-white">
+            {t("Kalender")}
           </Link>
           <Link href="/suppliers" className="text-white/70 transition-colors hover:text-white">
             {t("Leveranciers")}

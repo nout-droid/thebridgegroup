@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateFlightRequestPdf } from "@/lib/generate-flight-request-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 function formatDateTime(value: string | null): string {
   if (!value) return "";
@@ -16,12 +17,14 @@ export async function GET(
 
   const { data: project } = await admin
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("share_token", token)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: members } = await admin
     .from("crew_members")
@@ -34,20 +37,23 @@ export async function GET(
 
   // Bewust geen paspoort-/boekings-/ticketnummer in de klant-versie van deze PDF — dat is
   // interne/gevoelige crewdata, geen klantinfo (zelfde afweging als get_shared_production).
-  const pdfBuffer = await generateFlightRequestPdf({
-    projectName: project.name,
-    generatedAt: new Date(),
-    entries: (members ?? []).map((member) => ({
-      name: member.name,
-      passportNumber: "",
-      departureAirport: member.flight_departure_airport,
-      destination: member.flight_destination,
-      departureAt: formatDateTime(member.flight_departure_at),
-      returnAt: formatDateTime(member.flight_return_at),
-      bookingNumber: "",
-      ticketNumber: "",
-    })),
-  });
+  const pdfBuffer = await generateFlightRequestPdf(
+    {
+      projectName: project.name,
+      generatedAt: new Date(),
+      entries: (members ?? []).map((member) => ({
+        name: member.name,
+        passportNumber: "",
+        departureAirport: member.flight_departure_airport,
+        destination: member.flight_destination,
+        departureAt: formatDateTime(member.flight_departure_at),
+        returnAt: formatDateTime(member.flight_return_at),
+        bookingNumber: "",
+        ticketNumber: "",
+      })),
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

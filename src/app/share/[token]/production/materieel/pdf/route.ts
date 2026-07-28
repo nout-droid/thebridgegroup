@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateEquipmentPdf } from "@/lib/generate-equipment-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 export async function GET(
   _request: Request,
@@ -11,12 +12,14 @@ export async function GET(
 
   const { data: project } = await admin
     .from("projects")
-    .select("id, name")
+    .select("id, name, user_id")
     .eq("share_token", token)
     .maybeSingle();
   if (!project) {
     return new NextResponse("Niet gevonden", { status: 404 });
   }
+
+  const branding = await getOrgBranding(project.user_id);
 
   const { data: items } = await admin
     .from("equipment_reservations")
@@ -34,11 +37,14 @@ export async function GET(
     supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
   }));
 
-  const pdfBuffer = await generateEquipmentPdf({
-    projectName: project.name,
-    generatedAt: new Date(),
-    entries,
-  });
+  const pdfBuffer = await generateEquipmentPdf(
+    {
+      projectName: project.name,
+      generatedAt: new Date(),
+      entries,
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {

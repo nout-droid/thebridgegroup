@@ -1,7 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { generateRiderPdf } from "@/lib/generate-rider-pdf";
+import { getOrgBranding } from "@/lib/server/organization";
 
 export async function GET(
   _request: Request,
@@ -42,23 +44,34 @@ export async function GET(
     return new NextResponse("Niet gevonden", { status: 404 });
   }
 
-  const pdfBuffer = await generateRiderPdf({
-    projectName: projectData.project.name,
-    version: riderData.version,
-    generatedAt: new Date(),
-    sections: riderData.sections.map(
-      (section: {
-        title: string;
-        content: string;
-        stage_name: string | null;
-        items: { description: string }[];
-      }) => ({
-        title: section.stage_name ? `[${section.stage_name}] ${section.title}` : section.title,
-        content: section.content,
-        items: section.items,
-      })
-    ),
-  });
+  const admin = createAdminClient();
+  const { data: ownerProject } = await admin
+    .from("projects")
+    .select("user_id")
+    .eq("share_token", token)
+    .maybeSingle();
+  const branding = await getOrgBranding(ownerProject?.user_id);
+
+  const pdfBuffer = await generateRiderPdf(
+    {
+      projectName: projectData.project.name,
+      version: riderData.version,
+      generatedAt: new Date(),
+      sections: riderData.sections.map(
+        (section: {
+          title: string;
+          content: string;
+          stage_name: string | null;
+          items: { description: string }[];
+        }) => ({
+          title: section.stage_name ? `[${section.stage_name}] ${section.title}` : section.title,
+          content: section.content,
+          items: section.items,
+        })
+      ),
+    },
+    branding
+  );
 
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {
