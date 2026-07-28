@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { computeClientPrice, type Category, type MaterialListItem, type Quote, type Supplier } from "@/lib/types";
+import { getSupplierConflicts } from "@/lib/server/supplier-conflicts";
 import { CategoryCard, CATEGORY_CARD_LABELS } from "../../category-card";
 import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../../add-category-form";
 import { MaterialList, MATERIAL_LIST_LABELS } from "../../material-list";
@@ -72,6 +73,8 @@ export default async function StagePage({
     const chosen = quotesByCategory.get(category.id)?.find((q) => q.status === "gekozen");
     return chosen ? sum + computeClientPrice(category, chosen.cost_price) : sum;
   }, 0);
+
+  const conflictsBySupplier = await getSupplierConflicts(supabase, project);
 
   const { data: materialListItems } = await supabase
     .from("material_list_items")
@@ -181,6 +184,7 @@ export default async function StagePage({
               category={category}
               quotes={quotesByCategory.get(category.id) ?? []}
               suppliers={suppliers ?? []}
+              conflictsBySupplier={conflictsBySupplier}
               t={t}
             />
           ))}

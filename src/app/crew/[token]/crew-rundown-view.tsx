@@ -413,7 +413,11 @@ export function CrewRundownView({
             <div className="flex flex-wrap items-end gap-2">
               <div className="space-y-1">
                 <Label className="text-xs text-white/70">{t("Devisie")}</Label>
-                <Select value={division} onValueChange={(v) => setDivision(v ?? DIVISIONS[0])}>
+                <Select
+                  value={division}
+                  onValueChange={(v) => setDivision(v ?? DIVISIONS[0])}
+                  items={DIVISIONS.map((d) => ({ value: d, label: t(d) }))}
+                >
                   <SelectTrigger className="h-9 w-40 border-white/20 bg-white/5 text-sm text-white">
                     <SelectValue />
                   </SelectTrigger>

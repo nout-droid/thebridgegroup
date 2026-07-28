@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
+import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
 import { Footer } from "@/components/footer";
 import { useTranslator } from "@/hooks/use-translator";
@@ -98,11 +99,14 @@ const STATIC_LABELS = [
   "Notes van crew",
   "Nog geen notes.",
   ...COLOR_OPTIONS.map((c) => c.label),
+  ...DIVISIONS,
 ];
 
 function ColorSelect({ id, defaultValue, t = (text: string) => text }: { id: string; defaultValue?: string; t?: (text: string) => string }) {
+  const translatedItems = COLOR_OPTIONS.map((c) => ({ value: c.value, label: t(c.label) }));
+
   return (
-    <Select name="color" defaultValue={defaultValue || "none"} items={COLOR_OPTIONS}>
+    <Select name="color" defaultValue={defaultValue || "none"} items={translatedItems}>
       <SelectTrigger id={id} className="h-8 text-xs">
         <SelectValue placeholder={t("Geen")} />
       </SelectTrigger>
@@ -495,7 +499,10 @@ export function ShowcallerView({
                     >
                       <div className="space-y-1">
                         <Label htmlFor={`instr-div-${item.id}`} className="text-xs text-white/70">{t("Devisie")}</Label>
-                        <DivisionSelect id={`instr-div-${item.id}`} />
+                        <DivisionSelect
+                          id={`instr-div-${item.id}`}
+                          labels={Object.fromEntries(DIVISIONS.map((d) => [d, t(d)]))}
+                        />
                       </div>
                       <div className="min-w-[180px] flex-1 space-y-1">
                         <Label htmlFor={`instr-text-${item.id}`} className="text-xs text-white/70">{t("Opdracht")}</Label>

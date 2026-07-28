@@ -84,6 +84,7 @@ export interface RundownLiveLabels {
   newDurationPlaceholder: string;
   addCue: string;
   colorLabels: Record<string, string>;
+  divisionLabels: Record<string, string>;
 }
 
 function ColorSelect({
@@ -425,7 +426,9 @@ export function RundownLive({
                         className="flex items-center justify-between gap-2 rounded bg-white/10 px-2 py-1 text-sm"
                       >
                         <span>
-                          <span className="font-semibold">{instr.division}</span>
+                          <span className="font-semibold">
+                            {labels.divisionLabels[instr.division] ?? instr.division}
+                          </span>
                           {" — "}
                           {instr.instruction}
                         </span>
@@ -444,7 +447,7 @@ export function RundownLive({
                 >
                   <div className="space-y-1">
                     <Label htmlFor={`instr-div-${item.id}`} className="text-xs text-white/70">{labels.division}</Label>
-                    <DivisionSelect id={`instr-div-${item.id}`} />
+                    <DivisionSelect id={`instr-div-${item.id}`} labels={labels.divisionLabels} />
                   </div>
                   <div className="min-w-[180px] flex-1 space-y-1">
                     <Label htmlFor={`instr-text-${item.id}`} className="text-xs text-white/70">{labels.instruction}</Label>

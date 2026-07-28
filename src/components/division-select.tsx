@@ -12,20 +12,28 @@ export function DivisionSelect({
   id,
   defaultValue,
   triggerClassName,
+  labels,
 }: {
   id: string;
   defaultValue?: string;
   triggerClassName?: string;
+  labels?: Partial<Record<(typeof DIVISIONS)[number], string>>;
 }) {
+  const labelFor = (d: string) => labels?.[d as (typeof DIVISIONS)[number]] ?? d;
+
   return (
-    <Select name="division" defaultValue={defaultValue || DIVISIONS[0]}>
+    <Select
+      name="division"
+      defaultValue={defaultValue || DIVISIONS[0]}
+      items={DIVISIONS.map((d) => ({ value: d, label: labelFor(d) }))}
+    >
       <SelectTrigger id={id} className={cn("h-8 w-36 text-xs", triggerClassName)}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         {DIVISIONS.map((d) => (
           <SelectItem key={d} value={d}>
-            {d}
+            {labelFor(d)}
           </SelectItem>
         ))}
       </SelectContent>

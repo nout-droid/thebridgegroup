@@ -19,6 +19,7 @@ import {
   type Stage,
   type Supplier,
 } from "@/lib/types";
+import { getSupplierConflicts, type SupplierConflict } from "@/lib/server/supplier-conflicts";
 import { CategoryCard, CATEGORY_CARD_LABELS } from "../category-card";
 import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../add-category-form";
 import { MaterialList, MATERIAL_LIST_LABELS } from "../material-list";
@@ -92,6 +93,7 @@ function BudgetGroup({
   categories,
   quotesByCategory,
   suppliers,
+  conflictsBySupplier,
   projectId,
   stageId,
   t,
@@ -100,6 +102,7 @@ function BudgetGroup({
   categories: Category[];
   quotesByCategory: Map<string, Quote[]>;
   suppliers: Supplier[];
+  conflictsBySupplier: Map<string, SupplierConflict[]>;
   projectId: string;
   stageId: string | null;
   t: Translator;
@@ -139,6 +142,7 @@ function BudgetGroup({
           category={category}
           quotes={quotesByCategory.get(category.id) ?? []}
           suppliers={suppliers}
+          conflictsBySupplier={conflictsBySupplier}
           t={t}
         />
       ))}
@@ -206,6 +210,8 @@ export default async function ProjectBudgetPage({
 
   const grandTotal = sumCategories(categories ?? [], quotesByCategory);
   const openCategories = (categories ?? []).filter((c) => c.status !== "bevestigd");
+
+  const conflictsBySupplier = await getSupplierConflicts(supabase, project);
 
   const { data: materialListItems } = await supabase
     .from("material_list_items")
@@ -406,6 +412,8 @@ export default async function ProjectBudgetPage({
           stages={stages ?? []}
           suppliers={suppliers ?? []}
           labels={requestQuotesCardLabels}
+          categoryLabels={Object.fromEntries((categories ?? []).map((c) => [c.id, t(c.name)]))}
+          stageLabels={Object.fromEntries((stages ?? []).map((s) => [s.id, t(s.name)]))}
         />
 
         <QuotePdfImport
@@ -429,6 +437,7 @@ export default async function ProjectBudgetPage({
             categories={categoriesByStage.get(stage.id) ?? []}
             quotesByCategory={quotesByCategory}
             suppliers={suppliers ?? []}
+            conflictsBySupplier={conflictsBySupplier}
             projectId={project.id}
             stageId={stage.id}
             t={t}
@@ -440,6 +449,7 @@ export default async function ProjectBudgetPage({
           categories={projectWideCategories}
           quotesByCategory={quotesByCategory}
           suppliers={suppliers ?? []}
+          conflictsBySupplier={conflictsBySupplier}
           projectId={project.id}
           stageId={null}
           t={t}

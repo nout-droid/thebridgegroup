@@ -29,20 +29,25 @@ export function RequestQuotesCard({
   stages,
   suppliers,
   labels,
+  categoryLabels,
+  stageLabels,
 }: {
   projectId: string;
   categories: Category[];
   stages: Stage[];
   suppliers: Supplier[];
   labels: RequestQuotesCardLabels;
+  categoryLabels: Record<string, string>;
+  stageLabels: Record<string, string>;
 }) {
   const [supplierId, setSupplierId] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const stageName = new Map(stages.map((s) => [s.id, s.name]));
   const groups = new Map<string, Category[]>();
   for (const category of categories) {
-    const label = category.stage_id ? stageName.get(category.stage_id) ?? labels.unknownStage : labels.projectWide;
+    const label = category.stage_id
+      ? stageLabels[category.stage_id] ?? labels.unknownStage
+      : labels.projectWide;
     const list = groups.get(label) ?? [];
     list.push(category);
     groups.set(label, list);
@@ -97,7 +102,7 @@ export function RequestQuotesCard({
                       onChange={() => toggle(category.id)}
                       className="h-4 w-4"
                     />
-                    {category.name}
+                    {categoryLabels[category.id] ?? category.name}
                   </label>
                 ))}
               </div>

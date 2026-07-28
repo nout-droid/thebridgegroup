@@ -13,6 +13,7 @@ import { RundownDayTabs } from "../rundown-day-tabs";
 import { RUNDOWN_LIVE_LABELS } from "../translation-labels";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { DIVISIONS } from "@/lib/divisions";
 
 export default async function ProjectRundownPage({
   params,
@@ -102,6 +103,7 @@ export default async function ProjectRundownPage({
       blue: t("Blauw"),
       purple: t("Paars"),
     },
+    divisionLabels: Object.fromEntries(DIVISIONS.map((d) => [d, t(d)])),
   };
 
   return (

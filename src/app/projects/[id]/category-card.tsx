@@ -1,4 +1,5 @@
 import { Fragment } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -41,6 +42,11 @@ import {
 } from "./actions";
 import { QuoteLineItems, QUOTE_LINE_ITEMS_LABELS } from "./quote-line-items";
 import type { Translator } from "@/lib/server/translate";
+import type { SupplierConflict } from "@/lib/server/supplier-conflicts";
+
+function formatConflictDate(value: string) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
+}
 
 export const CATEGORY_CARD_LABELS = [
   "Categorie verwijderen",
@@ -74,6 +80,8 @@ export const CATEGORY_CARD_LABELS = [
   ...Object.values(CATEGORY_STATUS_LABELS),
   ...Object.values(QUOTE_STATUS_LABELS),
   ...QUOTE_LINE_ITEMS_LABELS,
+  "is ook bevestigd op",
+  "— controleer op een planningsconflict.",
 ];
 
 export function CategoryCard({
@@ -81,17 +89,20 @@ export function CategoryCard({
   category,
   quotes,
   suppliers,
+  conflictsBySupplier,
   t,
 }: {
   projectId: string;
   category: Category;
   quotes: Quote[];
   suppliers: Supplier[];
+  conflictsBySupplier?: Map<string, SupplierConflict[]>;
   t: Translator;
 }) {
   const chosenQuote = quotes.find((q) => q.status === "gekozen");
   const effectiveCost = chosenQuote?.cost_price ?? category.manual_cost ?? null;
   const clientPrice = effectiveCost !== null ? computeClientPrice(category, effectiveCost) : null;
+  const conflicts = chosenQuote ? conflictsBySupplier?.get(chosenQuote.supplier_id) : undefined;
 
   return (
     <Card>
@@ -114,7 +125,14 @@ export function CategoryCard({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor={`status-${category.id}`}>{t("Status")}</Label>
-            <Select name="status" defaultValue={category.status}>
+            <Select
+              name="status"
+              defaultValue={category.status}
+              items={Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => ({
+                value,
+                label: t(label),
+              }))}
+            >
               <SelectTrigger id={`status-${category.id}`}>
                 <SelectValue />
               </SelectTrigger>
@@ -129,7 +147,14 @@ export function CategoryCard({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor={`margin_type-${category.id}`}>{t("Marge type")}</Label>
-            <Select name="margin_type" defaultValue={category.margin_type}>
+            <Select
+              name="margin_type"
+              defaultValue={category.margin_type}
+              items={[
+                { value: "percentage", label: t("Percentage") },
+                { value: "fixed", label: t("Vast bedrag") },
+              ]}
+            >
               <SelectTrigger id={`margin_type-${category.id}`}>
                 <SelectValue />
               </SelectTrigger>
@@ -180,6 +205,24 @@ export function CategoryCard({
             "Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een offerte kiest, wint die."
           )}
         </p>
+
+        {conflicts && conflicts.length > 0 && (
+          <div className="space-y-1 rounded-md border border-yellow-500/50 bg-yellow-500/10 p-2.5 text-xs text-yellow-800">
+            {conflicts.map((conflict) => (
+              <p key={conflict.projectId}>
+                ⚠️ {chosenQuote?.supplier?.name} {t("is ook bevestigd op")}{" "}
+                <Link
+                  href={`/projects/${conflict.projectId}`}
+                  className="font-medium underline underline-offset-2"
+                >
+                  {conflict.projectName}
+                </Link>{" "}
+                ({formatConflictDate(conflict.start)}–{formatConflictDate(conflict.end)}){" "}
+                {t("— controleer op een planningsconflict.")}
+              </p>
+            ))}
+          </div>
+        )}
 
         {!quotes.length ? (
           <p className="text-sm text-muted-foreground">{t("Nog geen offertes toegevoegd.")}</p>
@@ -266,7 +309,14 @@ export function CategoryCard({
           </div>
           <div className="space-y-1.5">
             <Label htmlFor={`quote_status-${category.id}`}>{t("Status")}</Label>
-            <Select name="status" defaultValue="aangevraagd">
+            <Select
+              name="status"
+              defaultValue="aangevraagd"
+              items={Object.entries(QUOTE_STATUS_LABELS).map(([value, label]) => ({
+                value,
+                label: t(label),
+              }))}
+            >
               <SelectTrigger id={`quote_status-${category.id}`}>
                 <SelectValue />
               </SelectTrigger>

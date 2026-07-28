@@ -1,4 +1,5 @@
 import { CATALOG_CATEGORY_LABELS } from "@/lib/types";
+import { DIVISIONS } from "@/lib/divisions";
 
 export const MATCH_PICKER_LABELS = [
   "Wijzig",
@@ -258,4 +259,5 @@ export const RUNDOWN_LIVE_LABELS = [
   "Groen",
   "Blauw",
   "Paars",
+  ...DIVISIONS,
 ];
