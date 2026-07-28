@@ -10,9 +10,13 @@ export const RIDER_READONLY_LABELS = ["Rider", "Klant vult in"];
 // eigenaar-kant stagepagina's) geven 'm gewoon niet mee; het leveranciersportaal wel.
 export function RiderReadOnly({
   sections,
+  label = "Rider",
+  labelSuffix,
   t = identity,
 }: {
   sections: RiderSection[];
+  label?: string;
+  labelSuffix?: string;
   t?: (text: string) => string;
 }) {
   if (!sections.length) return null;
@@ -20,7 +24,10 @@ export function RiderReadOnly({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{t("Rider")}</CardTitle>
+        <CardTitle className="text-base">
+          {t(label)}
+          {labelSuffix ? ` — ${t(labelSuffix)}` : ""}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         {sections.map((section) => (

@@ -11,14 +11,17 @@ export function SupplierRiderView({
   supplierId,
   projects,
   selectedProjectId,
-  sections,
+  projectWideSections,
+  stageGroups,
 }: {
   supplierId: string;
   projects: { id: string; name: string }[];
   selectedProjectId: string | null;
-  sections: RiderSection[];
+  projectWideSections: RiderSection[];
+  stageGroups: { stageId: string; stageName: string; sections: RiderSection[] }[];
 }) {
   const { lang, setLang, t } = useSupplierTranslator();
+  const hasAnySections = projectWideSections.length > 0 || stageGroups.length > 0;
 
   return (
     <>
@@ -56,8 +59,19 @@ export function SupplierRiderView({
             </div>
           )}
 
-          {sections.length > 0 ? (
-            <RiderReadOnly sections={sections} t={t} />
+          {hasAnySections ? (
+            <div className="space-y-6">
+              <RiderReadOnly sections={projectWideSections} label="Rider — projectbreed" t={t} />
+              {stageGroups.map((group) => (
+                <RiderReadOnly
+                  key={group.stageId}
+                  sections={group.sections}
+                  label="Rider"
+                  labelSuffix={group.stageName}
+                  t={t}
+                />
+              ))}
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">
               {t("Er is nog geen rider beschikbaar voor dit project.")}

@@ -6,6 +6,8 @@ export const RIDER_VIEW_LABELS = [
   "Event rider",
   "Er staat nog geen project voor je klaar. Zodra er een offerteverzoek voor je is aangemaakt verschijnt het project hier.",
   "Er is nog geen rider beschikbaar voor dit project.",
+  "Rider — projectbreed",
+  "Rider",
 ];
 
 export const OFFERTES_DASHBOARD_LABELS = [

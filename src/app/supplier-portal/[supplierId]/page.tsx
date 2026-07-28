@@ -59,7 +59,8 @@ export default async function SupplierRiderPage({
   const projects = await getSupplierProjects(supplierId);
   const selectedProject = projects.find((p) => p.id === projectParam) ?? projects[0] ?? null;
 
-  let sections: RiderSection[] = [];
+  let projectWideSections: RiderSection[] = [];
+  let stageGroups: { stageId: string; stageName: string; sections: RiderSection[] }[] = [];
 
   if (selectedProject) {
     const { data: rider } = await admin
@@ -88,25 +89,53 @@ export default async function SupplierRiderPage({
             .returns<RiderSectionItem[]>()
         : { data: [] as RiderSectionItem[] };
 
-      const stageIds = [...new Set((riderSections ?? []).map((s) => s.stage_id).filter((id): id is string => !!id))];
+      const sectionsWithItems = (riderSections ?? []).map((section) => ({
+        ...section,
+        items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
+      }));
+
+      // Alleen de podia/areas waar deze leverancier daadwerkelijk voor is aangevraagd (via een
+      // offerte-categorie met stage_id) — zelfde "werkt aan" afleiding als getSupplierProjects,
+      // zodat een leverancier nooit rider-content van een ander podium te zien krijgt.
+      const { data: quoteCategoryRows } = await admin
+        .from("quotes")
+        .select("category:categories!inner(stage_id, project_id)")
+        .eq("supplier_id", supplierId)
+        .eq("category.project_id", selectedProject.id)
+        .returns<{ category: { stage_id: string | null; project_id: string } | null }[]>();
+      const relevantStageIds = new Set(
+        (quoteCategoryRows ?? [])
+          .map((row) => row.category?.stage_id)
+          .filter((id): id is string => Boolean(id))
+      );
+
+      projectWideSections = sectionsWithItems.filter((s) => !s.stage_id);
+
+      const relevantStageSections = sectionsWithItems.filter(
+        (s) => s.stage_id && relevantStageIds.has(s.stage_id)
+      );
+      const stageIds = [...new Set(relevantStageSections.map((s) => s.stage_id as string))];
       const { data: stages } = stageIds.length
         ? await admin.from("stages").select("id, name").in("id", stageIds)
         : { data: [] };
       const stageNameById = new Map((stages ?? []).map((s) => [s.id, s.name]));
 
-      sections = (riderSections ?? []).map((section) => ({
-        ...section,
-        title: section.stage_id && stageNameById.has(section.stage_id)
-          ? `[${stageNameById.get(section.stage_id)}] ${section.title}`
-          : section.title,
-        items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
-      }));
+      stageGroups = stageIds
+        .map((stageId) => ({
+          stageId,
+          stageName: stageNameById.get(stageId) ?? "",
+          sections: relevantStageSections.filter((s) => s.stage_id === stageId),
+        }))
+        .filter((group) => group.sections.length > 0)
+        .sort((a, b) => a.stageName.localeCompare(b.stageName));
     }
   }
 
+  const allSections = [...projectWideSections, ...stageGroups.flatMap((g) => g.sections)];
   const dynamicTexts = [
     ...projects.map((p) => p.name),
-    ...sections.flatMap((s) => [s.title, s.content, ...(s.items ?? []).map((i) => i.description)]),
+    ...stageGroups.map((g) => g.stageName),
+    ...allSections.flatMap((s) => [s.title, s.content, ...(s.items ?? []).map((i) => i.description)]),
   ];
 
   return (
@@ -118,7 +147,8 @@ export default async function SupplierRiderPage({
             supplierId={supplierId}
             projects={projects.map((p) => ({ id: p.id, name: p.name }))}
             selectedProjectId={selectedProject?.id ?? null}
-            sections={sections}
+            projectWideSections={projectWideSections}
+            stageGroups={stageGroups}
           />
         </main>
         <Footer />
