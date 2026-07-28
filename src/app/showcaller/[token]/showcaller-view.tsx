@@ -226,7 +226,7 @@ export function ShowcallerView({
       <div className="sticky top-0 z-20 border-b border-white/10 bg-black">
         <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-3">
           <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight text-primary">
-            <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
+            <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} />
             {t(data.project.name)} &mdash; {t("Showcaller")}
           </div>
           <div className="flex flex-wrap items-center gap-2">

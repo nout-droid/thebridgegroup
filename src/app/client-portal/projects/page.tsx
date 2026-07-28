@@ -26,8 +26,8 @@ export default async function ClientPortalProjectsPage() {
     <div className="flex min-h-screen flex-col">
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
         <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
-          The Bridge AV Group
+          <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} />
+          The Bridge Group B.V.
         </div>
         <form action={logoutClientAccount}>
           <Button

@@ -120,7 +120,7 @@ export async function generateCallsheetPdf(data: CallsheetPdfData): Promise<Buff
         <View style={styles.header} fixed>
           <View style={styles.headerLeft}>
             <Image src={logoBuffer} style={styles.logo} />
-            <Text style={styles.brand}>The Bridge AV Group</Text>
+            <Text style={styles.brand}>The Bridge Group B.V.</Text>
           </View>
           <Text style={styles.headerMeta}>
             Versie {data.version} — gegenereerd op {generatedAt}
@@ -156,7 +156,7 @@ export async function generateCallsheetPdf(data: CallsheetPdfData): Promise<Buff
         </View>
 
         <View style={styles.footer} fixed>
-          <Text>The Bridge AV Group — thebridgeavgroup.com</Text>
+          <Text>The Bridge Group B.V. — thebridgeavgroup.com</Text>
           <Text
             render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} / ${totalPages}`}
           />

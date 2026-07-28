@@ -10,7 +10,7 @@ import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 
 const STATIC_LABELS = [
-  "The Bridge AV Group",
+  "The Bridge Group B.V.",
   "Log in om al je projecten in één overzicht te zien.",
   "E-mailadres",
   "Wachtwoord",
@@ -39,9 +39,9 @@ export function ClientPortalLoginView({
       </div>
       <div className="flex h-[68vh] shrink-0 items-end" />
       <div className="flex w-full max-w-sm flex-col items-center rounded-xl border border-white/10 bg-black/60 p-6 shadow-2xl backdrop-blur-sm">
-        <Image src="/logo.png" alt="The Bridge AV Group" width={72} height={55} className="mb-4" />
+        <Image src="/logo.png" alt="The Bridge Group B.V." width={72} height={55} className="mb-4" />
         <h1 className="text-center font-heading text-2xl font-extrabold uppercase tracking-tight text-primary">
-          {t("The Bridge AV Group")}
+          {t("The Bridge Group B.V.")}
         </h1>
         <p className="mb-8 text-center text-sm text-white/60">
           {t("Log in om al je projecten in één overzicht te zien.")}

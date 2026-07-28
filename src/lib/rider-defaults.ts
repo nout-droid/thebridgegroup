@@ -7,7 +7,7 @@ export interface DefaultRiderSection {
   stageSpecific?: boolean;
 }
 
-// Gebaseerd op het officiële "Festival Stage Rider" sjabloon van The Bridge AV Group.
+// Gebaseerd op het officiële "Festival Stage Rider" sjabloon van The Bridge Group B.V..
 // De labels hieronder dienen als invulsjabloon in het vrije tekstveld van een onderdeel.
 export const DEFAULT_RIDER_SECTIONS: DefaultRiderSection[] = [
   {
@@ -22,7 +22,7 @@ export const DEFAULT_RIDER_SECTIONS: DefaultRiderSection[] = [
       "Datum uitgifte: ",
   },
   {
-    title: "Contactpersoon The Bridge AV Group",
+    title: "Contactpersoon The Bridge Group B.V.",
     editable_by_client: false,
     content:
       "Naam: Nout van Bruggen\n" +

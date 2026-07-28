@@ -221,7 +221,7 @@ export function CrewRundownView({
     <div className="min-h-screen bg-black text-white" style={{ zoom: FONT_SCALES[fontScale] }}>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
         <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt="The Bridge AV Group" width={28} height={21} />
+          <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} />
           {t(data.project.name)} &mdash; {t("Crew live")}
         </div>
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />

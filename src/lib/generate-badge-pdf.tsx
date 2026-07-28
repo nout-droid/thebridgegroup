@@ -68,7 +68,7 @@ export async function generateBadgePdf(data: BadgePdfData): Promise<Buffer> {
         <Page key={entry.badgeUrl} size={BADGE_SIZE} style={styles.page}>
           <View style={styles.header}>
             <Image src={logoBuffer} style={styles.logo} />
-            <Text style={styles.brand}>The Bridge AV Group</Text>
+            <Text style={styles.brand}>The Bridge Group B.V.</Text>
           </View>
           <View style={styles.body}>
             <Text style={styles.name}>{entry.name || "Naam volgt"}</Text>

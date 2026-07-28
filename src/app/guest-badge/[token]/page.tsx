@@ -46,7 +46,7 @@ export default async function GuestBadgeScanPage({
     .eq("id", guest.project_id)
     .maybeSingle();
 
-  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge AV Group";
+  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge Group B.V.";
 
   const declined = guest.rsvp_status === "afgemeld";
   const typeLabel = GUEST_TYPE_LABELS[guest.guest_type as GuestType] ?? guest.guest_type;

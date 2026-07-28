@@ -10,7 +10,7 @@ export default async function SupplierPortalPage({
 
   return (
     <PortalLogin
-      description="Log in met de leverancierscode en het wachtwoord dat je van The Bridge AV Group hebt ontvangen om offertes te bekijken en te uploaden."
+      description="Log in met de leverancierscode en het wachtwoord dat je van The Bridge Group B.V. hebt ontvangen om offertes te bekijken en te uploaden."
       idLabel="Leverancierscode"
       idName="portal_code"
       idPlaceholder="bv. AB12CD"

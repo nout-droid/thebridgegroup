@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export const DEFAULT_ORGANIZATION_NAME = "The Bridge AV Group";
+export const DEFAULT_ORGANIZATION_NAME = "The Bridge Group B.V.";
 
 // Valt terug op de default zodra de organizations-tabel nog niet bestaat (migratie nog niet
 // gedraaid) of er nog geen rij is voor deze eigenaar — nooit een lege/kapotte pagina.

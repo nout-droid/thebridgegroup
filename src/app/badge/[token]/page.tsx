@@ -58,7 +58,7 @@ export default async function BadgeScanPage({
     .eq("id", member.project_id)
     .maybeSingle();
 
-  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge AV Group";
+  const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge Group B.V.";
 
   const areaName = member.crew_position?.stage?.name ?? "Alle areas";
   const accessDates = member.access_dates ?? [];
