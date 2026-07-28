@@ -1,9 +1,12 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { CrewMember } from "@/lib/types";
 import { updateSupplierCrewFlightDetails } from "../requests-actions";
+import { useSupplierTranslator } from "../translator-context";
 
 function toDatetimeLocal(value: string | null): string {
   if (!value) return "";
@@ -19,6 +22,7 @@ export function SupplierFlightSection({
   projectId: string;
   members: CrewMember[];
 }) {
+  const { t } = useSupplierTranslator();
   const flightMembers = members.filter((member) => member.needs_flight);
 
   if (flightMembers.length === 0) return null;
@@ -26,10 +30,11 @@ export function SupplierFlightSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Vluchten</CardTitle>
+        <CardTitle className="text-base">{t("Vluchten")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Deze crewleden hebben een vliegticket nodig. Vul aan zodra bekend, ook als het pas
-          later compleet is.
+          {t(
+            "Deze crewleden hebben een vliegticket nodig. Vul aan zodra bekend, ook als het pas later compleet is."
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -40,10 +45,10 @@ export function SupplierFlightSection({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4"
           >
             <div className="sm:col-span-4">
-              <p className="text-sm font-medium">{member.name || "Naam volgt"}</p>
+              <p className="text-sm font-medium">{member.name || t("Naam volgt")}</p>
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`passport-${member.id}`} className="text-xs">Paspoortnummer</Label>
+              <Label htmlFor={`passport-${member.id}`} className="text-xs">{t("Paspoortnummer")}</Label>
               <Input
                 id={`passport-${member.id}`}
                 name="passport_number"
@@ -52,7 +57,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`departure-airport-${member.id}`} className="text-xs">Vertrekluchthaven</Label>
+              <Label htmlFor={`departure-airport-${member.id}`} className="text-xs">{t("Vertrekluchthaven")}</Label>
               <Input
                 id={`departure-airport-${member.id}`}
                 name="flight_departure_airport"
@@ -61,7 +66,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`destination-${member.id}`} className="text-xs">Bestemming</Label>
+              <Label htmlFor={`destination-${member.id}`} className="text-xs">{t("Bestemming")}</Label>
               <Input
                 id={`destination-${member.id}`}
                 name="flight_destination"
@@ -70,7 +75,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`departure-at-${member.id}`} className="text-xs">Vertrek datum/tijd</Label>
+              <Label htmlFor={`departure-at-${member.id}`} className="text-xs">{t("Vertrek datum/tijd")}</Label>
               <Input
                 id={`departure-at-${member.id}`}
                 name="flight_departure_at"
@@ -80,7 +85,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`return-at-${member.id}`} className="text-xs">Retour datum/tijd</Label>
+              <Label htmlFor={`return-at-${member.id}`} className="text-xs">{t("Retour datum/tijd")}</Label>
               <Input
                 id={`return-at-${member.id}`}
                 name="flight_return_at"
@@ -90,7 +95,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`booking-${member.id}`} className="text-xs">Boekingsnummer</Label>
+              <Label htmlFor={`booking-${member.id}`} className="text-xs">{t("Boekingsnummer")}</Label>
               <Input
                 id={`booking-${member.id}`}
                 name="flight_booking_number"
@@ -99,7 +104,7 @@ export function SupplierFlightSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`ticket-${member.id}`} className="text-xs">Ticketnummer</Label>
+              <Label htmlFor={`ticket-${member.id}`} className="text-xs">{t("Ticketnummer")}</Label>
               <Input
                 id={`ticket-${member.id}`}
                 name="flight_ticket_number"
@@ -109,7 +114,7 @@ export function SupplierFlightSection({
             </div>
             <div className="flex items-end sm:col-span-4">
               <Button type="submit" size="sm" className="h-8 text-xs">
-                Opslaan
+                {t("Opslaan")}
               </Button>
             </div>
           </form>

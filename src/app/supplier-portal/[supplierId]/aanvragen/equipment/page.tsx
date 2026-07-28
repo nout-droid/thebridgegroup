@@ -1,16 +1,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
-import type { CrewMember } from "@/lib/types";
-import { Nav } from "../supplier-nav";
+import type { EquipmentReservation } from "@/lib/types";
+import { Nav } from "../../supplier-nav";
 import { Footer } from "@/components/footer";
-import { getAuthorizedSupplier, getSupplierProjects } from "../data";
-import { AanvragenSubNav } from "./aanvragen-sub-nav";
-import { SupplierTranslatorProvider } from "../translator-context";
-import { SupplierCrewSection } from "./crew-section";
-import { SUPPLIER_NAV_LABELS } from "../labels";
-import { AANVRAGEN_SUB_NAV_LABELS, CREW_SECTION_LABELS } from "./labels";
+import { getAuthorizedSupplier, getSupplierProjects } from "../../data";
+import { AanvragenSubNav } from "../aanvragen-sub-nav";
+import { SupplierTranslatorProvider } from "../../translator-context";
+import { SupplierEquipmentSection } from "../equipment-section";
+import { SUPPLIER_NAV_LABELS } from "../../labels";
+import { AANVRAGEN_SUB_NAV_LABELS, EQUIPMENT_SECTION_LABELS } from "../labels";
 
-export default async function SupplierCrewRequestsPage({
+export default async function SupplierEquipmentRequestsPage({
   params,
   searchParams,
 }: {
@@ -28,22 +28,22 @@ export default async function SupplierCrewRequestsPage({
   const projects = await getSupplierProjects(supplierId);
   const selectedProject = projects.find((p) => p.id === projectParam) ?? projects[0] ?? null;
 
-  let crewMembers: CrewMember[] = [];
+  let reservations: EquipmentReservation[] = [];
   if (selectedProject) {
     const admin = createAdminClient();
     const { data } = await admin
-      .from("crew_members")
+      .from("equipment_reservations")
       .select("*")
       .eq("project_id", selectedProject.id)
       .eq("supplier_id", supplierId)
       .order("sort_order", { ascending: true })
-      .returns<CrewMember[]>();
-    crewMembers = data ?? [];
+      .returns<EquipmentReservation[]>();
+    reservations = data ?? [];
   }
 
   return (
     <SupplierTranslatorProvider
-      staticLabels={[...SUPPLIER_NAV_LABELS, ...AANVRAGEN_SUB_NAV_LABELS, ...CREW_SECTION_LABELS]}
+      staticLabels={[...SUPPLIER_NAV_LABELS, ...AANVRAGEN_SUB_NAV_LABELS, ...EQUIPMENT_SECTION_LABELS]}
       dynamicTexts={projects.map((p) => p.name)}
     >
       <div className="flex min-h-screen flex-col">
@@ -53,11 +53,11 @@ export default async function SupplierCrewRequestsPage({
             supplierId={supplierId}
             projects={projects.map((p) => ({ id: p.id, name: p.name }))}
             selectedProjectId={selectedProject?.id ?? null}
-            active="crew"
+            active="equipment"
             showTravel={selectedProject?.suppliers_manage_travel ?? false}
           />
           {selectedProject && (
-            <SupplierCrewSection supplierId={supplierId} projectId={selectedProject.id} members={crewMembers} />
+            <SupplierEquipmentSection supplierId={supplierId} projectId={selectedProject.id} reservations={reservations} />
           )}
         </main>
         <Footer />

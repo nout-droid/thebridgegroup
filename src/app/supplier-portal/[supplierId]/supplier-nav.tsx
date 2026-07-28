@@ -1,10 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { useSupplierTranslator } from "./translator-context";
 
 const TABS = [
   { key: "rider", label: "Event rider" },
   { key: "offertes", label: "Offertes" },
+  { key: "begroting", label: "Begroting" },
   { key: "aanvragen", label: "Aanvragen" },
 ] as const;
 
@@ -24,6 +28,8 @@ export function Nav({
   supplierName: string;
   active: SupplierTabKey;
 }) {
+  const { t } = useSupplierTranslator();
+
   return (
     <header className="bg-black text-sm font-semibold uppercase tracking-wide text-primary">
       <div className="flex items-center gap-2 px-6 py-3">
@@ -41,7 +47,7 @@ export function Nav({
               active === tab.key ? "bg-white/10 text-white" : "text-white/60 hover:text-white"
             )}
           >
-            {tab.label}
+            {t(tab.label)}
           </Link>
         ))}
       </nav>

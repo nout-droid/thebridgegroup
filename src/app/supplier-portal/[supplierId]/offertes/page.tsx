@@ -6,6 +6,8 @@ import { isSupabaseConfigured } from "@/lib/env";
 import type { QuoteDocument } from "@/lib/types";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { SupplierDashboard, type SupplierProjectGroup } from "../supplier-dashboard";
+import { SupplierTranslatorProvider } from "../translator-context";
+import { SUPPLIER_NAV_LABELS, OFFERTES_DASHBOARD_LABELS } from "../labels";
 
 interface RawQuoteRow {
   id: string;
@@ -123,11 +125,11 @@ export default async function SupplierPortalDashboard({
   const rows = [...groups.values()].sort((a, b) => a.projectName.localeCompare(b.projectName));
 
   return (
-    <SupplierDashboard
-      supplierId={supplierId}
-      supplierName={supplier.name}
-      projects={rows}
-      isOwner={isOwner}
-    />
+    <SupplierTranslatorProvider
+      staticLabels={[...SUPPLIER_NAV_LABELS, ...OFFERTES_DASHBOARD_LABELS]}
+      dynamicTexts={rows.map((p) => p.projectName)}
+    >
+      <SupplierDashboard supplierId={supplierId} supplierName={supplier.name} projects={rows} />
+    </SupplierTranslatorProvider>
   );
 }

@@ -3,13 +3,13 @@
 import { Nav } from "./supplier-nav";
 import { Footer } from "@/components/footer";
 import { LanguageToggle } from "@/components/language-toggle";
-import { useTranslator } from "@/hooks/use-translator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QUOTE_STATUS_LABELS, type QuoteDocument, type QuoteStatus } from "@/lib/types";
 import { uploadSupplierDocument } from "./actions";
+import { useSupplierTranslator } from "./translator-context";
 
 type DocumentWithUrl = QuoteDocument & { signedUrl: string | null };
 
@@ -27,20 +27,6 @@ export interface SupplierProjectGroup {
   quotes: SupplierQuoteRow[];
   pendingDocuments: DocumentWithUrl[];
 }
-
-const STATIC_LABELS = [
-  "Jouw offertes",
-  "Er staan nog geen offerteverzoeken voor je klaar.",
-  "Upload één offerte-PDF voor alle categorieën hieronder tegelijk — we splitsen de kosten er zelf uit. Alle technische info en tekeningen vind je onder Event rider.",
-  "Al verwerkte offerte-documenten",
-  "Geüpload, wacht op verwerking door The Bridge",
-  "Offerte-PDF uploaden",
-  "Bekijken",
-  "(door The Bridge)",
-  "bevestigd",
-  "ter controle",
-  ...Object.values(QUOTE_STATUS_LABELS),
-];
 
 function DocumentRow({ document, t }: { document: DocumentWithUrl; t: (text: string) => string }) {
   return (
@@ -63,15 +49,12 @@ export function SupplierDashboard({
   supplierId,
   supplierName,
   projects,
-  isOwner = false,
 }: {
   supplierId: string;
   supplierName: string;
   projects: SupplierProjectGroup[];
-  isOwner?: boolean;
 }) {
-  const dynamicTexts = projects.map((p) => p.projectName);
-  const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
+  const { lang, setLang, t } = useSupplierTranslator();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -96,7 +79,7 @@ export function SupplierDashboard({
                   <CardTitle className="text-base">{t(project.projectName)}</CardTitle>
                   <p className="text-sm text-muted-foreground">
                     {t(
-                      "Upload één offerte-PDF voor alle categorieën hieronder tegelijk — we splitsen de kosten er zelf uit. Alle technische info en tekeningen vind je onder Event rider."
+                      "Upload één offerte-PDF voor alle categorieën hieronder tegelijk — we splitsen de kosten er zelf uit. Bekijk je prijsopgave onder Begroting, en alle technische info en tekeningen onder Event rider."
                     )}
                   </p>
                 </CardHeader>
@@ -105,16 +88,9 @@ export function SupplierDashboard({
                     {project.quotes.map((quote) => (
                       <li key={quote.id} className="flex items-center justify-between gap-2 text-sm">
                         <span>{t(quote.categoryName)}</span>
-                        <span className="flex items-center gap-2">
-                          {isOwner && (
-                            <span className="text-muted-foreground">
-                              &euro; {quote.costPrice.toFixed(2)}
-                            </span>
-                          )}
-                          <Badge variant="secondary">
-                            {t(QUOTE_STATUS_LABELS[quote.status as QuoteStatus] ?? quote.status)}
-                          </Badge>
-                        </span>
+                        <Badge variant="secondary">
+                          {t(QUOTE_STATUS_LABELS[quote.status as QuoteStatus] ?? quote.status)}
+                        </Badge>
                       </li>
                     ))}
                   </ul>

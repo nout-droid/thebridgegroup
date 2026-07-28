@@ -8,6 +8,8 @@ import { Nav } from "./supplier-nav";
 import { Footer } from "@/components/footer";
 import { getSupplierProjects } from "./data";
 import { SupplierRiderView } from "./supplier-rider-view";
+import { SupplierTranslatorProvider } from "./translator-context";
+import { SUPPLIER_NAV_LABELS, RIDER_VIEW_LABELS } from "./labels";
 
 export default async function SupplierRiderPage({
   params,
@@ -102,18 +104,25 @@ export default async function SupplierRiderPage({
     }
   }
 
+  const dynamicTexts = [
+    ...projects.map((p) => p.name),
+    ...sections.flatMap((s) => [s.title, s.content, ...(s.items ?? []).map((i) => i.description)]),
+  ];
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <Nav supplierId={supplierId} supplierName={supplier.name} active="rider" />
-      <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
-        <SupplierRiderView
-          supplierId={supplierId}
-          projects={projects.map((p) => ({ id: p.id, name: p.name }))}
-          selectedProjectId={selectedProject?.id ?? null}
-          sections={sections}
-        />
-      </main>
-      <Footer />
-    </div>
+    <SupplierTranslatorProvider staticLabels={[...SUPPLIER_NAV_LABELS, ...RIDER_VIEW_LABELS]} dynamicTexts={dynamicTexts}>
+      <div className="flex min-h-screen flex-col">
+        <Nav supplierId={supplierId} supplierName={supplier.name} active="rider" />
+        <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
+          <SupplierRiderView
+            supplierId={supplierId}
+            projects={projects.map((p) => ({ id: p.id, name: p.name }))}
+            selectedProjectId={selectedProject?.id ?? null}
+            sections={sections}
+          />
+        </main>
+        <Footer />
+      </div>
+    </SupplierTranslatorProvider>
   );
 }

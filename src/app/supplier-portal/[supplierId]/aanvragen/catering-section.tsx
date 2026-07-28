@@ -1,3 +1,5 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +10,7 @@ import {
   deleteSupplierCatering,
   updateSupplierCatering,
 } from "../requests-actions";
+import { useSupplierTranslator } from "../translator-context";
 
 export function SupplierCateringSection({
   supplierId,
@@ -18,11 +21,13 @@ export function SupplierCateringSection({
   projectId: string;
   orders: CateringOrder[];
 }) {
+  const { t } = useSupplierTranslator();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Catering</CardTitle>
-        <p className="text-sm text-muted-foreground">Aantallen per dag voor jouw crew op dit project.</p>
+        <CardTitle className="text-base">{t("Catering")}</CardTitle>
+        <p className="text-sm text-muted-foreground">{t("Aantallen per dag voor jouw crew op dit project.")}</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {orders.map((order) => (
@@ -32,7 +37,7 @@ export function SupplierCateringSection({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-7"
           >
             <div className="space-y-1">
-              <Label htmlFor={`date-${order.id}`} className="text-xs">Datum</Label>
+              <Label htmlFor={`date-${order.id}`} className="text-xs">{t("Datum")}</Label>
               <Input
                 id={`date-${order.id}`}
                 name="order_date"
@@ -43,7 +48,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`party-${order.id}`} className="text-xs">Afnemer</Label>
+              <Label htmlFor={`party-${order.id}`} className="text-xs">{t("Afnemer")}</Label>
               <Input
                 id={`party-${order.id}`}
                 name="party"
@@ -53,7 +58,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`cl-${order.id}`} className="text-xs">Crew lunch</Label>
+              <Label htmlFor={`cl-${order.id}`} className="text-xs">{t("Crew lunch")}</Label>
               <Input
                 id={`cl-${order.id}`}
                 name="crew_lunch"
@@ -64,7 +69,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`vl-${order.id}`} className="text-xs">Veggie lunch</Label>
+              <Label htmlFor={`vl-${order.id}`} className="text-xs">{t("Veggie lunch")}</Label>
               <Input
                 id={`vl-${order.id}`}
                 name="veggie_lunch"
@@ -75,7 +80,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`cd-${order.id}`} className="text-xs">Crew diner</Label>
+              <Label htmlFor={`cd-${order.id}`} className="text-xs">{t("Crew diner")}</Label>
               <Input
                 id={`cd-${order.id}`}
                 name="crew_dinner"
@@ -86,7 +91,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`vd-${order.id}`} className="text-xs">Veggie diner</Label>
+              <Label htmlFor={`vd-${order.id}`} className="text-xs">{t("Veggie diner")}</Label>
               <Input
                 id={`vd-${order.id}`}
                 name="veggie_dinner"
@@ -97,7 +102,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`ns-${order.id}`} className="text-xs">Night snacks</Label>
+              <Label htmlFor={`ns-${order.id}`} className="text-xs">{t("Night snacks")}</Label>
               <Input
                 id={`ns-${order.id}`}
                 name="night_snacks"
@@ -108,7 +113,7 @@ export function SupplierCateringSection({
               />
             </div>
             <div className="space-y-1 sm:col-span-3">
-              <Label htmlFor={`notes-${order.id}`} className="text-xs">Opmerkingen</Label>
+              <Label htmlFor={`notes-${order.id}`} className="text-xs">{t("Opmerkingen")}</Label>
               <Input
                 id={`notes-${order.id}`}
                 name="notes"
@@ -118,7 +123,7 @@ export function SupplierCateringSection({
             </div>
             <div className="flex items-end gap-2 sm:col-span-4">
               <Button type="submit" size="sm" className="h-8 text-xs">
-                Opslaan
+                {t("Opslaan")}
               </Button>
               <Button
                 type="submit"
@@ -127,7 +132,7 @@ export function SupplierCateringSection({
                 variant="ghost"
                 className="h-8 text-xs"
               >
-                Verwijderen
+                {t("Verwijderen")}
               </Button>
             </div>
           </form>
@@ -138,40 +143,40 @@ export function SupplierCateringSection({
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-7"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-date" className="text-xs">Datum</Label>
+            <Label htmlFor="new-date" className="text-xs">{t("Datum")}</Label>
             <Input id="new-date" name="order_date" type="date" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-party" className="text-xs">Afnemer</Label>
-            <Input id="new-party" name="party" placeholder="bv. Eigen crew" className="h-8 text-xs" required />
+            <Label htmlFor="new-party" className="text-xs">{t("Afnemer")}</Label>
+            <Input id="new-party" name="party" placeholder={t("bv. Eigen crew")} className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-cl" className="text-xs">Crew lunch</Label>
+            <Label htmlFor="new-cl" className="text-xs">{t("Crew lunch")}</Label>
             <Input id="new-cl" name="crew_lunch" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-vl" className="text-xs">Veggie lunch</Label>
+            <Label htmlFor="new-vl" className="text-xs">{t("Veggie lunch")}</Label>
             <Input id="new-vl" name="veggie_lunch" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-cd" className="text-xs">Crew diner</Label>
+            <Label htmlFor="new-cd" className="text-xs">{t("Crew diner")}</Label>
             <Input id="new-cd" name="crew_dinner" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-vd" className="text-xs">Veggie diner</Label>
+            <Label htmlFor="new-vd" className="text-xs">{t("Veggie diner")}</Label>
             <Input id="new-vd" name="veggie_dinner" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-ns" className="text-xs">Night snacks</Label>
+            <Label htmlFor="new-ns" className="text-xs">{t("Night snacks")}</Label>
             <Input id="new-ns" name="night_snacks" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1 sm:col-span-3">
-            <Label htmlFor="new-notes" className="text-xs">Opmerkingen</Label>
+            <Label htmlFor="new-notes" className="text-xs">{t("Opmerkingen")}</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
           <div className="flex items-end">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Order toevoegen
+              {t("Order toevoegen")}
             </Button>
           </div>
         </form>

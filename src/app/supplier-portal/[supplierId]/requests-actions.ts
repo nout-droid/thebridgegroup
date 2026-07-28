@@ -6,8 +6,19 @@ import { logActivity } from "@/lib/server/log-activity";
 import { isAuthorizedSupplier } from "./actions";
 import { isSupplierLinkedToProject } from "./data";
 
-function revalidate(supplierId: string, projectId: string, subpage: string) {
-  revalidatePath(`/supplier-portal/${supplierId}/aanvragen`);
+// Route-segmenten verschillen tussen het interne app (waar hotel + vlucht één pagina delen)
+// en het leveranciersportaal (waar ze, net als de andere secties, een eigen tab hebben).
+const SUPPLIER_SUBPAGE_MAP: Record<string, string> = {
+  materieel: "equipment",
+};
+
+function revalidate(supplierId: string, projectId: string, subpage: string, supplierSubpage?: string) {
+  const resolvedSupplierSubpage = supplierSubpage ?? SUPPLIER_SUBPAGE_MAP[subpage] ?? subpage;
+  revalidatePath(
+    resolvedSupplierSubpage
+      ? `/supplier-portal/${supplierId}/aanvragen/${resolvedSupplierSubpage}`
+      : `/supplier-portal/${supplierId}/aanvragen`
+  );
   revalidatePath(`/projects/${projectId}/production/${subpage}`);
 }
 
@@ -196,7 +207,7 @@ export async function updateSupplierCrewFlightDetails(
     description: "Vluchtgegevens bijgewerkt",
   });
 
-  revalidate(supplierId, projectId, "hotel");
+  revalidate(supplierId, projectId, "hotel", "flight");
 }
 
 // ========== Materieel (equipment_reservations) ==========

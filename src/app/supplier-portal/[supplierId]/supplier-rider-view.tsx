@@ -2,16 +2,10 @@
 
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 import { RiderReadOnly } from "@/app/projects/[id]/rider-readonly";
 import type { RiderSection } from "@/lib/types";
-
-const STATIC_LABELS = [
-  "Event rider",
-  "Er staat nog geen project voor je klaar. Zodra er een offerteverzoek voor je is aangemaakt verschijnt het project hier.",
-  "Er is nog geen rider beschikbaar voor dit project.",
-];
+import { useSupplierTranslator } from "./translator-context";
 
 export function SupplierRiderView({
   supplierId,
@@ -24,11 +18,7 @@ export function SupplierRiderView({
   selectedProjectId: string | null;
   sections: RiderSection[];
 }) {
-  const dynamicTexts = [
-    ...projects.map((p) => p.name),
-    ...sections.flatMap((s) => [s.title, s.content, ...(s.items ?? []).map((i) => i.description)]),
-  ];
-  const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
+  const { lang, setLang, t } = useSupplierTranslator();
 
   return (
     <>

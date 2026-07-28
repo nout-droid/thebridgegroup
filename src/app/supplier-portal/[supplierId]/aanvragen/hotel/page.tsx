@@ -1,16 +1,16 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/env";
 import type { CrewMember } from "@/lib/types";
-import { Nav } from "../supplier-nav";
+import { Nav } from "../../supplier-nav";
 import { Footer } from "@/components/footer";
-import { getAuthorizedSupplier, getSupplierProjects } from "../data";
-import { AanvragenSubNav } from "./aanvragen-sub-nav";
-import { SupplierTranslatorProvider } from "../translator-context";
-import { SupplierCrewSection } from "./crew-section";
-import { SUPPLIER_NAV_LABELS } from "../labels";
-import { AANVRAGEN_SUB_NAV_LABELS, CREW_SECTION_LABELS } from "./labels";
+import { getAuthorizedSupplier, getSupplierProjects } from "../../data";
+import { AanvragenSubNav } from "../aanvragen-sub-nav";
+import { SupplierTranslatorProvider } from "../../translator-context";
+import { SupplierHotelSection } from "../hotel-section";
+import { SUPPLIER_NAV_LABELS } from "../../labels";
+import { AANVRAGEN_SUB_NAV_LABELS, HOTEL_SECTION_LABELS } from "../labels";
 
-export default async function SupplierCrewRequestsPage({
+export default async function SupplierHotelRequestsPage({
   params,
   searchParams,
 }: {
@@ -43,7 +43,7 @@ export default async function SupplierCrewRequestsPage({
 
   return (
     <SupplierTranslatorProvider
-      staticLabels={[...SUPPLIER_NAV_LABELS, ...AANVRAGEN_SUB_NAV_LABELS, ...CREW_SECTION_LABELS]}
+      staticLabels={[...SUPPLIER_NAV_LABELS, ...AANVRAGEN_SUB_NAV_LABELS, ...HOTEL_SECTION_LABELS]}
       dynamicTexts={projects.map((p) => p.name)}
     >
       <div className="flex min-h-screen flex-col">
@@ -53,11 +53,11 @@ export default async function SupplierCrewRequestsPage({
             supplierId={supplierId}
             projects={projects.map((p) => ({ id: p.id, name: p.name }))}
             selectedProjectId={selectedProject?.id ?? null}
-            active="crew"
+            active="hotel"
             showTravel={selectedProject?.suppliers_manage_travel ?? false}
           />
           {selectedProject && (
-            <SupplierCrewSection supplierId={supplierId} projectId={selectedProject.id} members={crewMembers} />
+            <SupplierHotelSection supplierId={supplierId} projectId={selectedProject.id} members={crewMembers} />
           )}
         </main>
         <Footer />
