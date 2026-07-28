@@ -19,6 +19,10 @@ const STATIC_LABELS = [
   "Account aanmaken",
   "Heb je al een account?",
   "Inloggen",
+  "Door een account aan te maken ga je akkoord met onze",
+  "algemene voorwaarden",
+  "en",
+  "privacyverklaring",
 ];
 
 export function SignupView({
@@ -105,6 +109,18 @@ export function SignupView({
             {t("Account aanmaken")}
           </SubmitButton>
         </form>
+
+        <p className="mt-4 text-center text-xs text-white/40">
+          {t("Door een account aan te maken ga je akkoord met onze")}{" "}
+          <Link href="/terms" className="underline-offset-4 hover:text-white hover:underline">
+            {t("algemene voorwaarden")}
+          </Link>{" "}
+          {t("en")}{" "}
+          <Link href="/privacy" className="underline-offset-4 hover:text-white hover:underline">
+            {t("privacyverklaring")}
+          </Link>
+          .
+        </p>
 
         <p className="mt-4 text-center text-sm text-white/60">
           {t("Heb je al een account?")}{" "}

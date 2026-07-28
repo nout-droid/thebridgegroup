@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE_NL } from "@/lib/server/rate-limit";
 
 export async function signUp(formData: FormData) {
   const companyName = String(formData.get("company_name") ?? "").trim();
@@ -12,6 +13,10 @@ export async function signUp(formData: FormData) {
   if (!companyName || !email || !password) {
     redirect(`/signup?error=${encodeURIComponent("Vul alle velden in.")}`);
   }
+
+  const ip = await getClientIp();
+  const { blocked } = await checkRateLimit("signup", ip, { maxAttempts: 8, windowMinutes: 60 });
+  if (blocked) redirect(`/signup?error=${encodeURIComponent(RATE_LIMIT_MESSAGE_NL)}`);
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });

@@ -24,7 +24,7 @@ import {
   updateTeamMemberAccess,
   removeTeamMember,
 } from "./actions";
-import { updateOrganizationName } from "./organization-actions";
+import { updateOrganizationName, deleteOrganizationAccount } from "./organization-actions";
 
 export default async function TeamPage({
   searchParams,
@@ -123,6 +123,14 @@ export default async function TeamPage({
                     className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground hover:opacity-90"
                   >
                     Upgraden
+                  </a>
+                )}
+                {isOwner && organization.subscription_status === "active" && (
+                  <a
+                    href="/api/stripe/portal"
+                    className="rounded-md border px-3 py-1 text-sm font-medium hover:bg-muted"
+                  >
+                    Abonnement beheren
                   </a>
                 )}
               </div>
@@ -307,6 +315,46 @@ export default async function TeamPage({
             )}
           </CardContent>
         </Card>
+
+        {isOwner && organization && (
+          <Card className="border-destructive/40">
+            <CardHeader>
+              <CardTitle className="text-base">Gegevens & account</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm font-medium">Exporteer je gegevens</p>
+                <p className="mb-2 text-sm text-muted-foreground">
+                  Download al je projecten, begrotingen, draaiboeken en teamgegevens als JSON-bestand.
+                </p>
+                <a
+                  href="/api/export"
+                  className="inline-block rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
+                >
+                  Download export
+                </a>
+              </div>
+
+              <div className="border-t pt-4">
+                <p className="text-sm font-medium text-destructive">Account verwijderen</p>
+                <p className="mb-2 text-sm text-muted-foreground">
+                  Dit verwijdert direct en onomkeerbaar je hele organisatie: alle projecten,
+                  begrotingen, teamleden en klantaccounts. Typ de organisatienaam (
+                  <strong>{organization.name}</strong>) ter bevestiging.
+                </p>
+                <form action={deleteOrganizationAccount} className="flex items-end gap-2">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="confirmation_name">Organisatienaam ter bevestiging</Label>
+                    <Input id="confirmation_name" name="confirmation_name" className="w-64" required />
+                  </div>
+                  <Button type="submit" variant="destructive" size="sm">
+                    Verwijder account definitief
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </main>
       <Footer />
     </div>

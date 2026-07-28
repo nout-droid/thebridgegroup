@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE_NL } from "@/lib/server/rate-limit";
 
 export async function crewLogin(formData: FormData) {
   const eventCode = String(formData.get("event_code") ?? "").trim();
@@ -12,6 +13,13 @@ export async function crewLogin(formData: FormData) {
   if (!eventCode || !password) {
     redirect(`/crew-portal?error=${encodeURIComponent("Vul een Event ID en wachtwoord in.")}`);
   }
+
+  const ip = await getClientIp();
+  const { blocked } = await checkRateLimit("crew_login", `${ip}:${eventCode.toLowerCase()}`, {
+    maxAttempts: 10,
+    windowMinutes: 15,
+  });
+  if (blocked) redirect(`/crew-portal?error=${encodeURIComponent(RATE_LIMIT_MESSAGE_NL)}`);
 
   const supabase = await createClient();
   const { data: token } = await supabase.rpc("verify_crew_login", {

@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { NewProjectDialog } from "./new-project-dialog";
 import { ProjectCardActions } from "./project-card-actions";
 import type { Project } from "@/lib/types";
+import { getTeamOwnerId } from "@/lib/server/team";
+import { getOrgAccess } from "@/lib/server/subscription";
 
 export default async function ProjectsPage({
   searchParams,
@@ -15,11 +17,18 @@ export default async function ProjectsPage({
 }) {
   const { error: pageError } = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   const { data: projects } = await supabase
     .from("projects")
     .select("*")
     .order("created_at", { ascending: false })
     .returns<Project[]>();
+
+  const access = user ? await getOrgAccess(await getTeamOwnerId(supabase, user.id)) : null;
+  const showAccessBanner = access && access.status !== "active" && access.status !== "no_org" && access.message;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -27,6 +36,14 @@ export default async function ProjectsPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         {pageError && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{pageError}</p>
+        )}
+        {showAccessBanner && (
+          <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+            {access.message}{" "}
+            <Link href="/team" className="font-medium underline">
+              Naar Team & abonnement
+            </Link>
+          </p>
         )}
         <div className="flex items-center justify-between">
           <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Projecten</h1>

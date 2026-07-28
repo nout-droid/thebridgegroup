@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE_NL } from "@/lib/server/rate-limit";
 
 export async function supplierLogin(formData: FormData) {
   const portalCode = String(formData.get("portal_code") ?? "").trim();
@@ -11,6 +12,13 @@ export async function supplierLogin(formData: FormData) {
   if (!portalCode || !password) {
     redirect(`/supplier-portal?error=${encodeURIComponent("Vul een code en wachtwoord in.")}`);
   }
+
+  const ip = await getClientIp();
+  const { blocked } = await checkRateLimit("supplier_login", `${ip}:${portalCode.toLowerCase()}`, {
+    maxAttempts: 10,
+    windowMinutes: 15,
+  });
+  if (blocked) redirect(`/supplier-portal?error=${encodeURIComponent(RATE_LIMIT_MESSAGE_NL)}`);
 
   const supabase = await createClient();
   const { data: supplierId } = await supabase.rpc("verify_supplier_login", {

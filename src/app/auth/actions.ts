@@ -3,12 +3,19 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getOrigin } from "@/lib/server/origin";
+import { checkRateLimit, getClientIp } from "@/lib/server/rate-limit";
 
 export async function requestPasswordReset(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
   const origin = await getOrigin();
 
-  if (email) {
+  const ip = await getClientIp();
+  const { blocked } = await checkRateLimit("password_reset", `${ip}:${email.toLowerCase()}`, {
+    maxAttempts: 5,
+    windowMinutes: 60,
+  });
+
+  if (email && !blocked) {
     const supabase = await createClient();
     await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${origin}/auth/confirm?next=/auth/reset-password`,

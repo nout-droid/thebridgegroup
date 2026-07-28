@@ -55,5 +55,20 @@ export async function POST(request: Request) {
     }
   }
 
+  // Stripe stuurt bij een mislukte incasso meestal ook customer.subscription.updated met status
+  // "past_due"/"unpaid" (al afgehandeld hierboven) — deze handler dekt het geval waarin dat
+  // (nog) niet gebeurt, zodat we nooit stil blijven op een mislukte betaling.
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
+    if (customerId) {
+      await admin
+        .from("organizations")
+        .update({ subscription_status: "past_due" })
+        .eq("stripe_customer_id", customerId)
+        .neq("subscription_status", "canceled");
+    }
+  }
+
   return NextResponse.json({ received: true });
 }

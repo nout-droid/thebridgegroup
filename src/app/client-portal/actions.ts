@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE_NL } from "@/lib/server/rate-limit";
 
 export async function loginClientAccount(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim();
@@ -11,6 +12,13 @@ export async function loginClientAccount(formData: FormData) {
   if (!email || !password) {
     redirect(`/client-portal?error=${encodeURIComponent("Vul je e-mailadres en wachtwoord in.")}`);
   }
+
+  const ip = await getClientIp();
+  const { blocked } = await checkRateLimit("client_account_login", `${ip}:${email.toLowerCase()}`, {
+    maxAttempts: 10,
+    windowMinutes: 15,
+  });
+  if (blocked) redirect(`/client-portal?error=${encodeURIComponent(RATE_LIMIT_MESSAGE_NL)}`);
 
   const supabase = await createClient();
   const { data: accountId } = await supabase.rpc("login_client_account", {
