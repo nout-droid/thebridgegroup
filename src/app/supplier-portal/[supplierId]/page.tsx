@@ -10,6 +10,7 @@ import { getSupplierProjects } from "./data";
 import { SupplierRiderView } from "./supplier-rider-view";
 import { SupplierTranslatorProvider } from "./translator-context";
 import { SUPPLIER_NAV_LABELS, RIDER_VIEW_LABELS } from "./labels";
+import { RIDER_READONLY_LABELS } from "../../projects/[id]/rider-readonly";
 
 export default async function SupplierRiderPage({
   params,
@@ -139,7 +140,10 @@ export default async function SupplierRiderPage({
   ];
 
   return (
-    <SupplierTranslatorProvider staticLabels={[...SUPPLIER_NAV_LABELS, ...RIDER_VIEW_LABELS]} dynamicTexts={dynamicTexts}>
+    <SupplierTranslatorProvider
+      staticLabels={[...SUPPLIER_NAV_LABELS, ...RIDER_VIEW_LABELS, ...RIDER_READONLY_LABELS]}
+      dynamicTexts={dynamicTexts}
+    >
       <div className="flex min-h-screen flex-col">
         <Nav supplierId={supplierId} supplierName={supplier.name} active="rider" />
         <main className="mx-auto w-full max-w-4xl flex-1 space-y-6 px-6 py-8">
