@@ -10,27 +10,40 @@ import {
 } from "@/components/ui/table";
 import type { QuoteLineItem } from "@/lib/types";
 import { addQuoteLineItem, deleteQuoteLineItem } from "./actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const QUOTE_LINE_ITEMS_LABELS = [
+  "Materiaalregels",
+  "Omschrijving",
+  "Aantal",
+  "Stukprijs",
+  "Totaal",
+  "Verwijderen",
+  "Regel toevoegen",
+];
 
 export function QuoteLineItems({
   projectId,
   quoteId,
   lineItems,
+  t,
 }: {
   projectId: string;
   quoteId: string;
   lineItems: QuoteLineItem[];
+  t: Translator;
 }) {
   return (
     <div className="space-y-2 px-4 py-3">
-      <p className="text-xs font-medium text-muted-foreground">Materiaalregels</p>
+      <p className="text-xs font-medium text-muted-foreground">{t("Materiaalregels")}</p>
       {lineItems.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="h-7 text-xs">Omschrijving</TableHead>
-              <TableHead className="h-7 text-xs">Aantal</TableHead>
-              <TableHead className="h-7 text-xs">Stukprijs</TableHead>
-              <TableHead className="h-7 text-xs">Totaal</TableHead>
+              <TableHead className="h-7 text-xs">{t("Omschrijving")}</TableHead>
+              <TableHead className="h-7 text-xs">{t("Aantal")}</TableHead>
+              <TableHead className="h-7 text-xs">{t("Stukprijs")}</TableHead>
+              <TableHead className="h-7 text-xs">{t("Totaal")}</TableHead>
               <TableHead className="h-7" />
             </TableRow>
           </TableHeader>
@@ -46,7 +59,7 @@ export function QuoteLineItems({
                 <TableCell className="py-1 text-right">
                   <form action={deleteQuoteLineItem.bind(null, projectId, item.id)}>
                     <Button type="submit" variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                      Verwijderen
+                      {t("Verwijderen")}
                     </Button>
                   </form>
                 </TableCell>
@@ -59,24 +72,24 @@ export function QuoteLineItems({
         action={addQuoteLineItem.bind(null, projectId, quoteId)}
         className="grid grid-cols-2 gap-2 sm:grid-cols-4"
       >
-        <Input name="description" placeholder="Omschrijving" required className="h-8 text-xs" />
+        <Input name="description" placeholder={t("Omschrijving")} required className="h-8 text-xs" />
         <Input
           name="quantity"
           type="number"
           step="0.01"
           defaultValue={1}
-          placeholder="Aantal"
+          placeholder={t("Aantal")}
           className="h-8 text-xs"
         />
         <Input
           name="unit_price"
           type="number"
           step="0.01"
-          placeholder="Stukprijs"
+          placeholder={t("Stukprijs")}
           className="h-8 text-xs"
         />
         <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
-          Regel toevoegen
+          {t("Regel toevoegen")}
         </Button>
       </form>
     </div>

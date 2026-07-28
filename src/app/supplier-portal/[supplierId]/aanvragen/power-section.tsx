@@ -43,6 +43,7 @@ export function SupplierPowerSection({
                 id={`stage-${request.id}`}
                 defaultValue={request.stage_id ?? undefined}
                 stages={stages}
+                placeholder={t("Kies podium")}
               />
             </div>
             <div className="space-y-1">
@@ -109,7 +110,7 @@ export function SupplierPowerSection({
         >
           <div className="space-y-1">
             <Label htmlFor="new-power-stage" className="text-xs">{t("Podium")}</Label>
-            <StageSelect id="new-power-stage" stages={stages} />
+            <StageSelect id="new-power-stage" stages={stages} placeholder={t("Kies podium")} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-power-desc" className="text-xs">{t("Wat")}</Label>

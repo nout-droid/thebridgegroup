@@ -39,18 +39,55 @@ import {
   deleteQuote,
   updateCategory,
 } from "./actions";
-import { QuoteLineItems } from "./quote-line-items";
+import { QuoteLineItems, QUOTE_LINE_ITEMS_LABELS } from "./quote-line-items";
+import type { Translator } from "@/lib/server/translate";
+
+export const CATEGORY_CARD_LABELS = [
+  "Categorie verwijderen",
+  "Naam",
+  "Status",
+  "Marge type",
+  "Percentage",
+  "Vast bedrag",
+  "Marge waarde",
+  "Stelpost (indien geen offerte)",
+  "Handmatige inschatting",
+  "Geschat aantal km (optioneel)",
+  "Voor CO2-indicatie",
+  "Opslaan",
+  "Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een offerte kiest, wint die.",
+  "Nog geen offertes toegevoegd.",
+  "Leverancier",
+  "Inkoopprijs",
+  "Kiezen",
+  "Verwijderen",
+  "Kies leverancier",
+  "Inkoopprijs (optioneel)",
+  "Nog onbekend? Laat leeg",
+  "CO2 (kg, optioneel)",
+  "Bv. transport",
+  "Offerte toevoegen",
+  "Klantprijs:",
+  "inkoop",
+  "+ marge",
+  "· stelpost",
+  ...Object.values(CATEGORY_STATUS_LABELS),
+  ...Object.values(QUOTE_STATUS_LABELS),
+  ...QUOTE_LINE_ITEMS_LABELS,
+];
 
 export function CategoryCard({
   projectId,
   category,
   quotes,
   suppliers,
+  t,
 }: {
   projectId: string;
   category: Category;
   quotes: Quote[];
   suppliers: Supplier[];
+  t: Translator;
 }) {
   const chosenQuote = quotes.find((q) => q.status === "gekozen");
   const effectiveCost = chosenQuote?.cost_price ?? category.manual_cost ?? null;
@@ -59,10 +96,10 @@ export function CategoryCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-base">{category.name}</CardTitle>
+        <CardTitle className="text-base">{t(category.name)}</CardTitle>
         <form action={deleteCategory.bind(null, projectId, category.id)}>
           <Button type="submit" variant="ghost" size="sm">
-            Categorie verwijderen
+            {t("Categorie verwijderen")}
           </Button>
         </form>
       </CardHeader>
@@ -72,11 +109,11 @@ export function CategoryCard({
           className="grid grid-cols-2 gap-3 sm:grid-cols-4"
         >
           <div className="col-span-2 space-y-1.5 sm:col-span-1">
-            <Label htmlFor={`name-${category.id}`}>Naam</Label>
+            <Label htmlFor={`name-${category.id}`}>{t("Naam")}</Label>
             <Input id={`name-${category.id}`} name="name" defaultValue={category.name} required />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`status-${category.id}`}>Status</Label>
+            <Label htmlFor={`status-${category.id}`}>{t("Status")}</Label>
             <Select name="status" defaultValue={category.status}>
               <SelectTrigger id={`status-${category.id}`}>
                 <SelectValue />
@@ -84,26 +121,26 @@ export function CategoryCard({
               <SelectContent>
                 {Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    {t(label)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`margin_type-${category.id}`}>Marge type</Label>
+            <Label htmlFor={`margin_type-${category.id}`}>{t("Marge type")}</Label>
             <Select name="margin_type" defaultValue={category.margin_type}>
               <SelectTrigger id={`margin_type-${category.id}`}>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="percentage">Percentage</SelectItem>
-                <SelectItem value="fixed">Vast bedrag</SelectItem>
+                <SelectItem value="percentage">{t("Percentage")}</SelectItem>
+                <SelectItem value="fixed">{t("Vast bedrag")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`margin_value-${category.id}`}>Marge waarde</Label>
+            <Label htmlFor={`margin_value-${category.id}`}>{t("Marge waarde")}</Label>
             <Input
               id={`margin_value-${category.id}`}
               name="margin_value"
@@ -113,45 +150,46 @@ export function CategoryCard({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`manual_cost-${category.id}`}>Stelpost (indien geen offerte)</Label>
+            <Label htmlFor={`manual_cost-${category.id}`}>{t("Stelpost (indien geen offerte)")}</Label>
             <Input
               id={`manual_cost-${category.id}`}
               name="manual_cost"
               type="number"
               step="0.01"
-              placeholder="Handmatige inschatting"
+              placeholder={t("Handmatige inschatting")}
               defaultValue={category.manual_cost ?? ""}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`estimated_km-${category.id}`}>Geschat aantal km (optioneel)</Label>
+            <Label htmlFor={`estimated_km-${category.id}`}>{t("Geschat aantal km (optioneel)")}</Label>
             <Input
               id={`estimated_km-${category.id}`}
               name="estimated_km"
               type="number"
               step="1"
-              placeholder="Voor CO2-indicatie"
+              placeholder={t("Voor CO2-indicatie")}
               defaultValue={category.estimated_km ?? ""}
             />
           </div>
           <Button type="submit" size="sm" className="col-span-2 sm:col-span-4 sm:w-fit">
-            Opslaan
+            {t("Opslaan")}
           </Button>
         </form>
         <p className="text-xs text-muted-foreground">
-          Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een
-          offerte kiest, wint die.
+          {t(
+            "Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een offerte kiest, wint die."
+          )}
         </p>
 
         {!quotes.length ? (
-          <p className="text-sm text-muted-foreground">Nog geen offertes toegevoegd.</p>
+          <p className="text-sm text-muted-foreground">{t("Nog geen offertes toegevoegd.")}</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Leverancier</TableHead>
-                <TableHead>Inkoopprijs</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>{t("Leverancier")}</TableHead>
+                <TableHead>{t("Inkoopprijs")}</TableHead>
+                <TableHead>{t("Status")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -163,20 +201,20 @@ export function CategoryCard({
                     <TableCell>&euro;&nbsp;{quote.cost_price.toFixed(2)}</TableCell>
                     <TableCell>
                       <Badge variant={quote.status === "gekozen" ? "default" : "secondary"}>
-                        {QUOTE_STATUS_LABELS[quote.status]}
+                        {t(QUOTE_STATUS_LABELS[quote.status])}
                       </Badge>
                     </TableCell>
                     <TableCell className="flex justify-end gap-2">
                       {quote.status !== "gekozen" && (
                         <form action={chooseQuote.bind(null, projectId, quote.id)}>
                           <Button type="submit" size="sm" variant="secondary">
-                            Kiezen
+                            {t("Kiezen")}
                           </Button>
                         </form>
                       )}
                       <form action={deleteQuote.bind(null, projectId, quote.id)}>
                         <Button type="submit" size="sm" variant="ghost">
-                          Verwijderen
+                          {t("Verwijderen")}
                         </Button>
                       </form>
                     </TableCell>
@@ -187,6 +225,7 @@ export function CategoryCard({
                         projectId={projectId}
                         quoteId={quote.id}
                         lineItems={quote.line_items ?? []}
+                        t={t}
                       />
                     </TableCell>
                   </TableRow>
@@ -201,10 +240,10 @@ export function CategoryCard({
           className="grid grid-cols-2 gap-3 sm:grid-cols-4"
         >
           <div className="space-y-1.5">
-            <Label htmlFor={`supplier-${category.id}`}>Leverancier</Label>
+            <Label htmlFor={`supplier-${category.id}`}>{t("Leverancier")}</Label>
             <Select name="supplier_id">
               <SelectTrigger id={`supplier-${category.id}`}>
-                <SelectValue placeholder="Kies leverancier" />
+                <SelectValue placeholder={t("Kies leverancier")} />
               </SelectTrigger>
               <SelectContent>
                 {suppliers.map((supplier) => (
@@ -216,17 +255,17 @@ export function CategoryCard({
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`cost_price-${category.id}`}>Inkoopprijs (optioneel)</Label>
+            <Label htmlFor={`cost_price-${category.id}`}>{t("Inkoopprijs (optioneel)")}</Label>
             <Input
               id={`cost_price-${category.id}`}
               name="cost_price"
               type="number"
               step="0.01"
-              placeholder="Nog onbekend? Laat leeg"
+              placeholder={t("Nog onbekend? Laat leeg")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`quote_status-${category.id}`}>Status</Label>
+            <Label htmlFor={`quote_status-${category.id}`}>{t("Status")}</Label>
             <Select name="status" defaultValue="aangevraagd">
               <SelectTrigger id={`quote_status-${category.id}`}>
                 <SelectValue />
@@ -234,34 +273,34 @@ export function CategoryCard({
               <SelectContent>
                 {Object.entries(QUOTE_STATUS_LABELS).map(([value, label]) => (
                   <SelectItem key={value} value={value}>
-                    {label}
+                    {t(label)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor={`co2-${category.id}`}>CO2 (kg, optioneel)</Label>
+            <Label htmlFor={`co2-${category.id}`}>{t("CO2 (kg, optioneel)")}</Label>
             <Input
               id={`co2-${category.id}`}
               name="co2_kg"
               type="number"
               step="0.1"
-              placeholder="Bv. transport"
+              placeholder={t("Bv. transport")}
             />
           </div>
           <Button type="submit" size="sm" className="self-end">
-            Offerte toevoegen
+            {t("Offerte toevoegen")}
           </Button>
         </form>
 
         {clientPrice !== null && (
           <p className="text-sm">
-            Klantprijs: <span className="font-semibold">&euro; {clientPrice.toFixed(2)}</span>{" "}
+            {t("Klantprijs:")} <span className="font-semibold">&euro; {clientPrice.toFixed(2)}</span>{" "}
             <span className="text-muted-foreground">
-              (inkoop &euro; {effectiveCost!.toFixed(2)} + marge &euro;{" "}
+              ({t("inkoop")} &euro; {effectiveCost!.toFixed(2)} {t("+ marge")} &euro;{" "}
               {(clientPrice - effectiveCost!).toFixed(2)}
-              {!chosenQuote && " · stelpost"})
+              {!chosenQuote && ` ${t("· stelpost")}`})
             </span>
           </p>
         )}

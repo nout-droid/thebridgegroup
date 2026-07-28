@@ -3,8 +3,10 @@ import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { ProjectMedia } from "@/lib/types";
-import { ProjectMediaCard } from "../project-media";
+import { ProjectMediaCard, PROJECT_MEDIA_CARD_LABELS } from "../project-media";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectMediaPage({
   params,
@@ -23,6 +25,9 @@ export default async function ProjectMediaPage({
     .order("sort_order", { ascending: true })
     .returns<ProjectMedia[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, PROJECT_MEDIA_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -32,6 +37,7 @@ export default async function ProjectMediaPage({
           projectId={project.id}
           backgroundImageUrl={project.background_image_url}
           media={media ?? []}
+          t={t}
         />
       </main>
       <Footer />

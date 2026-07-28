@@ -5,7 +5,10 @@ import { Footer } from "@/components/footer";
 import type { EquipmentReservation, Stage, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { EquipmentCard } from "../equipment-card";
+import { EquipmentCard, type EquipmentCardLabels } from "../equipment-card";
+import { EQUIPMENT_CARD_LABELS } from "../../translation-labels";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionEquipmentPage({
   params,
@@ -37,6 +40,36 @@ export default async function ProductionEquipmentPage({
     .order("sort_order", { ascending: true })
     .returns<Stage[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, EQUIPMENT_CARD_LABELS);
+  const labels: EquipmentCardLabels = {
+    title: t("Materieel reservering"),
+    description: t("Gehuurde machines: van wie, wanneer, en waar ligt de sleutel."),
+    area: t("Podium/area"),
+    allStages: t("Alle podia"),
+    projectWide: t("Projectbreed"),
+    date: t("Datum"),
+    allDates: t("Alle datums"),
+    supplier: t("Leverancier"),
+    allSuppliers: t("Alle leveranciers"),
+    search: t("Zoek op type/sleutelhouder"),
+    searchPlaceholder: "bv. Manitou",
+    downloadPdf: t("Materieellijst downloaden (PDF)"),
+    machineType: t("Type machine"),
+    quantity: t("Aantal"),
+    accessories: t("Accessoires"),
+    reservationDate: t("Datum reservering"),
+    duration: t("Benodigde duur"),
+    machineNumber: t("Machinenummer"),
+    keyHolder: t("Sleutel bij"),
+    pickedUp: t("Opgehaald"),
+    save: t("Opslaan"),
+    remove: t("Verwijderen"),
+    addReservation: t("Reservering toevoegen"),
+    chooseStage: t("Kies podium"),
+    chooseSupplier: t("Kies leverancier"),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -48,6 +81,7 @@ export default async function ProductionEquipmentPage({
           reservations={reservations ?? []}
           suppliers={suppliers ?? []}
           stages={stages ?? []}
+          labels={labels}
         />
       </main>
       <Footer />

@@ -7,21 +7,49 @@ import type { CrewMember, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { AccessDatesInput } from "@/components/access-dates-input";
 import { addCrewMember, deleteCrewMember, updateCrewMember } from "./crew-actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const CREW_CARD_LABELS = [
+  "Crew & Accreditatie",
+  "Alle badges downloaden",
+  "Wie is er, van welke leverancier, en is de accreditatie geregeld.",
+  "Positie:",
+  "Uit artiestenrider",
+  "Naam",
+  "Leverancier",
+  "Kies leverancier",
+  "Functie",
+  "Toegangsniveau",
+  "ID-nummer",
+  "Geaccrediteerd",
+  "Catering nodig",
+  "Hotel nodig",
+  "Vliegticket nodig",
+  "Toegangsdagen",
+  "Opslaan",
+  "Verwijderen",
+  "Badge",
+  "Crewlid toevoegen",
+];
+
+const identity: Translator = (text) => text;
 
 export function CrewCard({
   projectId,
   members,
   suppliers,
+  t = identity,
 }: {
   projectId: string;
   members: CrewMember[];
   suppliers: Supplier[];
+  t?: Translator;
 }) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">Crew & Accreditatie</CardTitle>
+          <CardTitle className="text-base">{t("Crew & Accreditatie")}</CardTitle>
           {members.length > 0 && (
             <a
               href={`/projects/${projectId}/production/crew/badges`}
@@ -29,12 +57,12 @@ export function CrewCard({
               rel="noopener noreferrer"
               className="text-sm text-primary underline"
             >
-              Alle badges downloaden
+              {t("Alle badges downloaden")}
             </a>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Wie is er, van welke leverancier, en is de accreditatie geregeld.
+          {t("Wie is er, van welke leverancier, en is de accreditatie geregeld.")}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -47,15 +75,15 @@ export function CrewCard({
             {(member.crew_position_id || member.artist_rider_id) && (
               <div className="flex flex-wrap items-center gap-1.5 sm:col-span-6">
                 {member.crew_position_id && (
-                  <Badge variant="secondary" className="text-[10px]">Positie: {member.role || "—"}</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{t("Positie:")} {member.role || "—"}</Badge>
                 )}
                 {member.artist_rider_id && (
-                  <Badge variant="secondary" className="text-[10px]">Uit artiestenrider</Badge>
+                  <Badge variant="secondary" className="text-[10px]">{t("Uit artiestenrider")}</Badge>
                 )}
               </div>
             )}
             <div className="space-y-1">
-              <Label htmlFor={`name-${member.id}`} className="text-xs">Naam</Label>
+              <Label htmlFor={`name-${member.id}`} className="text-xs">{t("Naam")}</Label>
               <Input
                 id={`name-${member.id}`}
                 name="name"
@@ -65,15 +93,16 @@ export function CrewCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`supplier-${member.id}`} className="text-xs">Leverancier</Label>
+              <Label htmlFor={`supplier-${member.id}`} className="text-xs">{t("Leverancier")}</Label>
               <SupplierSelect
                 id={`supplier-${member.id}`}
                 defaultValue={member.supplier_id ?? undefined}
                 suppliers={suppliers}
+                placeholder={t("Kies leverancier")}
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`role-${member.id}`} className="text-xs">Functie</Label>
+              <Label htmlFor={`role-${member.id}`} className="text-xs">{t("Functie")}</Label>
               <Input
                 id={`role-${member.id}`}
                 name="role"
@@ -82,7 +111,7 @@ export function CrewCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`access-${member.id}`} className="text-xs">Toegangsniveau</Label>
+              <Label htmlFor={`access-${member.id}`} className="text-xs">{t("Toegangsniveau")}</Label>
               <Input
                 id={`access-${member.id}`}
                 name="access_level"
@@ -91,7 +120,7 @@ export function CrewCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`idnum-${member.id}`} className="text-xs">ID-nummer</Label>
+              <Label htmlFor={`idnum-${member.id}`} className="text-xs">{t("ID-nummer")}</Label>
               <Input
                 id={`idnum-${member.id}`}
                 name="id_number"
@@ -107,7 +136,7 @@ export function CrewCard({
                   defaultChecked={member.accredited}
                   className="h-4 w-4"
                 />
-                Geaccrediteerd
+                {t("Geaccrediteerd")}
               </label>
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <input
@@ -116,7 +145,7 @@ export function CrewCard({
                   defaultChecked={member.needs_catering}
                   className="h-4 w-4"
                 />
-                Catering nodig
+                {t("Catering nodig")}
               </label>
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <input
@@ -125,7 +154,7 @@ export function CrewCard({
                   defaultChecked={member.needs_hotel}
                   className="h-4 w-4"
                 />
-                Hotel nodig
+                {t("Hotel nodig")}
               </label>
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <input
@@ -134,16 +163,16 @@ export function CrewCard({
                   defaultChecked={member.needs_flight}
                   className="h-4 w-4"
                 />
-                Vliegticket nodig
+                {t("Vliegticket nodig")}
               </label>
             </div>
             <div className="space-y-1 sm:col-span-6">
-              <Label className="text-xs">Toegangsdagen</Label>
+              <Label className="text-xs">{t("Toegangsdagen")}</Label>
               <AccessDatesInput defaultValues={member.access_dates} />
             </div>
             <div className="flex items-end gap-2 sm:col-span-6">
               <Button type="submit" size="sm" className="h-8 text-xs">
-                Opslaan
+                {t("Opslaan")}
               </Button>
               <Button
                 type="submit"
@@ -152,7 +181,7 @@ export function CrewCard({
                 variant="ghost"
                 className="h-8 text-xs"
               >
-                Verwijderen
+                {t("Verwijderen")}
               </Button>
               <a
                 href={`/projects/${projectId}/production/crew/${member.id}/badge`}
@@ -160,7 +189,7 @@ export function CrewCard({
                 rel="noopener noreferrer"
                 className="text-xs font-medium text-primary underline"
               >
-                Badge
+                {t("Badge")}
               </a>
             </div>
           </form>
@@ -171,50 +200,50 @@ export function CrewCard({
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-6"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-name" className="text-xs">Naam</Label>
+            <Label htmlFor="new-name" className="text-xs">{t("Naam")}</Label>
             <Input id="new-name" name="name" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-supplier" className="text-xs">Leverancier</Label>
-            <SupplierSelect id="new-supplier" suppliers={suppliers} />
+            <Label htmlFor="new-supplier" className="text-xs">{t("Leverancier")}</Label>
+            <SupplierSelect id="new-supplier" suppliers={suppliers} placeholder={t("Kies leverancier")} />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-role" className="text-xs">Functie</Label>
+            <Label htmlFor="new-role" className="text-xs">{t("Functie")}</Label>
             <Input id="new-role" name="role" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-access" className="text-xs">Toegangsniveau</Label>
+            <Label htmlFor="new-access" className="text-xs">{t("Toegangsniveau")}</Label>
             <Input id="new-access" name="access_level" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-idnum" className="text-xs">ID-nummer</Label>
+            <Label htmlFor="new-idnum" className="text-xs">{t("ID-nummer")}</Label>
             <Input id="new-idnum" name="id_number" className="h-8 text-xs" />
           </div>
           <div className="flex flex-wrap items-end gap-3 sm:col-span-2">
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="accredited" className="h-4 w-4" />
-              Geaccrediteerd
+              {t("Geaccrediteerd")}
             </label>
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="needs_catering" className="h-4 w-4" />
-              Catering nodig
+              {t("Catering nodig")}
             </label>
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="needs_hotel" className="h-4 w-4" />
-              Hotel nodig
+              {t("Hotel nodig")}
             </label>
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="needs_flight" className="h-4 w-4" />
-              Vliegticket nodig
+              {t("Vliegticket nodig")}
             </label>
           </div>
           <div className="space-y-1 sm:col-span-6">
-            <Label className="text-xs">Toegangsdagen</Label>
+            <Label className="text-xs">{t("Toegangsdagen")}</Label>
             <AccessDatesInput />
           </div>
           <div className="sm:col-span-6">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Crewlid toevoegen
+              {t("Crewlid toevoegen")}
             </Button>
           </div>
         </form>

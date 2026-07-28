@@ -31,16 +31,36 @@ interface ReviewLine extends ParsedSupplierDocumentLine {
   category_id: string;
 }
 
+export interface SupplierProjectDocumentReviewLabels {
+  busy: string;
+  review: string;
+  ignore: string;
+  noCategoriesWarning: string;
+  noLinesFound: string;
+  description: string;
+  amount: string;
+  category: string;
+  notAssign: string;
+  recognizedAs: string;
+  remove: string;
+  unassignedSuffix: string;
+  confirm: string;
+  lines: string;
+  cancel: string;
+}
+
 export function SupplierProjectDocumentReview({
   projectId,
   documentId,
   supplierId,
   label,
+  labels,
 }: {
   projectId: string;
   documentId: string;
   supplierId: string;
   label: string;
+  labels: SupplierProjectDocumentReviewLabels;
 }) {
   const router = useRouter();
   const [lines, setLines] = useState<ReviewLine[] | null>(null);
@@ -80,10 +100,10 @@ export function SupplierProjectDocumentReview({
       <div className="flex items-center gap-2">
         <span className="text-sm">{label}</span>
         <Button type="button" size="sm" variant="secondary" onClick={loadPreview} disabled={loading}>
-          {loading ? "Bezig..." : "Doorlopen"}
+          {loading ? labels.busy : labels.review}
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={dismiss}>
-          Negeren
+          {labels.ignore}
         </Button>
       </div>
     );
@@ -95,21 +115,18 @@ export function SupplierProjectDocumentReview({
     <div className="space-y-2 rounded-md border p-3">
       <p className="text-sm font-medium">{label}</p>
       {!categories.length && (
-        <p className="text-xs text-destructive">
-          Deze leverancier is nog voor geen enkele categorie in dit project aangevraagd — er is
-          niets om aan toe te wijzen.
-        </p>
+        <p className="text-xs text-destructive">{labels.noCategoriesWarning}</p>
       )}
       {lines.length === 0 && (
-        <p className="text-xs text-muted-foreground">Geen regels herkend in dit PDF.</p>
+        <p className="text-xs text-muted-foreground">{labels.noLinesFound}</p>
       )}
       {lines.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Omschrijving</TableHead>
-              <TableHead>Bedrag</TableHead>
-              <TableHead>Categorie</TableHead>
+              <TableHead>{labels.description}</TableHead>
+              <TableHead>{labels.amount}</TableHead>
+              <TableHead>{labels.category}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -119,7 +136,9 @@ export function SupplierProjectDocumentReview({
                 <TableCell className="max-w-xs">
                   {line.raw_text}
                   {line.matched_label && (
-                    <p className="text-xs text-muted-foreground">Herkend als: {line.matched_label}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {labels.recognizedAs} {line.matched_label}
+                    </p>
                   )}
                 </TableCell>
                 <TableCell>
@@ -137,7 +156,7 @@ export function SupplierProjectDocumentReview({
                     onValueChange={(value) => updateLine(index, { category_id: value ?? "" })}
                   >
                     <SelectTrigger className="h-8 w-40 text-xs">
-                      <SelectValue placeholder="Niet toewijzen" />
+                      <SelectValue placeholder={labels.notAssign} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
@@ -150,7 +169,7 @@ export function SupplierProjectDocumentReview({
                 </TableCell>
                 <TableCell className="text-right">
                   <Button type="button" size="sm" variant="ghost" onClick={() => removeLine(index)}>
-                    Verwijderen
+                    {labels.remove}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -160,15 +179,15 @@ export function SupplierProjectDocumentReview({
       )}
       {unassignedCount > 0 && (
         <p className="text-xs text-muted-foreground">
-          {unassignedCount} regel(s) zonder categorie worden niet overgenomen.
+          {unassignedCount} {labels.unassignedSuffix}
         </p>
       )}
       <div className="flex gap-2">
         <Button type="button" size="sm" onClick={confirm}>
-          Bevestigen ({lines.filter((l) => l.category_id).length} regels)
+          {labels.confirm} ({lines.filter((l) => l.category_id).length} {labels.lines})
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={() => setLines(null)}>
-          Annuleren
+          {labels.cancel}
         </Button>
       </div>
     </div>

@@ -5,7 +5,9 @@ import { Footer } from "@/components/footer";
 import type { CateringOrder, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { CateringCard } from "../catering-card";
+import { CateringCard, CATERING_CARD_LABELS } from "../catering-card";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionCateringPage({
   params,
@@ -30,13 +32,16 @@ export default async function ProductionCateringPage({
     .order("name", { ascending: true })
     .returns<Supplier[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, CATERING_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="production" />
       <ProductionSubNav projectId={project.id} active="catering" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <CateringCard projectId={project.id} orders={orders ?? []} suppliers={suppliers ?? []} />
+        <CateringCard projectId={project.id} orders={orders ?? []} suppliers={suppliers ?? []} t={t} />
       </main>
       <Footer />
     </div>

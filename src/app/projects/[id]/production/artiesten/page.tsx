@@ -5,7 +5,9 @@ import { Footer } from "@/components/footer";
 import type { ArtistRider, CrewMember } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { ArtistCard } from "../artist-card";
+import { ArtistCard, ARTIST_CARD_LABELS } from "../artist-card";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionArtistsPage({
   params,
@@ -31,6 +33,9 @@ export default async function ProductionArtistsPage({
     .not("artist_rider_id", "is", null)
     .returns<CrewMember[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, ARTIST_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -41,6 +46,7 @@ export default async function ProductionArtistsPage({
           projectId={project.id}
           artists={artists ?? []}
           crewMembers={artistCrewMembers ?? []}
+          t={t}
         />
       </main>
       <Footer />

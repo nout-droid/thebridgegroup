@@ -4,9 +4,11 @@ import { ensureRiderWithDefaults, ensureStageRiderSections } from "@/lib/server/
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { RiderSection, RiderSectionItem } from "@/lib/types";
-import { RiderReadOnly } from "../../../rider-readonly";
-import { RiderCard } from "../../../rider-card";
+import { RiderReadOnly, RIDER_READONLY_LABELS } from "../../../rider-readonly";
+import { RiderCard, RIDER_CARD_LABELS } from "../../../rider-card";
 import { StageSubNav } from "../stage-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function StageRiderPage({
   params,
@@ -53,6 +55,19 @@ export default async function StageRiderPage({
   const projectWideSections = sectionsWithItems.filter((s) => !s.stage_id);
   const stageSections = sectionsWithItems.filter((s) => s.stage_id === stageId);
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [
+    `Rider — ${stage.name}`,
+    "Projectbrede onderdelen (alleen-lezen, wijzig via Rider in het hoofdmenu)",
+    ...RIDER_CARD_LABELS,
+    ...RIDER_READONLY_LABELS,
+    ...projectWideSections.flatMap((s) => [
+      s.title,
+      s.content,
+      ...(s.items ?? []).map((i) => i.description),
+    ]),
+  ]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -70,13 +85,14 @@ export default async function StageRiderPage({
           sections={stageSections}
           title={`Rider — ${stage.name}`}
           showDownloadLinks={false}
+          t={t}
         />
 
         <div>
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-            Projectbrede onderdelen (alleen-lezen, wijzig via Rider in het hoofdmenu)
+            {t("Projectbrede onderdelen (alleen-lezen, wijzig via Rider in het hoofdmenu)")}
           </h2>
-          <RiderReadOnly sections={projectWideSections} />
+          <RiderReadOnly sections={projectWideSections} t={t} />
         </div>
       </main>
       <Footer />

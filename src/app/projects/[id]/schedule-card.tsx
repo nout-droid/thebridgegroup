@@ -16,6 +16,27 @@ import {
 } from "./schedule-actions";
 import { SupplierSelect } from "./supplier-select";
 
+export interface ScheduleCardLabels {
+  title: string;
+  description: string;
+  downloadPdf: string;
+  date: string;
+  time: string;
+  activity: string;
+  priority: string;
+  notes: string;
+  save: string;
+  remove: string;
+  performers: string;
+  unknown: string;
+  removeSupplier: string;
+  add: string;
+  newActivityPlaceholder: string;
+  addActivity: string;
+  addPerformersHint: string;
+  chooseSupplier: string;
+}
+
 function sortItems(items: ScheduleItem[]): ScheduleItem[] {
   return [...items].sort((a, b) => {
     if (a.activity_date !== b.activity_date) return a.activity_date < b.activity_date ? -1 : 1;
@@ -37,11 +58,13 @@ export function ScheduleCard({
   stageId,
   items,
   suppliers,
+  labels,
 }: {
   projectId: string;
   stageId: string | null;
   items: ScheduleItem[];
   suppliers: Supplier[];
+  labels: ScheduleCardLabels;
 }) {
   const sorted = sortItems(items);
   const dates = [...new Set(sorted.map((item) => item.activity_date))];
@@ -52,10 +75,8 @@ export function ScheduleCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Draaiboek</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Tijdlijn van activiteiten, van opbouw tot afbraak.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {sorted.length > 0 && (
@@ -65,7 +86,7 @@ export function ScheduleCard({
             rel="noopener noreferrer"
             className="text-sm text-primary underline"
           >
-            Draaiboek downloaden (PDF)
+            {labels.downloadPdf}
           </a>
         )}
 
@@ -101,7 +122,7 @@ export function ScheduleCard({
                 className="grid grid-cols-2 gap-2 sm:grid-cols-6"
               >
                 <div className="space-y-1">
-                  <Label htmlFor={`date-${item.id}`} className="text-xs">Datum</Label>
+                  <Label htmlFor={`date-${item.id}`} className="text-xs">{labels.date}</Label>
                   <Input
                     id={`date-${item.id}`}
                     name="activity_date"
@@ -112,7 +133,7 @@ export function ScheduleCard({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor={`time-${item.id}`} className="text-xs">Tijd</Label>
+                  <Label htmlFor={`time-${item.id}`} className="text-xs">{labels.time}</Label>
                   <Input
                     id={`time-${item.id}`}
                     name="activity_time"
@@ -123,7 +144,7 @@ export function ScheduleCard({
                   />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <Label htmlFor={`activity-${item.id}`} className="text-xs">Activiteit</Label>
+                  <Label htmlFor={`activity-${item.id}`} className="text-xs">{labels.activity}</Label>
                   <Input
                     id={`activity-${item.id}`}
                     name="activity"
@@ -133,7 +154,7 @@ export function ScheduleCard({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor={`priority-${item.id}`} className="text-xs">Prioriteit</Label>
+                  <Label htmlFor={`priority-${item.id}`} className="text-xs">{labels.priority}</Label>
                   <Input
                     id={`priority-${item.id}`}
                     name="priority"
@@ -142,7 +163,7 @@ export function ScheduleCard({
                   />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <Label htmlFor={`notes-${item.id}`} className="text-xs">Notities</Label>
+                  <Label htmlFor={`notes-${item.id}`} className="text-xs">{labels.notes}</Label>
                   <Input
                     id={`notes-${item.id}`}
                     name="notes"
@@ -152,7 +173,7 @@ export function ScheduleCard({
                 </div>
                 <div className="flex items-end gap-2 sm:col-span-6">
                   <Button type="submit" size="sm" className="h-8 text-xs">
-                    Opslaan
+                    {labels.save}
                   </Button>
                   <Button
                     type="submit"
@@ -161,13 +182,13 @@ export function ScheduleCard({
                     variant="ghost"
                     className="h-8 text-xs"
                   >
-                    Verwijderen
+                    {labels.remove}
                   </Button>
                 </div>
               </form>
 
               <div className="space-y-1.5 border-t pt-2">
-                <Label className="text-xs">Uitvoerders</Label>
+                <Label className="text-xs">{labels.performers}</Label>
                 {linkedSuppliers.length > 0 && (
                   <ul className="flex flex-wrap gap-1.5">
                     {linkedSuppliers.map((link) => (
@@ -175,12 +196,12 @@ export function ScheduleCard({
                         key={link.id}
                         className="flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs"
                       >
-                        {link.supplier?.name ?? "Onbekend"}
+                        {link.supplier?.name ?? labels.unknown}
                         <form action={deleteScheduleItemSupplier.bind(null, projectId, stageId, link.id)}>
                           <button
                             type="submit"
                             className="text-muted-foreground hover:text-foreground"
-                            aria-label={`${link.supplier?.name ?? "leverancier"} verwijderen`}
+                            aria-label={`${link.supplier?.name ?? labels.unknown} ${labels.removeSupplier}`}
                           >
                             &times;
                           </button>
@@ -194,9 +215,13 @@ export function ScheduleCard({
                     action={addScheduleItemSupplier.bind(null, projectId, stageId, item.id)}
                     className="flex items-end gap-2"
                   >
-                    <SupplierSelect id={`add-supplier-${item.id}`} suppliers={availableSuppliers} />
+                    <SupplierSelect
+                      id={`add-supplier-${item.id}`}
+                      suppliers={availableSuppliers}
+                      placeholder={labels.chooseSupplier}
+                    />
                     <Button type="submit" size="sm" variant="outline" className="h-8 text-xs">
-                      Toevoegen
+                      {labels.add}
                     </Button>
                   </form>
                 )}
@@ -210,7 +235,7 @@ export function ScheduleCard({
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-6"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-date" className="text-xs">Datum</Label>
+            <Label htmlFor="new-date" className="text-xs">{labels.date}</Label>
             <Input
               id="new-date"
               name="activity_date"
@@ -221,30 +246,28 @@ export function ScheduleCard({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-time" className="text-xs">Tijd</Label>
+            <Label htmlFor="new-time" className="text-xs">{labels.time}</Label>
             <Input id="new-time" name="activity_time" type="time" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1 sm:col-span-3">
-            <Label htmlFor="new-activity" className="text-xs">Activiteit</Label>
-            <Input id="new-activity" name="activity" placeholder="bv. Start load in licht" className="h-8 text-xs" required />
+            <Label htmlFor="new-activity" className="text-xs">{labels.activity}</Label>
+            <Input id="new-activity" name="activity" placeholder={labels.newActivityPlaceholder} className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-priority" className="text-xs">Prioriteit</Label>
+            <Label htmlFor="new-priority" className="text-xs">{labels.priority}</Label>
             <Input id="new-priority" name="priority" className="h-8 text-xs" />
           </div>
           <div className="space-y-1 sm:col-span-5">
-            <Label htmlFor="new-notes" className="text-xs">Notities</Label>
+            <Label htmlFor="new-notes" className="text-xs">{labels.notes}</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
           <div className="flex items-end">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Activiteit toevoegen
+              {labels.addActivity}
             </Button>
           </div>
         </form>
-        <p className="text-xs text-muted-foreground">
-          Uitvoerders (leveranciers) voeg je toe nadat de activiteit is aangemaakt.
-        </p>
+        <p className="text-xs text-muted-foreground">{labels.addPerformersHint}</p>
       </CardContent>
     </Card>
   );

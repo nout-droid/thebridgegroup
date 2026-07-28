@@ -10,6 +10,42 @@ import { SupplierSelect } from "../supplier-select";
 import { StageSelect } from "../stage-select";
 import { addCrewPosition, deleteCrewPosition, updateCrewPosition } from "./crew-planning-actions";
 
+export interface CrewPlanningCardLabels {
+  title: string;
+  description: string;
+  area: string;
+  allStages: string;
+  projectWide: string;
+  date: string;
+  allDates: string;
+  searchRoleName: string;
+  searchPlaceholder: string;
+  stage: string;
+  role: string;
+  rolePlaceholder: string;
+  quantity: string;
+  providedBy: string;
+  providedByUs: string;
+  providedByClient: string;
+  providedBySupplier: string;
+  supplier: string;
+  needsAccreditation: string;
+  needsCatering: string;
+  needsHotel: string;
+  needsFlight: string;
+  notes: string;
+  save: string;
+  add: string;
+  remove: string;
+  ofPositionsFilled: string;
+  positionsFilled: string;
+  catering: string;
+  hotel: string;
+  addNewPosition: string;
+  chooseStage: string;
+  chooseSupplier: string;
+}
+
 function PositionForm({
   projectId,
   position,
@@ -17,6 +53,7 @@ function PositionForm({
   stages,
   defaultDate,
   defaultStageId,
+  labels,
 }: {
   projectId: string;
   position?: CrewPosition;
@@ -24,6 +61,7 @@ function PositionForm({
   stages: Stage[];
   defaultDate?: string;
   defaultStageId?: string;
+  labels: CrewPlanningCardLabels;
 }) {
   const action = position
     ? updateCrewPosition.bind(null, projectId, position.id)
@@ -33,15 +71,16 @@ function PositionForm({
   return (
     <form action={action} className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4">
       <div className="space-y-1">
-        <Label htmlFor={`stage-${idPrefix}`} className="text-xs">Podium/area</Label>
+        <Label htmlFor={`stage-${idPrefix}`} className="text-xs">{labels.area}</Label>
         <StageSelect
           id={`stage-${idPrefix}`}
           defaultValue={position?.stage_id ?? defaultStageId}
           stages={stages}
+          placeholder={labels.chooseStage}
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`date-${idPrefix}`} className="text-xs">Datum</Label>
+        <Label htmlFor={`date-${idPrefix}`} className="text-xs">{labels.date}</Label>
         <Input
           id={`date-${idPrefix}`}
           name="work_date"
@@ -52,18 +91,18 @@ function PositionForm({
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`role-${idPrefix}`} className="text-xs">Functie</Label>
+        <Label htmlFor={`role-${idPrefix}`} className="text-xs">{labels.role}</Label>
         <Input
           id={`role-${idPrefix}`}
           name="role"
           defaultValue={position?.role}
-          placeholder="bv. Podiumtechnicus"
+          placeholder={labels.rolePlaceholder}
           className="h-8 text-xs"
           required
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`qty-${idPrefix}`} className="text-xs">Aantal</Label>
+        <Label htmlFor={`qty-${idPrefix}`} className="text-xs">{labels.quantity}</Label>
         <Input
           id={`qty-${idPrefix}`}
           name="quantity"
@@ -74,24 +113,25 @@ function PositionForm({
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`provider-${idPrefix}`} className="text-xs">Wie levert</Label>
+        <Label htmlFor={`provider-${idPrefix}`} className="text-xs">{labels.providedBy}</Label>
         <select
           id={`provider-${idPrefix}`}
           name="provided_by"
           defaultValue={position?.provided_by ?? "wij"}
           className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs"
         >
-          <option value="wij">Wij</option>
-          <option value="klant">Klant</option>
-          <option value="leverancier">Leverancier</option>
+          <option value="wij">{labels.providedByUs}</option>
+          <option value="klant">{labels.providedByClient}</option>
+          <option value="leverancier">{labels.providedBySupplier}</option>
         </select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`supplier-${idPrefix}`} className="text-xs">Leverancier</Label>
+        <Label htmlFor={`supplier-${idPrefix}`} className="text-xs">{labels.supplier}</Label>
         <SupplierSelect
           id={`supplier-${idPrefix}`}
           defaultValue={position?.supplier_id ?? undefined}
           suppliers={suppliers}
+          placeholder={labels.chooseSupplier}
         />
       </div>
       <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
@@ -102,7 +142,7 @@ function PositionForm({
             defaultChecked={position?.needs_accreditation}
             className="h-4 w-4"
           />
-          Accreditatie nodig
+          {labels.needsAccreditation}
         </label>
         <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <input
@@ -111,7 +151,7 @@ function PositionForm({
             defaultChecked={position?.needs_catering}
             className="h-4 w-4"
           />
-          Catering nodig
+          {labels.needsCatering}
         </label>
         <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <input
@@ -120,7 +160,7 @@ function PositionForm({
             defaultChecked={position?.needs_hotel}
             className="h-4 w-4"
           />
-          Hotel nodig
+          {labels.needsHotel}
         </label>
         <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <input
@@ -129,16 +169,16 @@ function PositionForm({
             defaultChecked={position?.needs_flight}
             className="h-4 w-4"
           />
-          Vlucht nodig
+          {labels.needsFlight}
         </label>
       </div>
       <div className="space-y-1 sm:col-span-4">
-        <Label htmlFor={`notes-${idPrefix}`} className="text-xs">Notities</Label>
+        <Label htmlFor={`notes-${idPrefix}`} className="text-xs">{labels.notes}</Label>
         <Input id={`notes-${idPrefix}`} name="notes" defaultValue={position?.notes} className="h-8 text-xs" />
       </div>
       <div className="flex items-end gap-2 sm:col-span-4">
         <Button type="submit" size="sm" className="h-8 text-xs">
-          {position ? "Opslaan" : "Toevoegen"}
+          {position ? labels.save : labels.add}
         </Button>
         {position && (
           <Button
@@ -148,7 +188,7 @@ function PositionForm({
             variant="ghost"
             className="h-8 text-xs"
           >
-            Verwijderen
+            {labels.remove}
           </Button>
         )}
       </div>
@@ -162,15 +202,17 @@ export function CrewPlanningCard({
   suppliers,
   stages,
   linkedMembers,
+  labels,
 }: {
   projectId: string;
   positions: CrewPosition[];
   suppliers: Supplier[];
   stages: Stage[];
   linkedMembers: CrewMember[];
+  labels: CrewPlanningCardLabels;
 }) {
   const stageGroups = [
-    { stageId: null as string | null, stageName: "Projectbreed" },
+    { stageId: null as string | null, stageName: labels.projectWide },
     ...stages.map((s) => ({ stageId: s.id, stageName: s.name })),
   ];
 
@@ -196,49 +238,45 @@ export function CrewPlanningCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Crew Planning per podium/area</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Leg per podium, dag en functie vast hoeveel mensen nodig zijn en wie ze levert —
-          nog zonder namen. Vink "Accreditatie nodig" aan om automatisch lege plekken in
-          Crew & Accreditatie aan te maken zodra dit bekend wordt.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
         <div className="flex flex-wrap items-end gap-2 pt-2">
           <div className="space-y-1">
-            <Label htmlFor="planning-filter-area" className="text-xs">Podium/area</Label>
+            <Label htmlFor="planning-filter-area" className="text-xs">{labels.area}</Label>
             <select
               id="planning-filter-area"
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle podia</option>
-              <option value="algemeen">Projectbreed</option>
+              <option value="alle">{labels.allStages}</option>
+              <option value="algemeen">{labels.projectWide}</option>
               {stages.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="planning-filter-date" className="text-xs">Datum</Label>
+            <Label htmlFor="planning-filter-date" className="text-xs">{labels.date}</Label>
             <select
               id="planning-filter-date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle datums</option>
+              <option value="alle">{labels.allDates}</option>
               {allDates.map((date) => (
                 <option key={date} value={date}>{date}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="planning-filter-search" className="text-xs">Zoek op functie/naam</Label>
+            <Label htmlFor="planning-filter-search" className="text-xs">{labels.searchRoleName}</Label>
             <Input
               id="planning-filter-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="bv. Podiumtechnicus"
+              placeholder={labels.searchPlaceholder}
               className="h-8 w-48 text-xs"
             />
           </div>
@@ -271,7 +309,7 @@ export function CrewPlanningCard({
                       <p className="font-medium">{date}</p>
                       {dayMembers.length > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          {filled} van {dayMembers.length} functies ingevuld · {catering} catering · {hotel} hotel
+                          {filled} {labels.ofPositionsFilled} {dayMembers.length} {labels.positionsFilled} · {catering} {labels.catering} · {hotel} {labels.hotel}
                         </p>
                       )}
                     </div>
@@ -282,6 +320,7 @@ export function CrewPlanningCard({
                         position={position}
                         suppliers={suppliers}
                         stages={stages}
+                        labels={labels}
                       />
                     ))}
                   </div>
@@ -292,8 +331,8 @@ export function CrewPlanningCard({
         })}
 
         <div className="space-y-2 border-t pt-4">
-          <p className="text-sm font-medium">Nieuwe positie toevoegen</p>
-          <PositionForm projectId={projectId} suppliers={suppliers} stages={stages} />
+          <p className="text-sm font-medium">{labels.addNewPosition}</p>
+          <PositionForm projectId={projectId} suppliers={suppliers} stages={stages} labels={labels} />
         </div>
       </CardContent>
     </Card>

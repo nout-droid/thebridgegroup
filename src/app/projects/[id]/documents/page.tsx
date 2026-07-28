@@ -9,6 +9,26 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { uploadProjectDocument, deleteProjectDocument } from "../documents-actions";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+
+const DOCUMENTS_PAGE_LABELS = [
+  "Nieuw document toevoegen",
+  "Voor losse bestanden die nergens anders bij horen, bijvoorbeeld tekeningen.",
+  "Titel",
+  "Bv. Plattegrond zaal",
+  "Bestand",
+  "Uploaden",
+  "Alle documenten",
+  "Nog geen documenten.",
+  "Bekijken",
+  "Verwijderen",
+  "Overig",
+  "Offerte",
+  "Gastenportaal",
+  "Checklist",
+  "nog te splitsen",
+];
 
 type DocRow = {
   id: string;
@@ -28,6 +48,9 @@ export default async function ProjectDocumentsPage({
   const supabase = await createClient();
 
   const project = await getProjectOrNotFound(supabase, id);
+
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, DOCUMENTS_PAGE_LABELS);
 
   const rows: DocRow[] = [];
 
@@ -99,7 +122,7 @@ export default async function ProjectDocumentsPage({
       (Array.isArray(doc.supplier) ? doc.supplier[0]?.name : (doc.supplier as { name: string } | null)?.name) ?? "";
     rows.push({
       id: doc.id,
-      title: `${supplierName ? `${supplierName} — ` : ""}nog te splitsen (${doc.original_filename})`,
+      title: `${supplierName ? `${supplierName} — ` : ""}${t("nog te splitsen")} (${doc.original_filename})`,
       storagePath: doc.storage_path,
       source: "Offerte",
       deletable: false,
@@ -160,9 +183,9 @@ export default async function ProjectDocumentsPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Nieuw document toevoegen</CardTitle>
+            <CardTitle className="text-base">{t("Nieuw document toevoegen")}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Voor losse bestanden die nergens anders bij horen, bijvoorbeeld tekeningen.
+              {t("Voor losse bestanden die nergens anders bij horen, bijvoorbeeld tekeningen.")}
             </p>
           </CardHeader>
           <CardContent>
@@ -171,15 +194,15 @@ export default async function ProjectDocumentsPage({
               className="flex flex-wrap items-end gap-3"
             >
               <div className="flex-1 min-w-[200px] space-y-1">
-                <label className="text-sm font-medium">Titel</label>
-                <Input name="title" placeholder="Bv. Plattegrond zaal" required />
+                <label className="text-sm font-medium">{t("Titel")}</label>
+                <Input name="title" placeholder={t("Bv. Plattegrond zaal")} required />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium">Bestand</label>
+                <label className="text-sm font-medium">{t("Bestand")}</label>
                 <Input name="file" type="file" required />
               </div>
               <Button type="submit" size="sm">
-                Uploaden
+                {t("Uploaden")}
               </Button>
             </form>
           </CardContent>
@@ -187,17 +210,17 @@ export default async function ProjectDocumentsPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Alle documenten</CardTitle>
+            <CardTitle className="text-base">{t("Alle documenten")}</CardTitle>
           </CardHeader>
           <CardContent>
             {rowsWithUrls.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Nog geen documenten.</p>
+              <p className="text-sm text-muted-foreground">{t("Nog geen documenten.")}</p>
             ) : (
               <ul className="divide-y">
                 {rowsWithUrls.map((row) => (
                   <li key={`${row.source}-${row.id}`} className="flex items-center justify-between gap-3 py-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <Badge variant="secondary">{row.source}</Badge>
+                      <Badge variant="secondary">{t(row.source)}</Badge>
                       <span className="truncate text-sm">{row.title}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -208,13 +231,13 @@ export default async function ProjectDocumentsPage({
                           rel="noreferrer"
                           className="text-sm font-medium text-primary hover:underline"
                         >
-                          Bekijken
+                          {t("Bekijken")}
                         </a>
                       )}
                       {row.deletable && (
                         <form action={deleteProjectDocument.bind(null, project.id, row.id)}>
                           <Button type="submit" size="sm" variant="ghost">
-                            Verwijderen
+                            {t("Verwijderen")}
                           </Button>
                         </form>
                       )}

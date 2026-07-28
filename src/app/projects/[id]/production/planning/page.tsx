@@ -5,7 +5,10 @@ import { Footer } from "@/components/footer";
 import type { CrewMember, CrewPosition, Stage, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { CrewPlanningCard } from "../crew-planning-card";
+import { CrewPlanningCard, type CrewPlanningCardLabels } from "../crew-planning-card";
+import { CREW_PLANNING_CARD_LABELS } from "../../translation-labels";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionPlanningPage({
   params,
@@ -44,6 +47,46 @@ export default async function ProductionPlanningPage({
     .not("crew_position_id", "is", null)
     .returns<CrewMember[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, CREW_PLANNING_CARD_LABELS);
+  const labels: CrewPlanningCardLabels = {
+    title: t("Crew Planning per podium/area"),
+    description: t(
+      'Leg per podium, dag en functie vast hoeveel mensen nodig zijn en wie ze levert — nog zonder namen. Vink "Accreditatie nodig" aan om automatisch lege plekken in Crew & Accreditatie aan te maken zodra dit bekend wordt.'
+    ),
+    area: t("Podium/area"),
+    allStages: t("Alle podia"),
+    projectWide: t("Projectbreed"),
+    date: t("Datum"),
+    allDates: t("Alle datums"),
+    searchRoleName: t("Zoek op functie/naam"),
+    searchPlaceholder: t("bv. Podiumtechnicus"),
+    stage: t("Podium/area"),
+    role: t("Functie"),
+    rolePlaceholder: t("bv. Podiumtechnicus"),
+    quantity: t("Aantal"),
+    providedBy: t("Wie levert"),
+    providedByUs: t("Wij"),
+    providedByClient: t("Klant"),
+    providedBySupplier: t("Leverancier"),
+    supplier: t("Leverancier"),
+    needsAccreditation: t("Accreditatie nodig"),
+    needsCatering: t("Catering nodig"),
+    needsHotel: t("Hotel nodig"),
+    needsFlight: t("Vlucht nodig"),
+    notes: t("Notities"),
+    save: t("Opslaan"),
+    add: t("Toevoegen"),
+    remove: t("Verwijderen"),
+    ofPositionsFilled: t("van"),
+    positionsFilled: t("functies ingevuld"),
+    catering: t("catering"),
+    hotel: t("hotel"),
+    addNewPosition: t("Nieuwe positie toevoegen"),
+    chooseStage: t("Kies podium"),
+    chooseSupplier: t("Kies leverancier"),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -56,6 +99,7 @@ export default async function ProductionPlanningPage({
           suppliers={suppliers ?? []}
           stages={stages ?? []}
           linkedMembers={linkedMembers ?? []}
+          labels={labels}
         />
       </main>
       <Footer />

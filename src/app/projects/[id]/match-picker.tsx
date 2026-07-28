@@ -10,6 +10,22 @@ import { CATALOG_CATEGORY_LABELS, type CatalogMatchSuggestion, type Supplier } f
 import { SupplierSelect } from "./supplier-select";
 import { createCatalogArticleAndMatch, updateMaterialListMatch } from "./actions";
 
+export interface MatchPickerLabels {
+  wijzig: string;
+  zoekArtikel: string;
+  zoek: string;
+  nietsGevonden: string;
+  nieuwArtikelToevoegen: string;
+  nietJuisteArtikel: string;
+  artikelnaam: string;
+  categorie: string;
+  prijsPerDag: string;
+  toevoegenKoppelen: string;
+  laatstGezien: string;
+  kiesLeverancier: string;
+  categoryLabels: Record<string, string>;
+}
+
 export function MatchPicker({
   projectId,
   stageId,
@@ -17,6 +33,7 @@ export function MatchPicker({
   currentLabel,
   defaultQuery,
   suppliers,
+  labels,
 }: {
   projectId: string;
   stageId: string | null;
@@ -24,6 +41,7 @@ export function MatchPicker({
   currentLabel: string;
   defaultQuery: string;
   suppliers: Supplier[];
+  labels: MatchPickerLabels;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(defaultQuery);
@@ -57,7 +75,7 @@ export function MatchPicker({
       <div className="flex items-center gap-2">
         <span className="text-sm">{currentLabel}</span>
         <Button type="button" size="sm" variant="ghost" onClick={() => setOpen((o) => !o)}>
-          Wijzig
+          {labels.wijzig}
         </Button>
       </div>
       {open && (
@@ -66,11 +84,11 @@ export function MatchPicker({
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Zoek artikel..."
+              placeholder={labels.zoekArtikel}
               className="h-8 text-xs"
             />
             <Button type="button" size="sm" onClick={search} disabled={loading}>
-              Zoek
+              {labels.zoek}
             </Button>
           </div>
           {suggestions.length > 0 && (
@@ -87,7 +105,7 @@ export function MatchPicker({
                     {suggestion.last_seen_price != null && (
                       <span className="text-muted-foreground">
                         {" "}
-                        · laatst gezien &euro; {suggestion.last_seen_price.toFixed(2)}
+                        · {labels.laatstGezien} &euro; {suggestion.last_seen_price.toFixed(2)}
                         {suggestion.last_seen_price_at &&
                           ` (${new Date(suggestion.last_seen_price_at).toLocaleDateString("nl-NL")})`}
                       </span>
@@ -99,13 +117,13 @@ export function MatchPicker({
           )}
           {searched && suggestions.length === 0 && !showNewArticle && (
             <p className="text-xs text-muted-foreground">
-              Niets gevonden.{" "}
+              {labels.nietsGevonden}{" "}
               <button
                 type="button"
                 onClick={() => setShowNewArticle(true)}
                 className="text-primary underline"
               >
-                Nieuw artikel toevoegen
+                {labels.nieuwArtikelToevoegen}
               </button>
             </p>
           )}
@@ -115,7 +133,7 @@ export function MatchPicker({
               onClick={() => setShowNewArticle(true)}
               className="text-xs text-primary underline"
             >
-              Niet het juiste artikel? Nieuw artikel toevoegen
+              {labels.nietJuisteArtikel}
             </button>
           )}
           {showNewArticle && (
@@ -130,19 +148,29 @@ export function MatchPicker({
               <Input
                 name="name"
                 defaultValue={defaultQuery}
-                placeholder="Artikelnaam"
+                placeholder={labels.artikelnaam}
                 className="h-8 text-xs"
                 required
               />
-              <SupplierSelect id={`new-article-supplier-${itemId}`} suppliers={suppliers} />
-              <Select name="category" items={Object.entries(CATALOG_CATEGORY_LABELS).map(([value, label]) => ({ value, label }))}>
+              <SupplierSelect
+                id={`new-article-supplier-${itemId}`}
+                suppliers={suppliers}
+                placeholder={labels.kiesLeverancier}
+              />
+              <Select
+                name="category"
+                items={Object.entries(CATALOG_CATEGORY_LABELS).map(([value, label]) => ({
+                  value,
+                  label: labels.categoryLabels[label] ?? label,
+                }))}
+              >
                 <SelectTrigger className="h-8 w-full text-xs">
-                  <SelectValue placeholder="Categorie" />
+                  <SelectValue placeholder={labels.categorie} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(CATALOG_CATEGORY_LABELS).map(([value, label]) => (
                     <SelectItem key={value} value={value}>
-                      {label}
+                      {labels.categoryLabels[label] ?? label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -151,12 +179,12 @@ export function MatchPicker({
                 name="day_price"
                 type="number"
                 step="0.01"
-                placeholder="Prijs per dag (€)"
+                placeholder={labels.prijsPerDag}
                 className="h-8 text-xs"
                 required
               />
               <Button type="submit" size="sm">
-                Toevoegen &amp; koppelen
+                {labels.toevoegenKoppelen}
               </Button>
             </form>
           )}

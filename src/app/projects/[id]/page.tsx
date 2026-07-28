@@ -26,9 +26,21 @@ import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
 import { updateClientRequestStatus } from "./client-requests-actions";
 import { ShareLinkBox } from "./share-link-box";
-import { SupplierDocumentReview } from "./supplier-document-review";
-import { SupplierProjectDocumentReview } from "./supplier-project-document-review";
+import {
+  SupplierDocumentReview,
+  type SupplierDocumentReviewLabels,
+} from "./supplier-document-review";
+import {
+  SupplierProjectDocumentReview,
+  type SupplierProjectDocumentReviewLabels,
+} from "./supplier-project-document-review";
 import { ProjectSubNav } from "./project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+import {
+  SUPPLIER_DOCUMENT_REVIEW_LABELS,
+  SUPPLIER_PROJECT_DOCUMENT_REVIEW_LABELS,
+} from "./translation-labels";
 
 // Het doorlopen van een leveranciers-offerte-PDF matcht elke regel tegen de catalogus
 // (RPC-aanroepen) — bij een offerte met honderden regels kan dat de standaard 10-15s
@@ -57,6 +69,72 @@ const CLIENT_REQUEST_STATUS_LABELS: Record<string, string> = {
   acknowledged: "In behandeling",
   done: "Afgehandeld",
 };
+
+const STATIC_LABELS = [
+  "Productieboek",
+  "Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en catering in één PDF — voor de map on-site.",
+  "Productieboek downloaden (PDF)",
+  "Recente activiteit",
+  "Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.",
+  "Gezien",
+  "Klantverzoeken",
+  "Zelf ingediend door de klant in het portaal — dit valt",
+  "niet",
+  "in de begroting hierboven, behandel het los.",
+  "Klantinvoer",
+  "In behandeling nemen",
+  "Afgehandeld",
+  "Projectgegevens",
+  "Projectnaam",
+  "Klant",
+  "Event datum",
+  "Status",
+  "Op-/afbouwperiode",
+  "Bouw start",
+  "Afbouw eind",
+  "Showperiode",
+  "Show start",
+  "Show eind",
+  "Type",
+  "Dag",
+  "Nacht",
+  "Beide",
+  "Totaal aantal huurdagen voor prijsberekening:",
+  "Opslaan",
+  "Klanttoegang",
+  "De klant logt in op",
+  "met dit Event ID en het wachtwoord dat jij instelt.",
+  "Event ID",
+  "Nieuw wachtwoord",
+  "Wachtwoord instellen",
+  "Nog geen wachtwoord ingesteld — de klant kan nog niet inloggen.",
+  "Directe link (voor jezelf)",
+  "Kopieer link",
+  "Gekopieerd",
+  "Totaalbudget (klant):",
+  "Reactie klant op begroting",
+  "Leveranciers-uploads ter controle",
+  "Een leverancier heeft zelf een offerte-PDF geüpload. Loop 'm door voordat de cijfers in je begroting worden bijgewerkt.",
+  "Onbekende leverancier",
+  "Onbekende categorie",
+  "Inchecken",
+  "Live status via de badge-QR (crew) en gasten-badges — bijwerken door de pagina te verversen.",
+  "Crew ingecheckt",
+  "Gasten ingecheckt",
+  "CO2 — dit project",
+  "Vluchten (crew)",
+  "Transport (km-stelposten)",
+  "Leveranciers (opgegeven)",
+  "Bekijk alle projecten →",
+  "Stages",
+  "Nog geen stages. Voeg een stage toe als het event meerdere podia/locaties heeft die je apart wilt begroten.",
+  "Nieuwe stage, bv. Hoofdpodium",
+  "Stage toevoegen",
+  ...Object.values(BUDGET_APPROVAL_LABELS),
+  ...Object.values(CLIENT_REQUEST_CATEGORY_LABELS),
+  ...Object.values(CLIENT_REQUEST_STATUS_LABELS),
+  ...Object.values(ACTIVITY_CATEGORY_LABELS),
+];
 
 function relativeTime(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -222,6 +300,50 @@ export default async function ProjectPage({
     .order("created_at", { ascending: false })
     .returns<ClientRequest[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [
+    ...STATIC_LABELS,
+    ...(stages ?? []).map((s) => s.name),
+    ...(activity ?? []).flatMap((entry) => [entry.actor_label, entry.description]),
+    ...(clientRequests ?? []).flatMap((request) => [request.description, request.notes ?? ""]),
+    project.budget_approval_comment ?? "",
+    ...SUPPLIER_DOCUMENT_REVIEW_LABELS,
+    ...SUPPLIER_PROJECT_DOCUMENT_REVIEW_LABELS,
+  ]);
+
+  const supplierDocumentReviewLabels: SupplierDocumentReviewLabels = {
+    busy: t("Bezig..."),
+    review: t("Doorlopen"),
+    ignore: t("Negeren"),
+    noLinesFound: t("Geen regels herkend in dit PDF."),
+    description: t("Omschrijving"),
+    amount: t("Bedrag"),
+    remove: t("Verwijderen"),
+    confirm: t("Bevestigen"),
+    lines: t("regels"),
+    cancel: t("Annuleren"),
+  };
+
+  const supplierProjectDocumentReviewLabels: SupplierProjectDocumentReviewLabels = {
+    busy: t("Bezig..."),
+    review: t("Doorlopen"),
+    ignore: t("Negeren"),
+    noCategoriesWarning: t(
+      "Deze leverancier is nog voor geen enkele categorie in dit project aangevraagd — er is niets om aan toe te wijzen."
+    ),
+    noLinesFound: t("Geen regels herkend in dit PDF."),
+    description: t("Omschrijving"),
+    amount: t("Bedrag"),
+    category: t("Categorie"),
+    notAssign: t("Niet toewijzen"),
+    recognizedAs: t("Herkend als:"),
+    remove: t("Verwijderen"),
+    unassignedSuffix: t("regel(s) zonder categorie worden niet overgenomen."),
+    confirm: t("Bevestigen"),
+    lines: t("regels"),
+    cancel: t("Annuleren"),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -234,10 +356,11 @@ export default async function ProjectPage({
         <Card>
           <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
             <div>
-              <p className="font-medium">Productieboek</p>
+              <p className="font-medium">{t("Productieboek")}</p>
               <p className="text-sm text-muted-foreground">
-                Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en
-                catering in één PDF — voor de map on-site.
+                {t(
+                  "Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en catering in één PDF — voor de map on-site."
+                )}
               </p>
             </div>
             <a
@@ -246,7 +369,7 @@ export default async function ProjectPage({
               rel="noopener noreferrer"
               className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
             >
-              Productieboek downloaden (PDF)
+              {t("Productieboek downloaden (PDF)")}
             </a>
           </CardContent>
         </Card>
@@ -254,9 +377,9 @@ export default async function ProjectPage({
         {activity && activity.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Recente activiteit</CardTitle>
+              <CardTitle className="text-base">{t("Recente activiteit")}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.
+                {t("Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.")}
               </p>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -268,18 +391,18 @@ export default async function ProjectPage({
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary">
-                        {ACTIVITY_CATEGORY_LABELS[entry.category] ?? entry.category}
+                        {t(ACTIVITY_CATEGORY_LABELS[entry.category] ?? entry.category)}
                       </Badge>
-                      <span className="font-medium">{entry.actor_label}</span>
+                      <span className="font-medium">{t(entry.actor_label)}</span>
                       <span className="text-xs text-muted-foreground">
                         {relativeTime(entry.created_at)}
                       </span>
                     </div>
-                    <p>{entry.description}</p>
+                    <p>{t(entry.description)}</p>
                   </div>
                   <form action={acknowledgeActivity.bind(null, project.id, entry.id)}>
                     <Button type="submit" size="sm" variant="ghost">
-                      Gezien
+                      {t("Gezien")}
                     </Button>
                   </form>
                 </div>
@@ -291,11 +414,11 @@ export default async function ProjectPage({
         {clientRequests && clientRequests.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Klantverzoeken</CardTitle>
+              <CardTitle className="text-base">{t("Klantverzoeken")}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Zelf ingediend door de klant in het portaal — dit valt{" "}
-                <span className="font-medium text-foreground">niet</span> in de begroting hierboven,
-                behandel het los.
+                {t("Zelf ingediend door de klant in het portaal — dit valt")}{" "}
+                <span className="font-medium text-foreground">{t("niet")}</span>{" "}
+                {t("in de begroting hierboven, behandel het los.")}
               </p>
             </CardHeader>
             <CardContent className="space-y-2">
@@ -307,21 +430,21 @@ export default async function ProjectPage({
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="border-primary text-primary">
-                        Klantinvoer
+                        {t("Klantinvoer")}
                       </Badge>
                       <Badge variant="secondary">
-                        {CLIENT_REQUEST_CATEGORY_LABELS[request.category] ?? request.category}
+                        {t(CLIENT_REQUEST_CATEGORY_LABELS[request.category] ?? request.category)}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {CLIENT_REQUEST_STATUS_LABELS[request.status]}
+                        {t(CLIENT_REQUEST_STATUS_LABELS[request.status])}
                       </span>
                     </div>
                     <p>
-                      {request.quantity}× {request.description}
+                      {request.quantity}× {t(request.description)}
                       {request.requested_date && ` · ${request.requested_date}`}
                     </p>
                     {request.notes && (
-                      <p className="text-xs text-muted-foreground">{request.notes}</p>
+                      <p className="text-xs text-muted-foreground">{t(request.notes)}</p>
                     )}
                   </div>
                   {request.status !== "done" && (
@@ -334,7 +457,7 @@ export default async function ProjectPage({
                       )}
                     >
                       <Button type="submit" size="sm" variant="ghost">
-                        {request.status === "new" ? "In behandeling nemen" : "Afgehandeld"}
+                        {request.status === "new" ? t("In behandeling nemen") : t("Afgehandeld")}
                       </Button>
                     </form>
                   )}
@@ -346,7 +469,7 @@ export default async function ProjectPage({
 
         <Card>
           <CardHeader>
-            <CardTitle>Projectgegevens</CardTitle>
+            <CardTitle>{t("Projectgegevens")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <form
@@ -354,15 +477,15 @@ export default async function ProjectPage({
               className="grid grid-cols-1 gap-3 sm:grid-cols-4"
             >
               <div className="space-y-1.5">
-                <Label htmlFor="name">Projectnaam</Label>
+                <Label htmlFor="name">{t("Projectnaam")}</Label>
                 <Input id="name" name="name" defaultValue={project.name} required />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="client_name">Klant</Label>
+                <Label htmlFor="client_name">{t("Klant")}</Label>
                 <Input id="client_name" name="client_name" defaultValue={project.client_name} />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="event_date">Event datum</Label>
+                <Label htmlFor="event_date">{t("Event datum")}</Label>
                 <Input
                   id="event_date"
                   name="event_date"
@@ -371,15 +494,15 @@ export default async function ProjectPage({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">{t("Status")}</Label>
                 <Input id="status" name="status" defaultValue={project.status} />
               </div>
 
               <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
-                <p className="text-sm font-medium">Op-/afbouwperiode</p>
+                <p className="text-sm font-medium">{t("Op-/afbouwperiode")}</p>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="build_start_date">Bouw start</Label>
+                    <Label htmlFor="build_start_date">{t("Bouw start")}</Label>
                     <Input
                       id="build_start_date"
                       name="build_start_date"
@@ -388,7 +511,7 @@ export default async function ProjectPage({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="strike_end_date">Afbouw eind</Label>
+                    <Label htmlFor="strike_end_date">{t("Afbouw eind")}</Label>
                     <Input
                       id="strike_end_date"
                       name="strike_end_date"
@@ -400,10 +523,10 @@ export default async function ProjectPage({
               </div>
 
               <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
-                <p className="text-sm font-medium">Showperiode</p>
+                <p className="text-sm font-medium">{t("Showperiode")}</p>
                 <div className="grid grid-cols-3 gap-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="show_start_date">Show start</Label>
+                    <Label htmlFor="show_start_date">{t("Show start")}</Label>
                     <Input
                       id="show_start_date"
                       name="show_start_date"
@@ -412,7 +535,7 @@ export default async function ProjectPage({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="show_end_date">Show eind</Label>
+                    <Label htmlFor="show_end_date">{t("Show eind")}</Label>
                     <Input
                       id="show_end_date"
                       name="show_end_date"
@@ -421,36 +544,36 @@ export default async function ProjectPage({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="show_type">Type</Label>
+                    <Label htmlFor="show_type">{t("Type")}</Label>
                     <select
                       id="show_type"
                       name="show_type"
                       defaultValue={project.show_type}
                       className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
                     >
-                      <option value="dag">Dag</option>
-                      <option value="nacht">Nacht</option>
-                      <option value="beide">Beide</option>
+                      <option value="dag">{t("Dag")}</option>
+                      <option value="nacht">{t("Nacht")}</option>
+                      <option value="beide">{t("Beide")}</option>
                     </select>
                   </div>
                 </div>
               </div>
 
               <p className="text-sm text-muted-foreground sm:col-span-4">
-                Totaal aantal huurdagen voor prijsberekening:{" "}
+                {t("Totaal aantal huurdagen voor prijsberekening:")}{" "}
                 <span className="font-medium text-foreground">{computeRentalDays(project)}</span>
               </p>
 
               <Button type="submit" size="sm" className="sm:col-span-4 sm:w-fit">
-                Opslaan
+                {t("Opslaan")}
               </Button>
             </form>
 
             <div className="space-y-3 border-t pt-4">
-              <Label>Klanttoegang</Label>
+              <Label>{t("Klanttoegang")}</Label>
               <p className="text-sm text-muted-foreground">
-                De klant logt in op <span className="font-mono">{portalUrl}</span> met dit Event
-                ID en het wachtwoord dat jij instelt.
+                {t("De klant logt in op")} <span className="font-mono">{portalUrl}</span>{" "}
+                {t("met dit Event ID en het wachtwoord dat jij instelt.")}
               </p>
               <div className="flex flex-wrap items-end gap-4">
                 <form
@@ -458,7 +581,7 @@ export default async function ProjectPage({
                   className="flex items-end gap-2"
                 >
                   <div className="space-y-1.5">
-                    <Label htmlFor="event_code">Event ID</Label>
+                    <Label htmlFor="event_code">{t("Event ID")}</Label>
                     <Input
                       id="event_code"
                       name="event_code"
@@ -468,7 +591,7 @@ export default async function ProjectPage({
                     />
                   </div>
                   <Button type="submit" size="sm">
-                    Opslaan
+                    {t("Opslaan")}
                   </Button>
                 </form>
 
@@ -478,44 +601,44 @@ export default async function ProjectPage({
                 >
                   <div className="space-y-1.5">
                     <Label htmlFor="password">
-                      {project.client_password_hash ? "Nieuw wachtwoord" : "Wachtwoord instellen"}
+                      {project.client_password_hash ? t("Nieuw wachtwoord") : t("Wachtwoord instellen")}
                     </Label>
                     <Input id="password" name="password" type="password" className="w-40" required />
                   </div>
                   <Button type="submit" size="sm">
-                    Opslaan
+                    {t("Opslaan")}
                   </Button>
                 </form>
               </div>
               {!project.client_password_hash && (
                 <p className="text-xs text-destructive">
-                  Nog geen wachtwoord ingesteld — de klant kan nog niet inloggen.
+                  {t("Nog geen wachtwoord ingesteld — de klant kan nog niet inloggen.")}
                 </p>
               )}
               <details className="text-sm text-muted-foreground">
-                <summary className="cursor-pointer">Directe link (voor jezelf)</summary>
+                <summary className="cursor-pointer">{t("Directe link (voor jezelf)")}</summary>
                 <div className="mt-2">
-                  <ShareLinkBox url={shareUrl} />
+                  <ShareLinkBox url={shareUrl} copyLabel={t("Kopieer link")} copiedLabel={t("Gekopieerd")} />
                 </div>
               </details>
             </div>
 
             {canViewBudget && (
               <p className="text-lg">
-                Totaalbudget (klant): <span className="font-semibold">&euro; {totalBudget.toFixed(2)}</span>
+                {t("Totaalbudget (klant):")} <span className="font-semibold">&euro; {totalBudget.toFixed(2)}</span>
               </p>
             )}
 
             {project.budget_approval_status !== "pending" && (
               <div className="space-y-1 border-t pt-4">
                 <div className="flex items-center gap-2">
-                  <Label>Reactie klant op begroting</Label>
+                  <Label>{t("Reactie klant op begroting")}</Label>
                   <Badge variant="secondary">
-                    {BUDGET_APPROVAL_LABELS[project.budget_approval_status]}
+                    {t(BUDGET_APPROVAL_LABELS[project.budget_approval_status])}
                   </Badge>
                 </div>
                 {project.budget_approval_comment && (
-                  <p className="text-sm text-muted-foreground">{project.budget_approval_comment}</p>
+                  <p className="text-sm text-muted-foreground">{t(project.budget_approval_comment)}</p>
                 )}
               </div>
             )}
@@ -525,10 +648,11 @@ export default async function ProjectPage({
         {(pendingDocuments.length > 0 || (pendingProjectDocuments?.length ?? 0) > 0) && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Leveranciers-uploads ter controle</CardTitle>
+              <CardTitle className="text-base">{t("Leveranciers-uploads ter controle")}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Een leverancier heeft zelf een offerte-PDF geüpload. Loop &apos;m door voordat de
-                cijfers in je begroting worden bijgewerkt.
+                {t(
+                  "Een leverancier heeft zelf een offerte-PDF geüpload. Loop 'm door voordat de cijfers in je begroting worden bijgewerkt."
+                )}
               </p>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -538,7 +662,8 @@ export default async function ProjectPage({
                   projectId={project.id}
                   documentId={doc.id}
                   supplierId={doc.supplier_id}
-                  label={`${doc.supplier?.name ?? "Onbekende leverancier"} (${doc.original_filename})`}
+                  label={`${doc.supplier?.name ?? t("Onbekende leverancier")} (${doc.original_filename})`}
+                  labels={supplierProjectDocumentReviewLabels}
                 />
               ))}
               {pendingDocuments.map((doc) => (
@@ -547,9 +672,10 @@ export default async function ProjectPage({
                   projectId={project.id}
                   documentId={doc.id}
                   quoteId={doc.quote?.id ?? ""}
-                  label={`${doc.quote?.supplier?.name ?? "Onbekende leverancier"} — ${
-                    doc.quote?.category?.name ?? "Onbekende categorie"
+                  label={`${doc.quote?.supplier?.name ?? t("Onbekende leverancier")} — ${
+                    doc.quote?.category?.name ?? t("Onbekende categorie")
                   } (${doc.original_filename})`}
+                  labels={supplierDocumentReviewLabels}
                 />
               ))}
             </CardContent>
@@ -559,22 +685,23 @@ export default async function ProjectPage({
         {((accreditedCrewCount ?? 0) > 0 || (totalGuestCount ?? 0) > 0) && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Inchecken</CardTitle>
+              <CardTitle className="text-base">{t("Inchecken")}</CardTitle>
               <p className="text-sm text-muted-foreground">
-                Live status via de badge-QR (crew) en gasten-badges — bijwerken door de pagina te
-                verversen.
+                {t(
+                  "Live status via de badge-QR (crew) en gasten-badges — bijwerken door de pagina te verversen."
+                )}
               </p>
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-muted-foreground">Crew ingecheckt</dt>
+                  <dt className="text-muted-foreground">{t("Crew ingecheckt")}</dt>
                   <dd className="text-xl font-semibold">
                     {checkedInCrewCount ?? 0}/{accreditedCrewCount ?? 0}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-muted-foreground">Gasten ingecheckt</dt>
+                  <dt className="text-muted-foreground">{t("Gasten ingecheckt")}</dt>
                   <dd className="text-xl font-semibold">
                     {checkedInGuestCount ?? 0}/{totalGuestCount ?? 0}
                   </dd>
@@ -586,7 +713,7 @@ export default async function ProjectPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">CO2 &mdash; dit project</CardTitle>
+            <CardTitle className="text-base">{t("CO2 — dit project")}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-semibold text-primary">
@@ -594,37 +721,38 @@ export default async function ProjectPage({
             </p>
             <dl className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
               <div>
-                <dt className="text-muted-foreground">Vluchten (crew)</dt>
+                <dt className="text-muted-foreground">{t("Vluchten (crew)")}</dt>
                 <dd className="font-medium">
                   {Math.round(projectCo2.flightKg).toLocaleString("nl-NL")} kg
                 </dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Transport (km-stelposten)</dt>
+                <dt className="text-muted-foreground">{t("Transport (km-stelposten)")}</dt>
                 <dd className="font-medium">{Math.round(projectCo2.kmKg).toLocaleString("nl-NL")} kg</dd>
               </div>
               <div>
-                <dt className="text-muted-foreground">Leveranciers (opgegeven)</dt>
+                <dt className="text-muted-foreground">{t("Leveranciers (opgegeven)")}</dt>
                 <dd className="font-medium">
                   {Math.round(projectCo2.quoteKg).toLocaleString("nl-NL")} kg
                 </dd>
               </div>
             </dl>
             <Link href="/co2" className="mt-3 inline-block text-sm text-primary hover:underline">
-              Bekijk alle projecten &rarr;
+              {t("Bekijk alle projecten →")}
             </Link>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Stages</CardTitle>
+            <CardTitle className="text-base">{t("Stages")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {!stages?.length ? (
               <p className="text-sm text-muted-foreground">
-                Nog geen stages. Voeg een stage toe als het event meerdere podia/locaties heeft
-                die je apart wilt begroten.
+                {t(
+                  "Nog geen stages. Voeg een stage toe als het event meerdere podia/locaties heeft die je apart wilt begroten."
+                )}
               </p>
             ) : (
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -632,7 +760,7 @@ export default async function ProjectPage({
                   <Link key={stage.id} href={`/projects/${project.id}/stages/${stage.id}`}>
                     <Card className="h-full transition-colors hover:border-foreground/30">
                       <CardContent className="pt-6">
-                        <p className="font-medium">{stage.name}</p>
+                        <p className="font-medium">{t(stage.name)}</p>
                         {canViewBudget && (
                           <p className="text-sm text-muted-foreground">
                             &euro; {(stageSubtotals.get(stage.id) ?? 0).toFixed(2)}
@@ -645,8 +773,8 @@ export default async function ProjectPage({
               </div>
             )}
             <form action={createStage.bind(null, project.id)} className="flex items-end gap-2">
-              <Input name="name" placeholder="Nieuwe stage, bv. Hoofdpodium" required />
-              <Button type="submit">Stage toevoegen</Button>
+              <Input name="name" placeholder={t("Nieuwe stage, bv. Hoofdpodium")} required />
+              <Button type="submit">{t("Stage toevoegen")}</Button>
             </form>
           </CardContent>
         </Card>

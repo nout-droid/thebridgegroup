@@ -12,18 +12,20 @@ export function StageSelect({
   name = "stage_id",
   defaultValue,
   stages,
+  placeholder = "Kies podium",
 }: {
   id: string;
   name?: string;
   defaultValue?: string;
   stages: Stage[];
+  placeholder?: string;
 }) {
   const items = stages.map((stage) => ({ value: stage.id, label: stage.name }));
 
   return (
     <Select name={name} defaultValue={defaultValue} items={items}>
       <SelectTrigger id={id} className="h-8 w-full min-w-0 text-xs">
-        <SelectValue className="min-w-0 truncate" placeholder="Kies podium" />
+        <SelectValue className="min-w-0 truncate" placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
         {stages.map((stage) => (

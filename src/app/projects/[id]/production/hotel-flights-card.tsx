@@ -7,13 +7,59 @@ import { SupplierSelect } from "../supplier-select";
 import { saveHotelCost, setSuppliersManageTravel, updateCrewPerDiem } from "./hotel-actions";
 import { saveFlightCost, updateCrewFlightDetails } from "./flight-actions";
 import { computeNights } from "@/lib/nights";
+import type { Translator } from "@/lib/server/translate";
+
+export const HOTEL_FLIGHTS_CARD_LABELS = [
+  "Leveranciers mogen de hotel- en vluchtgegevens van hun eigen crew zelf invullen",
+  "Opslaan",
+  "Staat dit aan, dan zien leveranciers een Hotel- en Vluchten-sectie bij hun aanvragen, beperkt tot hun eigen crewleden.",
+  "Leverancier",
+  "Kies leverancier",
+  "Inkoopprijs",
+  "Marge type",
+  "Percentage",
+  "Vast bedrag",
+  "Marge waarde",
+  "Vluchten",
+  "Vluchtaanvraag downloaden (PDF)",
+  "Iedereen met \"Vliegticket nodig\" aangevinkt op de accreditatiekaart. Details komen vaak pas later binnen — vul aan zodra bekend.",
+  "Niemand heeft op dit moment een vliegticket nodig.",
+  "Naam volgt",
+  "Paspoortnummer",
+  "Vertrekluchthaven",
+  "Bestemming",
+  "Vertrek datum/tijd",
+  "Retour datum/tijd",
+  "Boekingsnummer",
+  "Ticketnummer",
+  "Vluchtkosten",
+  "Staat al in de begroting als categorie \"Vluchten\" — wijzigingen hier passen 'm meteen aan.",
+  "Hotel",
+  "Iedereen met \"Hotel nodig\" aangevinkt (via Planning, Crew & Accreditatie, of Artiestenriders), met check-in/check-out afgeleid uit hun toegangsdagen.",
+  "Niemand heeft op dit moment een hotel nodig.",
+  "Naam",
+  "Functie",
+  "Check-in",
+  "Check-out",
+  "Hotelaanvraag downloaden (PDF)",
+  "Sejourskosten per persoon",
+  "Dagvergoeding voor iedereen die in het hotel zit — telt automatisch mee in de begroting als categorie \"Sejours\".",
+  "€ per nacht",
+  "Totaal:",
+  "Hotelkosten",
+  "Staat al in de begroting als categorie \"Hotel\" — wijzigingen hier passen 'm meteen aan.",
+];
+
+const identity: Translator = (text) => text;
 
 function SupplierAccessToggle({
   projectId,
   enabled,
+  t,
 }: {
   projectId: string;
   enabled: boolean;
+  t: Translator;
 }) {
   return (
     <Card>
@@ -21,15 +67,16 @@ function SupplierAccessToggle({
         <form action={setSuppliersManageTravel.bind(null, projectId)} className="flex flex-wrap items-center gap-3">
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="suppliers_manage_travel" defaultChecked={enabled} className="h-4 w-4" />
-            Leveranciers mogen de hotel- en vluchtgegevens van hun eigen crew zelf invullen
+            {t("Leveranciers mogen de hotel- en vluchtgegevens van hun eigen crew zelf invullen")}
           </label>
           <Button type="submit" size="sm" variant="secondary">
-            Opslaan
+            {t("Opslaan")}
           </Button>
         </form>
         <p className="mt-2 text-xs text-muted-foreground">
-          Staat dit aan, dan zien leveranciers een Hotel- en Vluchten-sectie bij hun aanvragen,
-          beperkt tot hun eigen crewleden.
+          {t(
+            "Staat dit aan, dan zien leveranciers een Hotel- en Vluchten-sectie bij hun aanvragen, beperkt tot hun eigen crewleden."
+          )}
         </p>
       </CardContent>
     </Card>
@@ -42,21 +89,28 @@ function CostForm({
   suppliers,
   category,
   quote,
+  t,
 }: {
   action: (formData: FormData) => void;
   idPrefix: string;
   suppliers: Supplier[];
   category: Category | null;
   quote: Quote | null;
+  t: Translator;
 }) {
   return (
     <form action={action} className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4">
       <div className="space-y-1">
-        <Label htmlFor={`${idPrefix}-supplier`} className="text-xs">Leverancier</Label>
-        <SupplierSelect id={`${idPrefix}-supplier`} defaultValue={quote?.supplier_id ?? undefined} suppliers={suppliers} />
+        <Label htmlFor={`${idPrefix}-supplier`} className="text-xs">{t("Leverancier")}</Label>
+        <SupplierSelect
+          id={`${idPrefix}-supplier`}
+          defaultValue={quote?.supplier_id ?? undefined}
+          suppliers={suppliers}
+          placeholder={t("Kies leverancier")}
+        />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`${idPrefix}-cost`} className="text-xs">Inkoopprijs</Label>
+        <Label htmlFor={`${idPrefix}-cost`} className="text-xs">{t("Inkoopprijs")}</Label>
         <Input
           id={`${idPrefix}-cost`}
           name="cost_price"
@@ -68,19 +122,19 @@ function CostForm({
         />
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`${idPrefix}-margin-type`} className="text-xs">Marge type</Label>
+        <Label htmlFor={`${idPrefix}-margin-type`} className="text-xs">{t("Marge type")}</Label>
         <select
           id={`${idPrefix}-margin-type`}
           name="margin_type"
           defaultValue={category?.margin_type ?? "percentage"}
           className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs"
         >
-          <option value="percentage">Percentage</option>
-          <option value="fixed">Vast bedrag</option>
+          <option value="percentage">{t("Percentage")}</option>
+          <option value="fixed">{t("Vast bedrag")}</option>
         </select>
       </div>
       <div className="space-y-1">
-        <Label htmlFor={`${idPrefix}-margin-value`} className="text-xs">Marge waarde</Label>
+        <Label htmlFor={`${idPrefix}-margin-value`} className="text-xs">{t("Marge waarde")}</Label>
         <Input
           id={`${idPrefix}-margin-value`}
           name="margin_value"
@@ -92,7 +146,7 @@ function CostForm({
       </div>
       <div className="flex items-end sm:col-span-4">
         <Button type="submit" size="sm" className="h-8 text-xs">
-          Opslaan
+          {t("Opslaan")}
         </Button>
       </div>
     </form>
@@ -110,18 +164,20 @@ function FlightsSection({
   suppliers,
   flightCategory,
   flightQuote,
+  t,
 }: {
   projectId: string;
   members: CrewMember[];
   suppliers: Supplier[];
   flightCategory: Category | null;
   flightQuote: Quote | null;
+  t: Translator;
 }) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">Vluchten</CardTitle>
+          <CardTitle className="text-base">{t("Vluchten")}</CardTitle>
           {members.length > 0 && (
             <a
               href={`/projects/${projectId}/production/flight/pdf`}
@@ -129,18 +185,19 @@ function FlightsSection({
               rel="noopener noreferrer"
               className="text-sm text-primary underline"
             >
-              Vluchtaanvraag downloaden (PDF)
+              {t("Vluchtaanvraag downloaden (PDF)")}
             </a>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Iedereen met "Vliegticket nodig" aangevinkt op de accreditatiekaart. Details komen
-          vaak pas later binnen — vul aan zodra bekend.
+          {t(
+            'Iedereen met "Vliegticket nodig" aangevinkt op de accreditatiekaart. Details komen vaak pas later binnen — vul aan zodra bekend.'
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Niemand heeft op dit moment een vliegticket nodig.</p>
+          <p className="text-sm text-muted-foreground">{t("Niemand heeft op dit moment een vliegticket nodig.")}</p>
         ) : (
           members.map((member) => (
             <form
@@ -149,10 +206,10 @@ function FlightsSection({
               className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4"
             >
               <div className="sm:col-span-4">
-                <p className="text-sm font-medium">{member.name || "Naam volgt"}</p>
+                <p className="text-sm font-medium">{member.name || t("Naam volgt")}</p>
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`passport-${member.id}`} className="text-xs">Paspoortnummer</Label>
+                <Label htmlFor={`passport-${member.id}`} className="text-xs">{t("Paspoortnummer")}</Label>
                 <Input
                   id={`passport-${member.id}`}
                   name="passport_number"
@@ -161,7 +218,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`departure-airport-${member.id}`} className="text-xs">Vertrekluchthaven</Label>
+                <Label htmlFor={`departure-airport-${member.id}`} className="text-xs">{t("Vertrekluchthaven")}</Label>
                 <Input
                   id={`departure-airport-${member.id}`}
                   name="flight_departure_airport"
@@ -170,7 +227,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`destination-${member.id}`} className="text-xs">Bestemming</Label>
+                <Label htmlFor={`destination-${member.id}`} className="text-xs">{t("Bestemming")}</Label>
                 <Input
                   id={`destination-${member.id}`}
                   name="flight_destination"
@@ -179,7 +236,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`departure-at-${member.id}`} className="text-xs">Vertrek datum/tijd</Label>
+                <Label htmlFor={`departure-at-${member.id}`} className="text-xs">{t("Vertrek datum/tijd")}</Label>
                 <Input
                   id={`departure-at-${member.id}`}
                   name="flight_departure_at"
@@ -189,7 +246,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`return-at-${member.id}`} className="text-xs">Retour datum/tijd</Label>
+                <Label htmlFor={`return-at-${member.id}`} className="text-xs">{t("Retour datum/tijd")}</Label>
                 <Input
                   id={`return-at-${member.id}`}
                   name="flight_return_at"
@@ -199,7 +256,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`booking-${member.id}`} className="text-xs">Boekingsnummer</Label>
+                <Label htmlFor={`booking-${member.id}`} className="text-xs">{t("Boekingsnummer")}</Label>
                 <Input
                   id={`booking-${member.id}`}
                   name="flight_booking_number"
@@ -208,7 +265,7 @@ function FlightsSection({
                 />
               </div>
               <div className="space-y-1">
-                <Label htmlFor={`ticket-${member.id}`} className="text-xs">Ticketnummer</Label>
+                <Label htmlFor={`ticket-${member.id}`} className="text-xs">{t("Ticketnummer")}</Label>
                 <Input
                   id={`ticket-${member.id}`}
                   name="flight_ticket_number"
@@ -218,7 +275,7 @@ function FlightsSection({
               </div>
               <div className="flex items-end sm:col-span-4">
                 <Button type="submit" size="sm" className="h-8 text-xs">
-                  Opslaan
+                  {t("Opslaan")}
                 </Button>
               </div>
             </form>
@@ -226,17 +283,18 @@ function FlightsSection({
         )}
 
         <div className="space-y-2 border-t pt-3">
-          <p className="text-sm font-medium">Vluchtkosten</p>
+          <p className="text-sm font-medium">{t("Vluchtkosten")}</p>
           <CostForm
             action={saveFlightCost.bind(null, projectId)}
             idPrefix="flight-cost"
             suppliers={suppliers}
             category={flightCategory}
             quote={flightQuote}
+            t={t}
           />
           {flightQuote && (
             <p className="text-xs text-muted-foreground">
-              Staat al in de begroting als categorie "Vluchten" — wijzigingen hier passen 'm meteen aan.
+              {t('Staat al in de begroting als categorie "Vluchten" — wijzigingen hier passen \'m meteen aan.')}
             </p>
           )}
         </div>
@@ -251,34 +309,37 @@ function HotelSection({
   suppliers,
   hotelCategory,
   hotelQuote,
+  t,
 }: {
   projectId: string;
   members: CrewMember[];
   suppliers: Supplier[];
   hotelCategory: Category | null;
   hotelQuote: Quote | null;
+  t: Translator;
 }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Hotel</CardTitle>
+        <CardTitle className="text-base">{t("Hotel")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Iedereen met "Hotel nodig" aangevinkt (via Planning, Crew & Accreditatie, of
-          Artiestenriders), met check-in/check-out afgeleid uit hun toegangsdagen.
+          {t(
+            'Iedereen met "Hotel nodig" aangevinkt (via Planning, Crew & Accreditatie, of Artiestenriders), met check-in/check-out afgeleid uit hun toegangsdagen.'
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {members.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Niemand heeft op dit moment een hotel nodig.</p>
+          <p className="text-sm text-muted-foreground">{t("Niemand heeft op dit moment een hotel nodig.")}</p>
         ) : (
           <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="p-2 text-left font-medium">Naam</th>
-                  <th className="p-2 text-left font-medium">Functie</th>
-                  <th className="p-2 text-left font-medium">Check-in</th>
-                  <th className="p-2 text-left font-medium">Check-out</th>
+                  <th className="p-2 text-left font-medium">{t("Naam")}</th>
+                  <th className="p-2 text-left font-medium">{t("Functie")}</th>
+                  <th className="p-2 text-left font-medium">{t("Check-in")}</th>
+                  <th className="p-2 text-left font-medium">{t("Check-out")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -286,7 +347,7 @@ function HotelSection({
                   const dates = [...member.access_dates].sort();
                   return (
                     <tr key={member.id} className="border-b last:border-0">
-                      <td className="p-2">{member.name || "Naam volgt"}</td>
+                      <td className="p-2">{member.name || t("Naam volgt")}</td>
                       <td className="p-2">{member.role || "—"}</td>
                       <td className="p-2">{dates[0] ?? "—"}</td>
                       <td className="p-2">{dates[dates.length - 1] ?? "—"}</td>
@@ -304,16 +365,17 @@ function HotelSection({
             rel="noopener noreferrer"
             className="text-sm text-primary underline"
           >
-            Hotelaanvraag downloaden (PDF)
+            {t("Hotelaanvraag downloaden (PDF)")}
           </a>
         )}
 
         {members.length > 0 && (
           <div className="space-y-2 border-t pt-3">
-            <p className="text-sm font-medium">Sejourskosten per persoon</p>
+            <p className="text-sm font-medium">{t("Sejourskosten per persoon")}</p>
             <p className="text-xs text-muted-foreground">
-              Dagvergoeding voor iedereen die in het hotel zit — telt automatisch mee in de
-              begroting als categorie "Sejours".
+              {t(
+                'Dagvergoeding voor iedereen die in het hotel zit — telt automatisch mee in de begroting als categorie "Sejours".'
+              )}
             </p>
             <div className="space-y-2">
               {members.map((member) => {
@@ -326,10 +388,10 @@ function HotelSection({
                     className="flex flex-wrap items-end gap-3 rounded-md border p-2"
                   >
                     <p className="min-w-0 flex-1 truncate text-xs font-medium">
-                      {member.name || "Naam volgt"} <span className="text-muted-foreground">({nights}n)</span>
+                      {member.name || t("Naam volgt")} <span className="text-muted-foreground">({nights}n)</span>
                     </p>
                     <div className="space-y-1">
-                      <Label htmlFor={`perdiem-${member.id}`} className="text-xs">€ per nacht</Label>
+                      <Label htmlFor={`perdiem-${member.id}`} className="text-xs">{t("€ per nacht")}</Label>
                       <Input
                         id={`perdiem-${member.id}`}
                         name="per_diem_rate"
@@ -340,9 +402,9 @@ function HotelSection({
                         className="h-8 w-24 text-xs"
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground">Totaal: € {total.toFixed(2)}</p>
+                    <p className="text-xs text-muted-foreground">{t("Totaal:")} € {total.toFixed(2)}</p>
                     <Button type="submit" size="sm" className="h-8 text-xs">
-                      Opslaan
+                      {t("Opslaan")}
                     </Button>
                   </form>
                 );
@@ -352,17 +414,18 @@ function HotelSection({
         )}
 
         <div className="space-y-2 border-t pt-3">
-          <p className="text-sm font-medium">Hotelkosten</p>
+          <p className="text-sm font-medium">{t("Hotelkosten")}</p>
           <CostForm
             action={saveHotelCost.bind(null, projectId)}
             idPrefix="hotel-cost"
             suppliers={suppliers}
             category={hotelCategory}
             quote={hotelQuote}
+            t={t}
           />
           {hotelQuote && (
             <p className="text-xs text-muted-foreground">
-              Staat al in de begroting als categorie "Hotel" — wijzigingen hier passen 'm meteen aan.
+              {t('Staat al in de begroting als categorie "Hotel" — wijzigingen hier passen \'m meteen aan.')}
             </p>
           )}
         </div>
@@ -381,6 +444,7 @@ export function HotelFlightsCard({
   hotelQuote,
   flightCategory,
   flightQuote,
+  t = identity,
 }: {
   projectId: string;
   hotelMembers: CrewMember[];
@@ -391,16 +455,18 @@ export function HotelFlightsCard({
   hotelQuote: Quote | null;
   flightCategory: Category | null;
   flightQuote: Quote | null;
+  t?: Translator;
 }) {
   return (
     <div className="space-y-6">
-      <SupplierAccessToggle projectId={projectId} enabled={suppliersManageTravel} />
+      <SupplierAccessToggle projectId={projectId} enabled={suppliersManageTravel} t={t} />
       <HotelSection
         projectId={projectId}
         members={hotelMembers}
         suppliers={suppliers}
         hotelCategory={hotelCategory}
         hotelQuote={hotelQuote}
+        t={t}
       />
       <FlightsSection
         projectId={projectId}
@@ -408,6 +474,7 @@ export function HotelFlightsCard({
         suppliers={suppliers}
         flightCategory={flightCategory}
         flightQuote={flightQuote}
+        t={t}
       />
     </div>
   );

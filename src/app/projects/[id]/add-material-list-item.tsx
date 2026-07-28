@@ -8,12 +8,21 @@ import { Button } from "@/components/ui/button";
 import type { CatalogMatchSuggestion } from "@/lib/types";
 import { addMaterialListItem } from "./actions";
 
+export interface AddMaterialListItemLabels {
+  addLine: string;
+  searchPlaceholder: string;
+  search: string;
+  cancel: string;
+}
+
 export function AddMaterialListItem({
   projectId,
   stageId,
+  labels,
 }: {
   projectId: string;
   stageId: string | null;
+  labels: AddMaterialListItemLabels;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -53,7 +62,7 @@ export function AddMaterialListItem({
   if (!open) {
     return (
       <Button type="button" size="sm" variant="secondary" onClick={() => setOpen(true)}>
-        + Regel toevoegen
+        {labels.addLine}
       </Button>
     );
   }
@@ -64,7 +73,7 @@ export function AddMaterialListItem({
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Zoek artikel in catalogus..."
+          placeholder={labels.searchPlaceholder}
           className="h-8 flex-1 text-xs"
         />
         <Input
@@ -75,10 +84,10 @@ export function AddMaterialListItem({
           className="h-8 w-20 text-xs"
         />
         <Button type="button" size="sm" onClick={search} disabled={loading}>
-          Zoek
+          {labels.search}
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>
-          Annuleren
+          {labels.cancel}
         </Button>
       </div>
       {suggestions.length > 0 && (

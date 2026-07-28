@@ -7,13 +7,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { computeClientPrice, type Category, type MaterialListItem, type Quote, type Supplier } from "@/lib/types";
-import { CategoryCard } from "../../category-card";
-import { AddCategoryForm } from "../../add-category-form";
-import { MaterialList } from "../../material-list";
-import { QuotePdfImport } from "../../quote-pdf-import";
+import { CategoryCard, CATEGORY_CARD_LABELS } from "../../category-card";
+import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../../add-category-form";
+import { MaterialList, MATERIAL_LIST_LABELS } from "../../material-list";
+import { QuotePdfImport, type QuotePdfImportLabels } from "../../quote-pdf-import";
+import { QUOTE_PDF_IMPORT_LABELS } from "../../translation-labels";
 import { updateStage, deleteStage } from "../actions";
 import { StageSubNav } from "./stage-sub-nav";
 import { computeRentalDays } from "@/lib/rental-days";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+
+const STAGE_PAGE_LABELS = [
+  "Stage",
+  "Naam",
+  "Opslaan",
+  "Stage verwijderen",
+  "Subtotaal (klant):",
+  "Categorie toevoegen",
+];
 
 export default async function StagePage({
   params,
@@ -73,6 +85,43 @@ export default async function StagePage({
     p_days: computeRentalDays(project),
   });
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [
+    ...STAGE_PAGE_LABELS,
+    ...CATEGORY_CARD_LABELS,
+    ...ADD_CATEGORY_FORM_LABELS,
+    ...MATERIAL_LIST_LABELS,
+    ...QUOTE_PDF_IMPORT_LABELS,
+    ...(categories ?? []).map((c) => c.name),
+  ]);
+
+  const quotePdfImportLabels: QuotePdfImportLabels = {
+    title: t("Offerte-PDF importeren"),
+    description: t(
+      "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt."
+    ),
+    supplier: t("Leverancier"),
+    chooseSupplier: t("Kies leverancier"),
+    busy: t("Bezig..."),
+    upload: t("Uploaden"),
+    noLinesFound: t(
+      "Geen regels met bedragen gevonden in dit PDF-bestand. Mogelijk bevat het een gescande afbeelding zonder tekstlaag, of staan bedragen in een formaat dat niet herkend wordt."
+    ),
+    uploadFailed: t(
+      "Uploaden mislukt. Controleer of het bestand een geldig PDF-bestand is en probeer het opnieuw."
+    ),
+    description2: t("Omschrijving"),
+    amount: t("Bedrag"),
+    category: t("Categorie"),
+    recognizedAs: t("Herkend als:"),
+    remove: t("Verwijderen"),
+    readyToConfirm: t("Klaar om over te nemen"),
+    lines: t("regels"),
+    confirmAsQuote: t("Overnemen als offerte"),
+    chooseSupplierFirst: t("Kies eerst een leverancier hierboven."),
+    confirmFailed: t("Overnemen als offerte is mislukt. Probeer het opnieuw."),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -85,7 +134,7 @@ export default async function StagePage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Stage</CardTitle>
+            <CardTitle>{t("Stage")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-end gap-2">
@@ -94,22 +143,22 @@ export default async function StagePage({
                 className="flex flex-1 items-end gap-2"
               >
                 <div className="flex-1 space-y-1.5">
-                  <Label htmlFor="name">Naam</Label>
+                  <Label htmlFor="name">{t("Naam")}</Label>
                   <Input id="name" name="name" defaultValue={stage.name} required />
                 </div>
                 <Button type="submit" size="sm">
-                  Opslaan
+                  {t("Opslaan")}
                 </Button>
               </form>
               <form action={deleteStage.bind(null, project.id, stage.id)}>
                 <Button type="submit" size="sm" variant="ghost">
-                  Stage verwijderen
+                  {t("Stage verwijderen")}
                 </Button>
               </form>
             </div>
 
             <p className="text-lg">
-              Subtotaal (klant): <span className="font-semibold">&euro; {subtotal.toFixed(2)}</span>
+              {t("Subtotaal (klant):")} <span className="font-semibold">&euro; {subtotal.toFixed(2)}</span>
             </p>
           </CardContent>
         </Card>
@@ -121,6 +170,7 @@ export default async function StagePage({
           suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
           defaultMarginPercentage={project.default_margin_percentage}
+          t={t}
         />
 
         <div className="space-y-4">
@@ -131,20 +181,26 @@ export default async function StagePage({
               category={category}
               quotes={quotesByCategory.get(category.id) ?? []}
               suppliers={suppliers ?? []}
+              t={t}
             />
           ))}
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Categorie toevoegen</CardTitle>
+            <CardTitle className="text-base">{t("Categorie toevoegen")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <AddCategoryForm projectId={project.id} stageId={stage.id} />
+            <AddCategoryForm projectId={project.id} stageId={stage.id} t={t} />
           </CardContent>
         </Card>
 
-        <QuotePdfImport projectId={project.id} stageId={stage.id} suppliers={suppliers ?? []} />
+        <QuotePdfImport
+          projectId={project.id}
+          stageId={stage.id}
+          suppliers={suppliers ?? []}
+          labels={quotePdfImportLabels}
+        />
       </main>
       <Footer />
     </div>

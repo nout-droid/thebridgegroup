@@ -4,9 +4,11 @@ import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { EventGuest, GuestDocument } from "@/lib/types";
-import { GuestDocumentsCard } from "../guest-documents-card";
-import { GuestListCard } from "../guest-list-card";
+import { GuestDocumentsCard, GUEST_DOCUMENTS_CARD_LABELS } from "../guest-documents-card";
+import { GuestListCard, GUEST_LIST_CARD_LABELS } from "../guest-list-card";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectGuestsPage({
   params,
@@ -37,13 +39,16 @@ export default async function ProjectGuestsPage({
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const baseUrl = `${protocol}://${host}`;
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [...GUEST_LIST_CARD_LABELS, ...GUEST_DOCUMENTS_CARD_LABELS]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="guests" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <GuestListCard projectId={project.id} guests={guests ?? []} baseUrl={baseUrl} />
-        <GuestDocumentsCard project={project} documents={guestDocuments ?? []} />
+        <GuestListCard projectId={project.id} guests={guests ?? []} baseUrl={baseUrl} t={t} />
+        <GuestDocumentsCard project={project} documents={guestDocuments ?? []} t={t} />
       </main>
       <Footer />
     </div>

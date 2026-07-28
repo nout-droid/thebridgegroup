@@ -1,6 +1,8 @@
 import "server-only";
 import type { AppLang } from "./lang";
 
+export type Translator = (text: string) => string;
+
 // Server-side vertegenwoordiger van dezelfde DeepL-vertaling als /api/translate, maar dan
 // direct aanroepbaar vanuit Server Components (geen client-side fetch/hook nodig — de
 // interne producer-app wisselt van taal via een cookie + volledige paginanavigatie, niet

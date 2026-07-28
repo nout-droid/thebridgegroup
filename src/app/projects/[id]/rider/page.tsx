@@ -4,8 +4,10 @@ import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { RiderSection, RiderSectionItem } from "@/lib/types";
-import { RiderCard } from "../rider-card";
+import { RiderCard, RIDER_CARD_LABELS } from "../rider-card";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectRiderPage({
   params,
@@ -46,6 +48,9 @@ export default async function ProjectRiderPage({
     items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
   }));
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, ["Rider (projectbreed)", ...RIDER_CARD_LABELS]);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -57,6 +62,7 @@ export default async function ProjectRiderPage({
           riderId={riderId ?? null}
           sections={riderSectionsWithItems}
           title="Rider (projectbreed)"
+          t={t}
         />
       </main>
       <Footer />

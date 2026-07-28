@@ -80,6 +80,7 @@ export const POWER_SECTION_LABELS = [
   "Aanvraag toevoegen",
   "bv. 32A 3-fase",
   "bv. Stage links",
+  "Kies podium",
 ];
 
 export const HOTEL_SECTION_LABELS = [

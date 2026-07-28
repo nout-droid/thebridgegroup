@@ -19,16 +19,31 @@ import {
   type PendingDocumentLine,
 } from "./supplier-review-actions";
 
+export interface SupplierDocumentReviewLabels {
+  busy: string;
+  review: string;
+  ignore: string;
+  noLinesFound: string;
+  description: string;
+  amount: string;
+  remove: string;
+  confirm: string;
+  lines: string;
+  cancel: string;
+}
+
 export function SupplierDocumentReview({
   projectId,
   documentId,
   quoteId,
   label,
+  labels,
 }: {
   projectId: string;
   documentId: string;
   quoteId: string;
   label: string;
+  labels: SupplierDocumentReviewLabels;
 }) {
   const router = useRouter();
   const [lines, setLines] = useState<PendingDocumentLine[] | null>(null);
@@ -64,10 +79,10 @@ export function SupplierDocumentReview({
       <div className="flex items-center gap-2">
         <span className="text-sm">{label}</span>
         <Button type="button" size="sm" variant="secondary" onClick={loadPreview} disabled={loading}>
-          {loading ? "Bezig..." : "Doorlopen"}
+          {loading ? labels.busy : labels.review}
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={dismiss}>
-          Negeren
+          {labels.ignore}
         </Button>
       </div>
     );
@@ -77,14 +92,14 @@ export function SupplierDocumentReview({
     <div className="space-y-2 rounded-md border p-3">
       <p className="text-sm font-medium">{label}</p>
       {lines.length === 0 && (
-        <p className="text-xs text-muted-foreground">Geen regels herkend in dit PDF.</p>
+        <p className="text-xs text-muted-foreground">{labels.noLinesFound}</p>
       )}
       {lines.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Omschrijving</TableHead>
-              <TableHead>Bedrag</TableHead>
+              <TableHead>{labels.description}</TableHead>
+              <TableHead>{labels.amount}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
@@ -109,7 +124,7 @@ export function SupplierDocumentReview({
                 </TableCell>
                 <TableCell>
                   <Button type="button" size="sm" variant="ghost" onClick={() => removeLine(index)}>
-                    Verwijderen
+                    {labels.remove}
                   </Button>
                 </TableCell>
               </TableRow>
@@ -119,10 +134,10 @@ export function SupplierDocumentReview({
       )}
       <div className="flex gap-2">
         <Button type="button" size="sm" onClick={confirm}>
-          Bevestigen ({lines.length} regels)
+          {labels.confirm} ({lines.length} {labels.lines})
         </Button>
         <Button type="button" size="sm" variant="ghost" onClick={() => setLines(null)}>
-          Annuleren
+          {labels.cancel}
         </Button>
       </div>
     </div>

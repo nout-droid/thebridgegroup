@@ -4,38 +4,57 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { GuestDocument, Project } from "@/lib/types";
 import { deleteGuestDocument, setGuestPassword, uploadGuestDocument } from "./guest-actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const GUEST_DOCUMENTS_CARD_LABELS = [
+  "Gastenportaal",
+  "Documenten (bv. riders) voor gasten — zelfde Event ID als de klant, met een eigen wachtwoord. Geen budgetdata zichtbaar.",
+  "Nieuw gastenwachtwoord",
+  "Gastenwachtwoord instellen",
+  "Opslaan",
+  "Nog geen gastenwachtwoord ingesteld — gasten kunnen nog niet inloggen.",
+  "Verwijderen",
+  "Titel",
+  "bv. Technical rider",
+  "Document toevoegen",
+];
+
+const identity: Translator = (text) => text;
 
 export function GuestDocumentsCard({
   project,
   documents,
+  t = identity,
 }: {
   project: Project;
   documents: GuestDocument[];
+  t?: Translator;
 }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Gastenportaal</CardTitle>
+        <CardTitle className="text-base">{t("Gastenportaal")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Documenten (bv. riders) voor gasten — zelfde Event ID als de klant, met een eigen
-          wachtwoord. Geen budgetdata zichtbaar.
+          {t(
+            "Documenten (bv. riders) voor gasten — zelfde Event ID als de klant, met een eigen wachtwoord. Geen budgetdata zichtbaar."
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <form action={setGuestPassword.bind(null, project.id)} className="flex items-end gap-2">
           <div className="space-y-1.5">
             <Label htmlFor="guest_password">
-              {project.guest_password_hash ? "Nieuw gastenwachtwoord" : "Gastenwachtwoord instellen"}
+              {project.guest_password_hash ? t("Nieuw gastenwachtwoord") : t("Gastenwachtwoord instellen")}
             </Label>
             <Input id="guest_password" name="password" type="password" className="w-40" required />
           </div>
           <Button type="submit" size="sm">
-            Opslaan
+            {t("Opslaan")}
           </Button>
         </form>
         {!project.guest_password_hash && (
           <p className="text-xs text-destructive">
-            Nog geen gastenwachtwoord ingesteld — gasten kunnen nog niet inloggen.
+            {t("Nog geen gastenwachtwoord ingesteld — gasten kunnen nog niet inloggen.")}
           </p>
         )}
 
@@ -52,7 +71,7 @@ export function GuestDocumentsCard({
                   </span>
                   <form action={deleteGuestDocument.bind(null, project.id, document.id)}>
                     <Button type="submit" size="sm" variant="ghost">
-                      Verwijderen
+                      {t("Verwijderen")}
                     </Button>
                   </form>
                 </li>
@@ -64,12 +83,12 @@ export function GuestDocumentsCard({
             className="flex flex-wrap items-end gap-2"
           >
             <div className="space-y-1.5">
-              <Label htmlFor="title">Titel</Label>
-              <Input id="title" name="title" placeholder="bv. Technical rider" required className="w-40" />
+              <Label htmlFor="title">{t("Titel")}</Label>
+              <Input id="title" name="title" placeholder={t("bv. Technical rider")} required className="w-40" />
             </div>
             <Input type="file" name="file" required className="max-w-xs" />
             <Button type="submit" size="sm">
-              Document toevoegen
+              {t("Document toevoegen")}
             </Button>
           </form>
         </div>

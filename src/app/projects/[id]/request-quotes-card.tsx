@@ -13,16 +13,28 @@ import {
 import type { Category, Stage, Supplier } from "@/lib/types";
 import { requestQuotesForCategories } from "./actions";
 
+export interface RequestQuotesCardLabels {
+  title: string;
+  description: string;
+  supplier: string;
+  chooseSupplier: string;
+  sendRequest: string;
+  unknownStage: string;
+  projectWide: string;
+}
+
 export function RequestQuotesCard({
   projectId,
   categories,
   stages,
   suppliers,
+  labels,
 }: {
   projectId: string;
   categories: Category[];
   stages: Stage[];
   suppliers: Supplier[];
+  labels: RequestQuotesCardLabels;
 }) {
   const [supplierId, setSupplierId] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -30,7 +42,7 @@ export function RequestQuotesCard({
   const stageName = new Map(stages.map((s) => [s.id, s.name]));
   const groups = new Map<string, Category[]>();
   for (const category of categories) {
-    const label = category.stage_id ? stageName.get(category.stage_id) ?? "Onbekend podium" : "Projectbreed";
+    const label = category.stage_id ? stageName.get(category.stage_id) ?? labels.unknownStage : labels.projectWide;
     const list = groups.get(label) ?? [];
     list.push(category);
     groups.set(label, list);
@@ -50,19 +62,15 @@ export function RequestQuotesCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Leverancier uitnodigen voor meerdere categorieën</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Kies een leverancier en vink de categorieën aan waar je een offerte voor wilt — bijvoorbeeld
-          alleen Licht + Rigging, zonder dat deze leverancier iets van Layher te zien krijgt. Alle
-          technische info en tekeningen vindt de leverancier onder Event rider.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-1.5">
-          <label className="text-sm font-medium">Leverancier</label>
+          <label className="text-sm font-medium">{labels.supplier}</label>
           <Select value={supplierId} onValueChange={(value) => setSupplierId(value ?? "")}>
             <SelectTrigger className="w-64">
-              <SelectValue placeholder="Kies leverancier" />
+              <SelectValue placeholder={labels.chooseSupplier} />
             </SelectTrigger>
             <SelectContent>
               {suppliers.map((supplier) => (
@@ -106,7 +114,7 @@ export function RequestQuotesCard({
             <input key={categoryId} type="hidden" name="category_id" value={categoryId} />
           ))}
           <Button type="submit" size="sm" disabled={!supplierId || selected.size === 0}>
-            Aanvraag versturen ({selected.size})
+            {labels.sendRequest} ({selected.size})
           </Button>
         </form>
       </CardContent>

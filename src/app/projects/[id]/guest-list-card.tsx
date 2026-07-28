@@ -12,15 +12,40 @@ import {
   type GuestType,
 } from "@/lib/types";
 import { createGuest, deleteGuest, updateGuestRsvp, updateGuestType } from "./guest-list-actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const GUEST_LIST_CARD_LABELS = [
+  "Gastenlijst & inchecken",
+  "ingecheckt",
+  "personen incl. +1's",
+  "Nog geen gasten toegevoegd.",
+  "Ingecheckt",
+  "Nog niet ingecheckt",
+  "Verwijderen",
+  "Type",
+  "Opslaan",
+  "Badge-link",
+  "Naam",
+  "E-mail",
+  "Telefoon",
+  "+1's",
+  "Gast toevoegen",
+  ...Object.values(GUEST_TYPE_LABELS),
+  ...Object.values(GUEST_RSVP_STATUS_LABELS),
+];
+
+const identity: Translator = (text) => text;
 
 export function GuestListCard({
   projectId,
   guests,
   baseUrl,
+  t = identity,
 }: {
   projectId: string;
   guests: EventGuest[];
   baseUrl: string;
+  t?: Translator;
 }) {
   const checkedInCount = guests.filter((g) => g.checked_in_at).length;
   const totalHeadcount = guests.reduce((sum, g) => sum + 1 + g.plus_ones, 0);
@@ -28,9 +53,11 @@ export function GuestListCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Gastenlijst & inchecken</CardTitle>
+        <CardTitle className="text-base">{t("Gastenlijst & inchecken")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {guests.length ? `${checkedInCount}/${guests.length} ingecheckt · ${totalHeadcount} personen incl. +1's` : "Nog geen gasten toegevoegd."}
+          {guests.length
+            ? `${checkedInCount}/${guests.length} ${t("ingecheckt")} · ${totalHeadcount} ${t("personen incl. +1's")}`
+            : t("Nog geen gasten toegevoegd.")}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -52,25 +79,25 @@ export function GuestListCard({
                   <div className="flex items-center gap-2">
                     {guest.checked_in_at ? (
                       <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
-                        Ingecheckt{" "}
+                        {t("Ingecheckt")}{" "}
                         {new Date(guest.checked_in_at).toLocaleTimeString("nl-NL", {
                           hour: "2-digit",
                           minute: "2-digit",
                         })}
                       </Badge>
                     ) : (
-                      <Badge variant="secondary">Nog niet ingecheckt</Badge>
+                      <Badge variant="secondary">{t("Nog niet ingecheckt")}</Badge>
                     )}
                     <form action={deleteGuest.bind(null, projectId, guest.id)}>
                       <Button type="submit" size="sm" variant="ghost">
-                        Verwijderen
+                        {t("Verwijderen")}
                       </Button>
                     </form>
                   </div>
                 </div>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <form action={updateGuestType.bind(null, projectId, guest.id)} className="flex items-center gap-1.5">
-                    <label className="text-xs text-muted-foreground">Type</label>
+                    <label className="text-xs text-muted-foreground">{t("Type")}</label>
                     <select
                       defaultValue={guest.guest_type}
                       className="h-8 rounded-md border bg-background px-2 text-xs"
@@ -78,12 +105,12 @@ export function GuestListCard({
                     >
                       {GUEST_TYPES.map((type) => (
                         <option key={type} value={type}>
-                          {GUEST_TYPE_LABELS[type]}
+                          {t(GUEST_TYPE_LABELS[type])}
                         </option>
                       ))}
                     </select>
                     <Button type="submit" size="sm" variant="outline" className="h-7 text-xs">
-                      Opslaan
+                      {t("Opslaan")}
                     </Button>
                   </form>
                   <div className="flex gap-1">
@@ -95,7 +122,7 @@ export function GuestListCard({
                           variant={guest.rsvp_status === status ? "default" : "outline"}
                           className="h-7 text-xs"
                         >
-                          {GUEST_RSVP_STATUS_LABELS[status]}
+                          {t(GUEST_RSVP_STATUS_LABELS[status])}
                         </Button>
                       </form>
                     ))}
@@ -106,7 +133,7 @@ export function GuestListCard({
                     rel="noopener noreferrer"
                     className="ml-auto text-xs text-primary underline"
                   >
-                    Badge-link
+                    {t("Badge-link")}
                   </a>
                 </div>
               </li>
@@ -115,19 +142,19 @@ export function GuestListCard({
         )}
 
         <form action={createGuest.bind(null, projectId)} className="grid grid-cols-1 gap-2 border-t pt-4 sm:grid-cols-5">
-          <Input name="name" placeholder="Naam" required className="sm:col-span-2" />
-          <Input name="email" type="email" placeholder="E-mail" />
-          <Input name="phone" placeholder="Telefoon" />
-          <Input name="plus_ones" type="number" min={0} defaultValue={0} placeholder="+1's" />
+          <Input name="name" placeholder={t("Naam")} required className="sm:col-span-2" />
+          <Input name="email" type="email" placeholder={t("E-mail")} />
+          <Input name="phone" placeholder={t("Telefoon")} />
+          <Input name="plus_ones" type="number" min={0} defaultValue={0} placeholder={t("+1's")} />
           <select name="guest_type" defaultValue="gast" className="h-9 rounded-md border bg-background px-2 text-sm sm:col-span-2">
             {GUEST_TYPES.map((type) => (
               <option key={type} value={type}>
-                {GUEST_TYPE_LABELS[type]}
+                {t(GUEST_TYPE_LABELS[type])}
               </option>
             ))}
           </select>
           <Button type="submit" className="sm:col-span-3">
-            Gast toevoegen
+            {t("Gast toevoegen")}
           </Button>
         </form>
       </CardContent>

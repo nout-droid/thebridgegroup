@@ -14,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { catalogCategoryLabel, type MaterialListItem, type Supplier } from "@/lib/types";
+import { CATALOG_CATEGORY_LABELS, catalogCategoryLabel, type MaterialListItem, type Supplier } from "@/lib/types";
 import {
   deleteMaterialListItem,
   pushMaterialListGroupToQuote,
@@ -23,6 +23,31 @@ import {
 } from "./actions";
 import { MatchPicker } from "./match-picker";
 import { AddMaterialListItem } from "./add-material-list-item";
+import type { Translator } from "@/lib/server/translate";
+import { MATCH_PICKER_LABELS, ADD_MATERIAL_LIST_ITEM_LABELS } from "./translation-labels";
+
+export const MATERIAL_LIST_LABELS = [
+  "Materiaallijst",
+  "Uploaden",
+  "Nog geen materiaallijst geüpload. Upload een CSV of Excel-export uit Vectorworks om automatisch een eerste prijsindicatie te krijgen.",
+  "Omschrijving",
+  "Aantal",
+  "Match",
+  "Prijs/dag",
+  "Regeltotaal",
+  "Geen match",
+  "ook als standaard opslaan",
+  "Opslaan",
+  "Verwijderen",
+  "Eerste prijsindicatie per categorie",
+  "inkoop",
+  "klant (indicatief,",
+  "% marge)",
+  "Overnemen als offerte",
+  "Geschatte DMX-netwerkbehoefte (vuistregel)",
+  ...MATCH_PICKER_LABELS,
+  ...ADD_MATERIAL_LIST_ITEM_LABELS,
+];
 
 function lineTotal(item: MaterialListItem, multiplier: number) {
   if (item.unit_price == null) return null;
@@ -36,6 +61,7 @@ export function MaterialList({
   suppliers,
   rentalMultiplier,
   defaultMarginPercentage,
+  t,
 }: {
   projectId: string;
   stageId: string | null;
@@ -43,7 +69,31 @@ export function MaterialList({
   suppliers: Supplier[];
   rentalMultiplier: number;
   defaultMarginPercentage: number;
+  t: Translator;
 }) {
+  const matchPickerLabels = {
+    wijzig: t("Wijzig"),
+    zoekArtikel: t("Zoek artikel..."),
+    zoek: t("Zoek"),
+    nietsGevonden: t("Niets gevonden."),
+    nieuwArtikelToevoegen: t("Nieuw artikel toevoegen"),
+    nietJuisteArtikel: t("Niet het juiste artikel? Nieuw artikel toevoegen"),
+    artikelnaam: t("Artikelnaam"),
+    categorie: t("Categorie"),
+    prijsPerDag: t("Prijs per dag (€)"),
+    toevoegenKoppelen: t("Toevoegen & koppelen"),
+    laatstGezien: t("laatst gezien"),
+    kiesLeverancier: t("Kies leverancier"),
+    categoryLabels: Object.fromEntries(
+      Object.values(CATALOG_CATEGORY_LABELS).map((label) => [label, t(label)])
+    ),
+  };
+  const addItemLabels = {
+    addLine: t("+ Regel toevoegen"),
+    searchPlaceholder: t("Zoek artikel in catalogus..."),
+    search: t("Zoek"),
+    cancel: t("Annuleren"),
+  };
   const groups = new Map<
     string,
     { category: string; supplierId: string; supplierName: string; total: number }
@@ -80,31 +130,32 @@ export function MaterialList({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Materiaallijst</CardTitle>
+        <CardTitle className="text-base">{t("Materiaallijst")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <form action={uploadMaterialList.bind(null, projectId, stageId)} className="flex items-center gap-2">
           <Input type="file" name="file" accept=".csv,.xlsx" required className="max-w-xs" />
           <Button type="submit" size="sm">
-            Uploaden
+            {t("Uploaden")}
           </Button>
         </form>
 
         {!items.length ? (
           <p className="text-sm text-muted-foreground">
-            Nog geen materiaallijst geüpload. Upload een CSV of Excel-export uit Vectorworks om
-            automatisch een eerste prijsindicatie te krijgen.
+            {t(
+              "Nog geen materiaallijst geüpload. Upload een CSV of Excel-export uit Vectorworks om automatisch een eerste prijsindicatie te krijgen."
+            )}
           </p>
         ) : (
           <>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Omschrijving</TableHead>
-                  <TableHead>Aantal</TableHead>
-                  <TableHead>Match</TableHead>
-                  <TableHead>Prijs/dag</TableHead>
-                  <TableHead>Regeltotaal</TableHead>
+                  <TableHead>{t("Omschrijving")}</TableHead>
+                  <TableHead>{t("Aantal")}</TableHead>
+                  <TableHead>{t("Match")}</TableHead>
+                  <TableHead>{t("Prijs/dag")}</TableHead>
+                  <TableHead>{t("Regeltotaal")}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
@@ -116,13 +167,13 @@ export function MaterialList({
                   const label = article
                     ? `${article.supplier?.name ?? ""} — ${article.name}` +
                       (article.last_seen_price != null
-                        ? ` · laatst gezien € ${article.last_seen_price.toFixed(2)}${
+                        ? ` · ${t("laatst gezien")} € ${article.last_seen_price.toFixed(2)}${
                             article.last_seen_price_at
                               ? ` (${new Date(article.last_seen_price_at).toLocaleDateString("nl-NL")})`
                               : ""
                           }`
                         : "")
-                    : "Geen match";
+                    : t("Geen match");
                   return (
                     <TableRow key={item.id}>
                       <TableCell className="max-w-xs">{item.raw_description}</TableCell>
@@ -145,6 +196,7 @@ export function MaterialList({
                           currentLabel={label}
                           defaultQuery={item.raw_description}
                           suppliers={suppliers}
+                          labels={matchPickerLabels}
                         />
                       </TableCell>
                       <TableCell>
@@ -160,7 +212,7 @@ export function MaterialList({
                         {article && (
                           <label className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                             <input form={formId} type="checkbox" name="save_as_default" />
-                            ook als standaard opslaan
+                            {t("ook als standaard opslaan")}
                           </label>
                         )}
                       </TableCell>
@@ -178,7 +230,7 @@ export function MaterialList({
                           className="inline"
                         >
                           <Button type="submit" size="sm" variant="secondary">
-                            Opslaan
+                            {t("Opslaan")}
                           </Button>
                         </form>
                         <form
@@ -186,7 +238,7 @@ export function MaterialList({
                           className="inline"
                         >
                           <Button type="submit" variant="ghost" size="sm">
-                            Verwijderen
+                            {t("Verwijderen")}
                           </Button>
                         </form>
                       </TableCell>
@@ -198,17 +250,17 @@ export function MaterialList({
 
             {groups.size > 0 && (
               <div className="space-y-2 border-t pt-4">
-                <p className="text-sm font-medium">Eerste prijsindicatie per categorie</p>
+                <p className="text-sm font-medium">{t("Eerste prijsindicatie per categorie")}</p>
                 {Array.from(groups.values()).map((group) => (
                   <div
                     key={`${group.category}::${group.supplierId}`}
                     className="flex items-center justify-between text-sm"
                   >
                     <span>
-                      {catalogCategoryLabel(group.category)} — {group.supplierName}: inkoop{" "}
+                      {t(catalogCategoryLabel(group.category))} — {group.supplierName}: {t("inkoop")}{" "}
                       <span className="font-medium">€ {group.total.toFixed(2)}</span>{" "}
                       <span className="text-muted-foreground">
-                        · klant (indicatief, {defaultMarginPercentage}% marge)
+                        · {t("klant (indicatief,")} {defaultMarginPercentage} {t("% marge)")}
                       </span>{" "}
                       <span className="font-medium">
                         € {(group.total * (1 + defaultMarginPercentage / 100)).toFixed(2)}
@@ -224,7 +276,7 @@ export function MaterialList({
                       )}
                     >
                       <Button type="submit" size="sm" variant="secondary">
-                        Overnemen als offerte
+                        {t("Overnemen als offerte")}
                       </Button>
                     </form>
                   </div>
@@ -234,7 +286,7 @@ export function MaterialList({
 
             {lightFixtureCount > 0 && (
               <div className="space-y-1 rounded-md border border-dashed p-3 text-sm">
-                <p className="font-medium">Geschatte DMX-netwerkbehoefte (vuistregel)</p>
+                <p className="font-medium">{t("Geschatte DMX-netwerkbehoefte (vuistregel)")}</p>
                 <p className="text-muted-foreground">
                   {lightFixtureCount} lichtarmaturen in deze lijst → circa {estimatedUniverses}{" "}
                   DMX-universe{estimatedUniverses === 1 ? "" : "s"}, {estimatedNodes} node
@@ -249,7 +301,7 @@ export function MaterialList({
         )}
 
         <div className="border-t pt-4">
-          <AddMaterialListItem projectId={projectId} stageId={stageId} />
+          <AddMaterialListItem projectId={projectId} stageId={stageId} labels={addItemLabels} />
         </div>
       </CardContent>
     </Card>

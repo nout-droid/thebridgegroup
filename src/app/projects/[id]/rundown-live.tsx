@@ -54,16 +54,61 @@ const COLOR_BORDER_CLASSES: Record<string, string> = {
 const OUTLINE_DARK = "border-white/20 bg-white/5 text-white hover:bg-white/10 hover:text-white";
 const GHOST_DARK = "text-white/70 hover:bg-white/10 hover:text-white";
 
-function ColorSelect({ id, defaultValue }: { id: string; defaultValue?: string }) {
+export interface RundownLiveLabels {
+  title: string;
+  description: string;
+  openClock: string;
+  startShow: string;
+  busy: string;
+  previous: string;
+  next: string;
+  stopShow: string;
+  totalOvertime: string;
+  startTimeLabel: string;
+  save: string;
+  overTime: string;
+  remaining: string;
+  cue: string;
+  name: string;
+  duration: string;
+  color: string;
+  notes: string;
+  remove: string;
+  instructionsPerDivision: string;
+  division: string;
+  instruction: string;
+  instructionPlaceholder: string;
+  add: string;
+  newCuePlaceholder: string;
+  newNamePlaceholder: string;
+  newDurationPlaceholder: string;
+  addCue: string;
+  colorLabels: Record<string, string>;
+}
+
+function ColorSelect({
+  id,
+  defaultValue,
+  labels,
+}: {
+  id: string;
+  defaultValue?: string;
+  labels: RundownLiveLabels;
+}) {
+  const translatedItems = COLOR_OPTIONS.map((c) => ({
+    value: c.value,
+    label: labels.colorLabels[c.value] ?? c.label,
+  }));
+
   return (
-    <Select name="color" defaultValue={defaultValue || "none"} items={COLOR_OPTIONS}>
+    <Select name="color" defaultValue={defaultValue || "none"} items={translatedItems}>
       <SelectTrigger id={id} className="h-8 text-xs">
-        <SelectValue placeholder="Geen" />
+        <SelectValue placeholder={labels.colorLabels.none} />
       </SelectTrigger>
       <SelectContent>
         {COLOR_OPTIONS.map((c) => (
           <SelectItem key={c.value} value={c.value}>
-            {c.label}
+            {labels.colorLabels[c.value] ?? c.label}
           </SelectItem>
         ))}
       </SelectContent>
@@ -78,6 +123,7 @@ export function RundownLive({
   shareToken,
   initialRundown,
   initialItems,
+  labels,
 }: {
   projectId: string;
   stageId: string | null;
@@ -85,6 +131,7 @@ export function RundownLive({
   shareToken: string;
   initialRundown: Rundown;
   initialItems: RundownItem[];
+  labels: RundownLiveLabels;
 }) {
   const [rundown, setRundown] = useState(initialRundown);
   const [items, setItems] = useState(initialItems);
@@ -176,11 +223,8 @@ export function RundownLive({
       <div className="sticky top-0 z-20 rounded-t-xl border-b border-white/10 bg-black px-(--card-spacing) py-(--card-spacing) [--card-spacing:--spacing(4)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-base">Show rundown</CardTitle>
-            <p className="text-sm text-white/70">
-              Cue-tijden schuiven automatisch door. Live tracking sync&apos;t mee op elk scherm dat
-              deze pagina open heeft.
-            </p>
+            <CardTitle className="text-base">{labels.title}</CardTitle>
+            <p className="text-sm text-white/70">{labels.description}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -196,7 +240,7 @@ export function RundownLive({
                 />
               }
             >
-              Open klok
+              {labels.openClock}
             </Button>
             {!rundown.is_live ? (
               <Button
@@ -204,7 +248,7 @@ export function RundownLive({
                 onClick={() => startTransition(() => startShow(projectId, stageId, rundownId))}
                 disabled={items.length === 0 || isPending}
               >
-                {isPending ? "Bezig…" : "Start show"}
+                {isPending ? labels.busy : labels.startShow}
               </Button>
             ) : (
               <>
@@ -214,7 +258,7 @@ export function RundownLive({
                 </span>
                 {totalOvertimeSeconds > 0 && (
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-2.5 py-1 text-xs font-semibold text-orange-300">
-                    Totaal opgelopen: +{formatDuration(totalOvertimeSeconds)}
+                    {labels.totalOvertime} +{formatDuration(totalOvertimeSeconds)}
                   </span>
                 )}
                 <Button
@@ -224,14 +268,14 @@ export function RundownLive({
                   disabled={isPending}
                   onClick={() => startTransition(() => previousCue(projectId, stageId, rundownId))}
                 >
-                  &larr; Vorige
+                  &larr; {labels.previous}
                 </Button>
                 <Button
                   size="sm"
                   disabled={isPending}
                   onClick={() => startTransition(() => nextCue(projectId, stageId, rundownId))}
                 >
-                  Volgende &rarr;
+                  {labels.next} &rarr;
                 </Button>
                 <Button
                   size="sm"
@@ -240,7 +284,7 @@ export function RundownLive({
                   disabled={isPending}
                   onClick={() => startTransition(() => stopShow(projectId, stageId, rundownId))}
                 >
-                  Stop show
+                  {labels.stopShow}
                 </Button>
               </>
             )}
@@ -253,7 +297,7 @@ export function RundownLive({
           className="flex items-end gap-2 border-b border-white/10 pb-4"
         >
           <div className="space-y-1">
-            <Label htmlFor="start_time" className="text-xs text-white/70">Starttijd show</Label>
+            <Label htmlFor="start_time" className="text-xs text-white/70">{labels.startTimeLabel}</Label>
             <Input
               id="start_time"
               name="start_time"
@@ -264,7 +308,7 @@ export function RundownLive({
             />
           </div>
           <SubmitButton size="sm" variant="outline" className={cn("h-8 text-xs", OUTLINE_DARK)}>
-            Opslaan
+            {labels.save}
           </SubmitButton>
         </form>
 
@@ -284,7 +328,7 @@ export function RundownLive({
               {isCurrent && showLiveTimer && (
                 <div className="flex items-center gap-2 text-xs font-semibold">
                   <span className={cn(remainingSeconds < 0 ? "text-red-400" : "text-primary")}>
-                    {remainingSeconds < 0 ? "Over tijd: " : "Resterend: "}
+                    {remainingSeconds < 0 ? `${labels.overTime} ` : `${labels.remaining} `}
                     {formatDuration(remainingSeconds)}
                   </span>
                 </div>
@@ -294,7 +338,7 @@ export function RundownLive({
                 className="grid grid-cols-2 gap-2 sm:grid-cols-6"
               >
                 <div className="space-y-1">
-                  <Label htmlFor={`cue-${item.id}`} className="text-xs text-white/70">Cue</Label>
+                  <Label htmlFor={`cue-${item.id}`} className="text-xs text-white/70">{labels.cue}</Label>
                   <Input
                     id={`cue-${item.id}`}
                     name="cue_number"
@@ -304,7 +348,7 @@ export function RundownLive({
                 </div>
                 <div className="space-y-1 sm:col-span-2">
                   <Label htmlFor={`name-${item.id}`} className="text-xs text-white/70">
-                    Naam ({start} &ndash; {end})
+                    {labels.name} ({start} &ndash; {end})
                   </Label>
                   <Input
                     id={`name-${item.id}`}
@@ -315,7 +359,7 @@ export function RundownLive({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor={`duration-${item.id}`} className="text-xs text-white/70">Duur (mm:ss)</Label>
+                  <Label htmlFor={`duration-${item.id}`} className="text-xs text-white/70">{labels.duration}</Label>
                   <Input
                     id={`duration-${item.id}`}
                     name="duration"
@@ -324,11 +368,11 @@ export function RundownLive({
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor={`color-${item.id}`} className="text-xs text-white/70">Kleur</Label>
-                  <ColorSelect id={`color-${item.id}`} defaultValue={item.color} />
+                  <Label htmlFor={`color-${item.id}`} className="text-xs text-white/70">{labels.color}</Label>
+                  <ColorSelect id={`color-${item.id}`} defaultValue={item.color} labels={labels} />
                 </div>
                 <div className="space-y-1 sm:col-span-2">
-                  <Label htmlFor={`notes-${item.id}`} className="text-xs text-white/70">Notities</Label>
+                  <Label htmlFor={`notes-${item.id}`} className="text-xs text-white/70">{labels.notes}</Label>
                   <Input
                     id={`notes-${item.id}`}
                     name="notes"
@@ -358,7 +402,7 @@ export function RundownLive({
                 </div>
                 <div className="flex items-end gap-2 sm:col-span-6">
                   <SubmitButton size="sm" className="h-8 text-xs">
-                    Opslaan
+                    {labels.save}
                   </SubmitButton>
                   <SubmitButton
                     formAction={deleteRundownItem.bind(null, projectId, stageId, rundownId, item.id)}
@@ -366,13 +410,13 @@ export function RundownLive({
                     variant="ghost"
                     className={cn("h-8 text-xs", GHOST_DARK)}
                   >
-                    Verwijderen
+                    {labels.remove}
                   </SubmitButton>
                 </div>
               </form>
 
               <div className="space-y-1.5 border-t border-white/10 pt-3">
-                <p className="text-xs font-medium text-white/60">Opdrachten per devisie</p>
+                <p className="text-xs font-medium text-white/60">{labels.instructionsPerDivision}</p>
                 {instructions.length > 0 && (
                   <ul className="space-y-1">
                     {instructions.map((instr) => (
@@ -387,7 +431,7 @@ export function RundownLive({
                         </span>
                         <form action={deleteRundownInstruction.bind(null, projectId, stageId, instr.id)}>
                           <SubmitButton variant="ghost" size="sm" className={cn("h-6 px-2 text-xs", GHOST_DARK)}>
-                            Verwijderen
+                            {labels.remove}
                           </SubmitButton>
                         </form>
                       </li>
@@ -399,21 +443,21 @@ export function RundownLive({
                   className="flex flex-wrap items-end gap-2"
                 >
                   <div className="space-y-1">
-                    <Label htmlFor={`instr-div-${item.id}`} className="text-xs text-white/70">Devisie</Label>
+                    <Label htmlFor={`instr-div-${item.id}`} className="text-xs text-white/70">{labels.division}</Label>
                     <DivisionSelect id={`instr-div-${item.id}`} />
                   </div>
                   <div className="min-w-[180px] flex-1 space-y-1">
-                    <Label htmlFor={`instr-text-${item.id}`} className="text-xs text-white/70">Opdracht</Label>
+                    <Label htmlFor={`instr-text-${item.id}`} className="text-xs text-white/70">{labels.instruction}</Label>
                     <Input
                       id={`instr-text-${item.id}`}
                       name="instruction"
-                      placeholder="bv. HH 1 open zetten"
+                      placeholder={labels.instructionPlaceholder}
                       className="h-8 text-xs"
                       required
                     />
                   </div>
                   <SubmitButton size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
-                    Toevoegen
+                    {labels.add}
                   </SubmitButton>
                 </form>
               </div>
@@ -426,28 +470,28 @@ export function RundownLive({
           className="grid grid-cols-2 gap-2 border-t border-white/10 pt-4 sm:grid-cols-6"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-cue" className="text-xs text-white/70">Cue</Label>
-            <Input id="new-cue" name="cue_number" placeholder="bv. 1" className="h-8 text-xs" />
+            <Label htmlFor="new-cue" className="text-xs text-white/70">{labels.cue}</Label>
+            <Input id="new-cue" name="cue_number" placeholder={labels.newCuePlaceholder} className="h-8 text-xs" />
           </div>
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="new-name" className="text-xs text-white/70">Naam</Label>
-            <Input id="new-name" name="name" placeholder="bv. Opening VJ set" className="h-8 text-xs" required />
+            <Label htmlFor="new-name" className="text-xs text-white/70">{labels.name}</Label>
+            <Input id="new-name" name="name" placeholder={labels.newNamePlaceholder} className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-duration" className="text-xs text-white/70">Duur (mm:ss)</Label>
-            <Input id="new-duration" name="duration" placeholder="bv. 3:00" className="h-8 text-xs" />
+            <Label htmlFor="new-duration" className="text-xs text-white/70">{labels.duration}</Label>
+            <Input id="new-duration" name="duration" placeholder={labels.newDurationPlaceholder} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-color" className="text-xs text-white/70">Kleur</Label>
-            <ColorSelect id="new-color" />
+            <Label htmlFor="new-color" className="text-xs text-white/70">{labels.color}</Label>
+            <ColorSelect id="new-color" labels={labels} />
           </div>
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="new-notes" className="text-xs text-white/70">Notities</Label>
+            <Label htmlFor="new-notes" className="text-xs text-white/70">{labels.notes}</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
           <div className="flex items-end">
             <SubmitButton size="sm" className="h-8 text-xs">
-              Cue toevoegen
+              {labels.addCue}
             </SubmitButton>
           </div>
         </form>

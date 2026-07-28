@@ -13,6 +13,26 @@ import {
   moveRiderSection,
   updateRiderSection,
 } from "./rider-actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const RIDER_CARD_LABELS = [
+  "Rider downloaden",
+  "Callsheet downloaden",
+  "Onderdelen die je markeert als \"klant mag invullen\" worden bewerkbaar in het klantportaal.",
+  "Klant vult in",
+  "Op callsheet",
+  "Klant mag dit invullen",
+  "Regels",
+  "Verwijderen",
+  "bv. 2x extra PAR lamp",
+  "Regel toevoegen",
+  "Nieuw onderdeel",
+  "bv. Catering",
+  "Onderdeel toevoegen",
+  "Opslaan",
+];
+
+const identity: Translator = (text) => text;
 
 export function RiderCard({
   projectId,
@@ -21,6 +41,7 @@ export function RiderCard({
   sections,
   title = "Rider",
   showDownloadLinks = true,
+  t = identity,
 }: {
   projectId: string;
   stageId: string | null;
@@ -28,12 +49,13 @@ export function RiderCard({
   sections: RiderSection[];
   title?: string;
   showDownloadLinks?: boolean;
+  t?: Translator;
 }) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
-          <CardTitle className="text-base">{title}</CardTitle>
+          <CardTitle className="text-base">{t(title)}</CardTitle>
           {riderId && showDownloadLinks && (
             <div className="flex items-center gap-3">
               <a
@@ -42,7 +64,7 @@ export function RiderCard({
                 rel="noopener noreferrer"
                 className="text-sm text-primary underline"
               >
-                Rider downloaden
+                {t("Rider downloaden")}
               </a>
               <a
                 href={`/projects/${projectId}/rider/callsheet`}
@@ -50,14 +72,15 @@ export function RiderCard({
                 rel="noopener noreferrer"
                 className="text-sm text-primary underline"
               >
-                Callsheet downloaden
+                {t("Callsheet downloaden")}
               </a>
             </div>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
-          Onderdelen die je markeert als &quot;klant mag invullen&quot; worden bewerkbaar in het
-          klantportaal.
+          {t(
+            'Onderdelen die je markeert als "klant mag invullen" worden bewerkbaar in het klantportaal.'
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -75,8 +98,8 @@ export function RiderCard({
                   required
                 />
                 <div className="flex items-center gap-2">
-                  {section.editable_by_client && <Badge variant="secondary">Klant vult in</Badge>}
-                  {section.include_in_callsheet && <Badge variant="secondary">Op callsheet</Badge>}
+                  {section.editable_by_client && <Badge variant="secondary">{t("Klant vult in")}</Badge>}
+                  {section.include_in_callsheet && <Badge variant="secondary">{t("Op callsheet")}</Badge>}
                   <div className="flex gap-1">
                     <Button
                       type="submit"
@@ -123,7 +146,7 @@ export function RiderCard({
                       defaultChecked={section.editable_by_client}
                       className="h-4 w-4"
                     />
-                    Klant mag dit invullen
+                    {t("Klant mag dit invullen")}
                   </label>
                   <label className="flex items-center gap-2 text-sm text-muted-foreground">
                     <input
@@ -132,12 +155,12 @@ export function RiderCard({
                       defaultChecked={section.include_in_callsheet}
                       className="h-4 w-4"
                     />
-                    Op callsheet
+                    {t("Op callsheet")}
                   </label>
                 </div>
                 <div className="flex gap-2">
                   <Button type="submit" size="sm">
-                    Opslaan
+                    {t("Opslaan")}
                   </Button>
                   <Button
                     type="submit"
@@ -145,14 +168,14 @@ export function RiderCard({
                     size="sm"
                     variant="ghost"
                   >
-                    Verwijderen
+                    {t("Verwijderen")}
                   </Button>
                 </div>
               </div>
             </form>
 
             <div className="space-y-1.5 border-t pt-3">
-              <p className="text-xs font-medium text-muted-foreground">Regels</p>
+              <p className="text-xs font-medium text-muted-foreground">{t("Regels")}</p>
               {(section.items ?? []).length > 0 && (
                 <ul className="space-y-1">
                   {(section.items ?? []).map((item) => (
@@ -160,7 +183,7 @@ export function RiderCard({
                       <span>{item.description}</span>
                       <form action={deleteRiderSectionItem.bind(null, projectId, stageId, item.id)}>
                         <Button type="submit" variant="ghost" size="sm" className="h-6 px-2 text-xs">
-                          Verwijderen
+                          {t("Verwijderen")}
                         </Button>
                       </form>
                     </li>
@@ -173,12 +196,12 @@ export function RiderCard({
               >
                 <Input
                   name="description"
-                  placeholder="bv. 2x extra PAR lamp"
+                  placeholder={t("bv. 2x extra PAR lamp")}
                   className="h-8 text-xs"
                   required
                 />
                 <Button type="submit" size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
-                  Regel toevoegen
+                  {t("Regel toevoegen")}
                 </Button>
               </form>
             </div>
@@ -187,21 +210,21 @@ export function RiderCard({
 
         <form action={addRiderSection.bind(null, projectId, stageId)} className="space-y-2 border-t pt-4">
           <div className="space-y-1.5">
-            <Label htmlFor="title">Nieuw onderdeel</Label>
-            <Input id="title" name="title" placeholder="bv. Catering" required className="max-w-xs" />
+            <Label htmlFor="title">{t("Nieuw onderdeel")}</Label>
+            <Input id="title" name="title" placeholder={t("bv. Catering")} required className="max-w-xs" />
           </div>
           <div className="flex flex-wrap gap-4">
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" name="editable_by_client" className="h-4 w-4" />
-              Klant mag dit invullen
+              {t("Klant mag dit invullen")}
             </label>
             <label className="flex items-center gap-2 text-sm text-muted-foreground">
               <input type="checkbox" name="include_in_callsheet" className="h-4 w-4" />
-              Op callsheet
+              {t("Op callsheet")}
             </label>
           </div>
           <Button type="submit" size="sm">
-            Onderdeel toevoegen
+            {t("Onderdeel toevoegen")}
           </Button>
         </form>
       </CardContent>

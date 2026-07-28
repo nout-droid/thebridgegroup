@@ -3,8 +3,11 @@ import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { ScheduleItem, Supplier } from "@/lib/types";
-import { ScheduleCard } from "../schedule-card";
+import { ScheduleCard, type ScheduleCardLabels } from "../schedule-card";
+import { SCHEDULE_CARD_LABELS } from "../translation-labels";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectSchedulePage({
   params,
@@ -30,6 +33,29 @@ export default async function ProjectSchedulePage({
     .order("name", { ascending: true })
     .returns<Supplier[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, SCHEDULE_CARD_LABELS);
+  const labels: ScheduleCardLabels = {
+    title: t("Draaiboek"),
+    description: t("Tijdlijn van activiteiten, van opbouw tot afbraak."),
+    downloadPdf: t("Draaiboek downloaden (PDF)"),
+    date: t("Datum"),
+    time: t("Tijd"),
+    activity: t("Activiteit"),
+    priority: t("Prioriteit"),
+    notes: t("Notities"),
+    save: t("Opslaan"),
+    remove: t("Verwijderen"),
+    performers: t("Uitvoerders"),
+    unknown: t("Onbekend"),
+    removeSupplier: t("verwijderen"),
+    add: t("Toevoegen"),
+    newActivityPlaceholder: t("bv. Start load in licht"),
+    addActivity: t("Activiteit toevoegen"),
+    addPerformersHint: t("Uitvoerders (leveranciers) voeg je toe nadat de activiteit is aangemaakt."),
+    chooseSupplier: t("Kies leverancier"),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -40,6 +66,7 @@ export default async function ProjectSchedulePage({
           stageId={null}
           items={scheduleItems ?? []}
           suppliers={suppliers ?? []}
+          labels={labels}
         />
       </main>
       <Footer />

@@ -14,16 +14,46 @@ import {
   updateEquipmentReservation,
 } from "./equipment-actions";
 
+export interface EquipmentCardLabels {
+  title: string;
+  description: string;
+  area: string;
+  allStages: string;
+  projectWide: string;
+  date: string;
+  allDates: string;
+  supplier: string;
+  allSuppliers: string;
+  search: string;
+  searchPlaceholder: string;
+  downloadPdf: string;
+  machineType: string;
+  quantity: string;
+  accessories: string;
+  reservationDate: string;
+  duration: string;
+  machineNumber: string;
+  keyHolder: string;
+  pickedUp: string;
+  save: string;
+  remove: string;
+  addReservation: string;
+  chooseStage: string;
+  chooseSupplier: string;
+}
+
 export function EquipmentCard({
   projectId,
   reservations,
   suppliers,
   stages,
+  labels,
 }: {
   projectId: string;
   reservations: EquipmentReservation[];
   suppliers: Supplier[];
   stages: Stage[];
+  labels: EquipmentCardLabels;
 }) {
   const [areaFilter, setAreaFilter] = useState("alle");
   const [supplierFilter, setSupplierFilter] = useState("alle");
@@ -49,61 +79,59 @@ export function EquipmentCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Materieel reservering</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Gehuurde machines: van wie, wanneer, en waar ligt de sleutel.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
         <div className="flex flex-wrap items-end gap-2 pt-2">
           <div className="space-y-1">
-            <Label htmlFor="equip-filter-area" className="text-xs">Podium/area</Label>
+            <Label htmlFor="equip-filter-area" className="text-xs">{labels.area}</Label>
             <select
               id="equip-filter-area"
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle podia</option>
-              <option value="algemeen">Projectbreed</option>
+              <option value="alle">{labels.allStages}</option>
+              <option value="algemeen">{labels.projectWide}</option>
               {stages.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="equip-filter-date" className="text-xs">Datum</Label>
+            <Label htmlFor="equip-filter-date" className="text-xs">{labels.date}</Label>
             <select
               id="equip-filter-date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle datums</option>
+              <option value="alle">{labels.allDates}</option>
               {dates.map((date) => (
                 <option key={date} value={date}>{date}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="equip-filter-supplier" className="text-xs">Leverancier</Label>
+            <Label htmlFor="equip-filter-supplier" className="text-xs">{labels.supplier}</Label>
             <select
               id="equip-filter-supplier"
               value={supplierFilter}
               onChange={(e) => setSupplierFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle leveranciers</option>
+              <option value="alle">{labels.allSuppliers}</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="equip-filter-search" className="text-xs">Zoek op type/sleutelhouder</Label>
+            <Label htmlFor="equip-filter-search" className="text-xs">{labels.search}</Label>
             <Input
               id="equip-filter-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="bv. Manitou"
+              placeholder={labels.searchPlaceholder}
               className="h-8 w-48 text-xs"
             />
           </div>
@@ -117,7 +145,7 @@ export function EquipmentCard({
             rel="noopener noreferrer"
             className="text-sm text-primary underline"
           >
-            Materieellijst downloaden (PDF)
+            {labels.downloadPdf}
           </a>
         )}
         {filtered.map((item) => (
@@ -127,7 +155,7 @@ export function EquipmentCard({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-6"
           >
             <div className="space-y-1">
-              <Label htmlFor={`type-${item.id}`} className="text-xs">Type machine</Label>
+              <Label htmlFor={`type-${item.id}`} className="text-xs">{labels.machineType}</Label>
               <Input
                 id={`type-${item.id}`}
                 name="machine_type"
@@ -137,23 +165,25 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`stage-${item.id}`} className="text-xs">Podium/area</Label>
+              <Label htmlFor={`stage-${item.id}`} className="text-xs">{labels.area}</Label>
               <StageSelect
                 id={`stage-${item.id}`}
                 defaultValue={item.stage_id ?? undefined}
                 stages={stages}
+                placeholder={labels.chooseStage}
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`supplier-${item.id}`} className="text-xs">Leverancier</Label>
+              <Label htmlFor={`supplier-${item.id}`} className="text-xs">{labels.supplier}</Label>
               <SupplierSelect
                 id={`supplier-${item.id}`}
                 defaultValue={item.supplier_id ?? undefined}
                 suppliers={suppliers}
+                placeholder={labels.chooseSupplier}
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`qty-${item.id}`} className="text-xs">Aantal</Label>
+              <Label htmlFor={`qty-${item.id}`} className="text-xs">{labels.quantity}</Label>
               <Input
                 id={`qty-${item.id}`}
                 name="quantity"
@@ -164,7 +194,7 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`acc-${item.id}`} className="text-xs">Accessoires</Label>
+              <Label htmlFor={`acc-${item.id}`} className="text-xs">{labels.accessories}</Label>
               <Input
                 id={`acc-${item.id}`}
                 name="accessories"
@@ -173,7 +203,7 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`date-${item.id}`} className="text-xs">Datum reservering</Label>
+              <Label htmlFor={`date-${item.id}`} className="text-xs">{labels.reservationDate}</Label>
               <Input
                 id={`date-${item.id}`}
                 name="reservation_date"
@@ -183,7 +213,7 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`duration-${item.id}`} className="text-xs">Benodigde duur</Label>
+              <Label htmlFor={`duration-${item.id}`} className="text-xs">{labels.duration}</Label>
               <Input
                 id={`duration-${item.id}`}
                 name="duration"
@@ -192,7 +222,7 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`num-${item.id}`} className="text-xs">Machinenummer</Label>
+              <Label htmlFor={`num-${item.id}`} className="text-xs">{labels.machineNumber}</Label>
               <Input
                 id={`num-${item.id}`}
                 name="machine_number"
@@ -201,7 +231,7 @@ export function EquipmentCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`key-${item.id}`} className="text-xs">Sleutel bij</Label>
+              <Label htmlFor={`key-${item.id}`} className="text-xs">{labels.keyHolder}</Label>
               <Input
                 id={`key-${item.id}`}
                 name="key_holder"
@@ -217,12 +247,12 @@ export function EquipmentCard({
                   defaultChecked={item.picked_up}
                   className="h-4 w-4"
                 />
-                Opgehaald
+                {labels.pickedUp}
               </label>
             </div>
             <div className="flex items-end gap-2 sm:col-span-6">
               <Button type="submit" size="sm" className="h-8 text-xs">
-                Opslaan
+                {labels.save}
               </Button>
               <Button
                 type="submit"
@@ -231,7 +261,7 @@ export function EquipmentCard({
                 variant="ghost"
                 className="h-8 text-xs"
               >
-                Verwijderen
+                {labels.remove}
               </Button>
             </div>
           </form>
@@ -242,50 +272,50 @@ export function EquipmentCard({
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-6"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-type" className="text-xs">Type machine</Label>
+            <Label htmlFor="new-type" className="text-xs">{labels.machineType}</Label>
             <Input id="new-type" name="machine_type" placeholder="bv. Manitou" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-stage" className="text-xs">Podium/area</Label>
-            <StageSelect id="new-stage" stages={stages} />
+            <Label htmlFor="new-stage" className="text-xs">{labels.area}</Label>
+            <StageSelect id="new-stage" stages={stages} placeholder={labels.chooseStage} />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-supplier" className="text-xs">Leverancier</Label>
-            <SupplierSelect id="new-supplier" suppliers={suppliers} />
+            <Label htmlFor="new-supplier" className="text-xs">{labels.supplier}</Label>
+            <SupplierSelect id="new-supplier" suppliers={suppliers} placeholder={labels.chooseSupplier} />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-qty" className="text-xs">Aantal</Label>
+            <Label htmlFor="new-qty" className="text-xs">{labels.quantity}</Label>
             <Input id="new-qty" name="quantity" type="number" min={1} defaultValue={1} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-acc" className="text-xs">Accessoires</Label>
+            <Label htmlFor="new-acc" className="text-xs">{labels.accessories}</Label>
             <Input id="new-acc" name="accessories" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-date" className="text-xs">Datum reservering</Label>
+            <Label htmlFor="new-date" className="text-xs">{labels.reservationDate}</Label>
             <Input id="new-date" name="reservation_date" type="date" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-duration" className="text-xs">Benodigde duur</Label>
+            <Label htmlFor="new-duration" className="text-xs">{labels.duration}</Label>
             <Input id="new-duration" name="duration" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-num" className="text-xs">Machinenummer</Label>
+            <Label htmlFor="new-num" className="text-xs">{labels.machineNumber}</Label>
             <Input id="new-num" name="machine_number" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-key" className="text-xs">Sleutel bij</Label>
+            <Label htmlFor="new-key" className="text-xs">{labels.keyHolder}</Label>
             <Input id="new-key" name="key_holder" className="h-8 text-xs" />
           </div>
           <div className="flex items-end">
             <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <input type="checkbox" name="picked_up" className="h-4 w-4" />
-              Opgehaald
+              {labels.pickedUp}
             </label>
           </div>
           <div className="sm:col-span-6">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Reservering toevoegen
+              {labels.addReservation}
             </Button>
           </div>
         </form>

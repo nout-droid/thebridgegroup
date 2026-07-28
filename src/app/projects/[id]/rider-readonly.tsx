@@ -4,6 +4,8 @@ import type { RiderSection } from "@/lib/types";
 
 const identity = (text: string) => text;
 
+export const RIDER_READONLY_LABELS = ["Rider", "Klant vult in"];
+
 // t is optioneel (default: geen vertaling) — interne, Nederlandstalige weergaven (bv.
 // eigenaar-kant stagepagina's) geven 'm gewoon niet mee; het leveranciersportaal wel.
 export function RiderReadOnly({

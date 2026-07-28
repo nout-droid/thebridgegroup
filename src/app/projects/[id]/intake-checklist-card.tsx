@@ -10,6 +10,21 @@ import {
   saveIntakeChecklistAnswer,
   uploadIntakeChecklistPhoto,
 } from "./intake-actions";
+import type { AppLang } from "@/lib/server/lang";
+import type { Translator } from "@/lib/server/translate";
+
+export const INTAKE_CHECKLIST_CARD_LABELS = [
+  "Aanvraag checklist",
+  "De klant kan dit zelf invullen in het klantportaal (NL of EN). Jij kunt hier ook zelf antwoorden invullen of aanvullen.",
+  "Ingevuld door klant",
+  "Opslaan",
+  "Bijlagen",
+  "Klant",
+  "Verwijderen",
+  "Bijlage toevoegen",
+];
+
+const identity: Translator = (text) => text;
 
 export interface IntakeChecklistPhotoWithUrl {
   id: string;
@@ -23,36 +38,43 @@ export function IntakeChecklistCard({
   projectId,
   answers,
   photos,
+  lang = "nl",
+  t = identity,
 }: {
   projectId: string;
   answers: IntakeChecklistAnswer[];
   photos: IntakeChecklistPhotoWithUrl[];
+  lang?: AppLang;
+  t?: Translator;
 }) {
   const answerByKey = new Map(answers.map((a) => [a.section_key, a]));
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Aanvraag checklist</CardTitle>
+        <CardTitle className="text-base">{t("Aanvraag checklist")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          De klant kan dit zelf invullen in het klantportaal (NL of EN). Jij kunt hier ook
-          zelf antwoorden invullen of aanvullen.
+          {t(
+            "De klant kan dit zelf invullen in het klantportaal (NL of EN). Jij kunt hier ook zelf antwoorden invullen of aanvullen."
+          )}
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
         {INTAKE_CHECKLIST_SECTIONS.map((section) => {
           const answer = answerByKey.get(section.key);
           const sectionPhotos = photos.filter((p) => p.section_key === section.key);
+          const title = lang === "en" ? section.title_en : section.title_nl;
+          const guidance = lang === "en" ? section.guidance_en : section.guidance_nl;
           return (
             <div key={section.key} className="space-y-2 rounded-md border p-3">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-medium">{section.title_nl}</p>
+                <p className="font-medium">{title}</p>
                 {answer?.updated_by === "client" && (
-                  <Badge variant="secondary">Ingevuld door klant</Badge>
+                  <Badge variant="secondary">{t("Ingevuld door klant")}</Badge>
                 )}
               </div>
               <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
-                {section.guidance_nl.map((line) => (
+                {guidance.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
               </ul>
@@ -62,12 +84,12 @@ export function IntakeChecklistCard({
               >
                 <Textarea name="content" defaultValue={answer?.content ?? ""} rows={3} />
                 <Button type="submit" size="sm">
-                  Opslaan
+                  {t("Opslaan")}
                 </Button>
               </form>
 
               <div className="space-y-1.5 border-t pt-3">
-                <p className="text-xs font-medium text-muted-foreground">Bijlagen</p>
+                <p className="text-xs font-medium text-muted-foreground">{t("Bijlagen")}</p>
                 {sectionPhotos.length > 0 && (
                   <ul className="space-y-1">
                     {sectionPhotos.map((photo) => (
@@ -89,7 +111,7 @@ export function IntakeChecklistCard({
                             photo.original_filename
                           )}
                           {photo.uploaded_by === "client" && (
-                            <Badge variant="secondary">Klant</Badge>
+                            <Badge variant="secondary">{t("Klant")}</Badge>
                           )}
                         </span>
                         <form action={deleteIntakeChecklistPhoto.bind(null, projectId, photo.id)}>
@@ -99,7 +121,7 @@ export function IntakeChecklistCard({
                             size="sm"
                             className="h-6 px-2 text-xs"
                           >
-                            Verwijderen
+                            {t("Verwijderen")}
                           </Button>
                         </form>
                       </li>
@@ -118,7 +140,7 @@ export function IntakeChecklistCard({
                     className="h-8 max-w-xs text-xs"
                   />
                   <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
-                    Bijlage toevoegen
+                    {t("Bijlage toevoegen")}
                   </Button>
                 </form>
               </div>

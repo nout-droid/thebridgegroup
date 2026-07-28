@@ -19,14 +19,17 @@ import {
   type Stage,
   type Supplier,
 } from "@/lib/types";
-import { CategoryCard } from "../category-card";
-import { AddCategoryForm } from "../add-category-form";
-import { MaterialList } from "../material-list";
-import { QuotePdfImport } from "../quote-pdf-import";
-import { RequestQuotesCard } from "../request-quotes-card";
+import { CategoryCard, CATEGORY_CARD_LABELS } from "../category-card";
+import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../add-category-form";
+import { MaterialList, MATERIAL_LIST_LABELS } from "../material-list";
+import { QuotePdfImport, type QuotePdfImportLabels } from "../quote-pdf-import";
+import { RequestQuotesCard, type RequestQuotesCardLabels } from "../request-quotes-card";
+import { QUOTE_PDF_IMPORT_LABELS, REQUEST_QUOTES_CARD_LABELS } from "../translation-labels";
 import { ProjectSubNav } from "../project-sub-nav";
 import { updateProjectBudget } from "../actions";
 import { computeRentalDays } from "@/lib/rental-days";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator, type Translator } from "@/lib/server/translate";
 
 // Het parsen van een offerte-PDF matcht elke regel tegen de catalogus (RPC-aanroepen) —
 // bij een offerte met honderden regels kan dat de standaard 10-15s functie-timeout
@@ -37,6 +40,34 @@ interface Totals {
   cost: number;
   client: number;
 }
+
+const BUDGET_PAGE_LABELS = [
+  "Totaaloverzicht",
+  "Totaal inkoop",
+  "Totaal marge",
+  "Totaal klantprijs",
+  "Alle categorieën zijn bevestigd.",
+  "van",
+  "categorieën nog niet bevestigd:",
+  "Budget klant",
+  "Nog geen klantbudget ingesteld.",
+  "Budget klant (€)",
+  "Standaardmarge (%)",
+  "Opslaan",
+  "Fase 1 — Materiaallijst & begroting",
+  "Materiaallijst uploaden en matchen met de catalogus, resulterend in een kosteninschatting per categorie. Deze lijst is voor projectbrede materialen — voor materiaal per podium, upload de lijst op de betreffende podiumpagina.",
+  "Fase 2 — Offertes",
+  "Offertes van leveranciers uitvragen en bevestigen, op basis van de begroting hierboven.",
+  "Categorieën per podium",
+  "Het resultaat van de offertes hierboven: gekozen en aangevraagde offertes per categorie.",
+  "Overige kosten (projectbreed)",
+  "Naar podium →",
+  "Subtotaal:",
+  "inkoop",
+  "marge",
+  "Nog geen categorieën.",
+  ...Object.values(CATEGORY_STATUS_LABELS),
+];
 
 function euro(value: number) {
   return `€ ${value.toFixed(2)}`;
@@ -63,6 +94,7 @@ function BudgetGroup({
   suppliers,
   projectId,
   stageId,
+  t,
 }: {
   title: string;
   categories: Category[];
@@ -70,6 +102,7 @@ function BudgetGroup({
   suppliers: Supplier[];
   projectId: string;
   stageId: string | null;
+  t: Translator;
 }) {
   const totals = sumCategories(categories, quotesByCategory);
 
@@ -77,27 +110,27 @@ function BudgetGroup({
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b pb-2">
         <h3 className="text-base font-semibold">
-          {title}
+          {t(title)}
           {stageId && (
             <Link
               href={`/projects/${projectId}/stages/${stageId}`}
               className="ml-2 text-xs font-normal text-primary hover:underline"
             >
-              Naar podium &rarr;
+              {t("Naar podium →")}
             </Link>
           )}
         </h3>
         {categories.length > 0 && (
           <p className="text-sm text-muted-foreground">
-            Subtotaal: <span className="font-medium text-foreground">{euro(totals.client)}</span>{" "}
+            {t("Subtotaal:")} <span className="font-medium text-foreground">{euro(totals.client)}</span>{" "}
             <span className="text-xs">
-              (inkoop {euro(totals.cost)} · marge {euro(totals.client - totals.cost)})
+              ({t("inkoop")} {euro(totals.cost)} · {t("marge")} {euro(totals.client - totals.cost)})
             </span>
           </p>
         )}
       </div>
       {categories.length === 0 && (
-        <p className="text-sm text-muted-foreground">Nog geen categorieën.</p>
+        <p className="text-sm text-muted-foreground">{t("Nog geen categorieën.")}</p>
       )}
       {categories.map((category) => (
         <CategoryCard
@@ -106,9 +139,10 @@ function BudgetGroup({
           category={category}
           quotes={quotesByCategory.get(category.id) ?? []}
           suppliers={suppliers}
+          t={t}
         />
       ))}
-      <AddCategoryForm projectId={projectId} stageId={stageId} />
+      <AddCategoryForm projectId={projectId} stageId={stageId} t={t} />
     </div>
   );
 }
@@ -185,6 +219,57 @@ export default async function ProjectBudgetPage({
     p_days: computeRentalDays(project),
   });
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [
+    ...BUDGET_PAGE_LABELS,
+    ...CATEGORY_CARD_LABELS,
+    ...ADD_CATEGORY_FORM_LABELS,
+    ...MATERIAL_LIST_LABELS,
+    ...QUOTE_PDF_IMPORT_LABELS,
+    ...REQUEST_QUOTES_CARD_LABELS,
+    ...(categories ?? []).map((c) => c.name),
+    ...(stages ?? []).map((s) => s.name),
+  ]);
+
+  const quotePdfImportLabels: QuotePdfImportLabels = {
+    title: t("Offerte-PDF importeren"),
+    description: t(
+      "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt."
+    ),
+    supplier: t("Leverancier"),
+    chooseSupplier: t("Kies leverancier"),
+    busy: t("Bezig..."),
+    upload: t("Uploaden"),
+    noLinesFound: t(
+      "Geen regels met bedragen gevonden in dit PDF-bestand. Mogelijk bevat het een gescande afbeelding zonder tekstlaag, of staan bedragen in een formaat dat niet herkend wordt."
+    ),
+    uploadFailed: t(
+      "Uploaden mislukt. Controleer of het bestand een geldig PDF-bestand is en probeer het opnieuw."
+    ),
+    description2: t("Omschrijving"),
+    amount: t("Bedrag"),
+    category: t("Categorie"),
+    recognizedAs: t("Herkend als:"),
+    remove: t("Verwijderen"),
+    readyToConfirm: t("Klaar om over te nemen"),
+    lines: t("regels"),
+    confirmAsQuote: t("Overnemen als offerte"),
+    chooseSupplierFirst: t("Kies eerst een leverancier hierboven."),
+    confirmFailed: t("Overnemen als offerte is mislukt. Probeer het opnieuw."),
+  };
+
+  const requestQuotesCardLabels: RequestQuotesCardLabels = {
+    title: t("Leverancier uitnodigen voor meerdere categorieën"),
+    description: t(
+      "Kies een leverancier en vink de categorieën aan waar je een offerte voor wilt — bijvoorbeeld alleen Licht + Rigging, zonder dat deze leverancier iets van Layher te zien krijgt. Alle technische info en tekeningen vindt de leverancier onder Event rider."
+    ),
+    supplier: t("Leverancier"),
+    chooseSupplier: t("Kies leverancier"),
+    sendRequest: t("Aanvraag versturen"),
+    unknownStage: t("Onbekend podium"),
+    projectWide: t("Projectbreed"),
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -192,16 +277,16 @@ export default async function ProjectBudgetPage({
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-6 py-8">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Totaaloverzicht</CardTitle>
+            <CardTitle className="text-base">{t("Totaaloverzicht")}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <p className="text-xs text-muted-foreground">Totaal inkoop</p>
+                <p className="text-xs text-muted-foreground">{t("Totaal inkoop")}</p>
                 <p className="text-xl font-semibold">{euro(grandTotal.cost)}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Totaal marge</p>
+                <p className="text-xs text-muted-foreground">{t("Totaal marge")}</p>
                 <p className="text-xl font-semibold">
                   {euro(grandTotal.client - grandTotal.cost)}
                   {grandTotal.cost > 0 && (
@@ -212,26 +297,28 @@ export default async function ProjectBudgetPage({
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Totaal klantprijs</p>
+                <p className="text-xs text-muted-foreground">{t("Totaal klantprijs")}</p>
                 <p className="text-xl font-semibold">{euro(grandTotal.client)}</p>
               </div>
             </div>
             {(categories ?? []).length > 0 && (
               <p className="mt-4 text-sm text-muted-foreground">
                 {openCategories.length === 0
-                  ? "Alle categorieën zijn bevestigd."
-                  : `${openCategories.length} van ${categories?.length} categorieën nog niet bevestigd: ${openCategories
-                      .map((c) => `${c.name} (${CATEGORY_STATUS_LABELS[c.status]})`)
+                  ? t("Alle categorieën zijn bevestigd.")
+                  : `${openCategories.length} ${t("van")} ${categories?.length} ${t(
+                      "categorieën nog niet bevestigd:"
+                    )} ${openCategories
+                      .map((c) => `${t(c.name)} (${t(CATEGORY_STATUS_LABELS[c.status])})`)
                       .join(", ")}`}
               </p>
             )}
 
             <div className="mt-6 flex flex-wrap items-end justify-between gap-4 border-t pt-4">
               <div>
-                <p className="text-xs text-muted-foreground">Budget klant</p>
+                <p className="text-xs text-muted-foreground">{t("Budget klant")}</p>
                 {project.client_budget != null ? (
                   <p className="text-xl font-semibold">
-                    {euro(grandTotal.client)} van {euro(project.client_budget)}
+                    {euro(grandTotal.client)} {t("van")} {euro(project.client_budget)}
                     <span
                       className={cn(
                         "ml-1 text-sm font-normal",
@@ -246,7 +333,7 @@ export default async function ProjectBudgetPage({
                     </span>
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Nog geen klantbudget ingesteld.</p>
+                  <p className="text-sm text-muted-foreground">{t("Nog geen klantbudget ingesteld.")}</p>
                 )}
               </div>
               <form
@@ -255,7 +342,7 @@ export default async function ProjectBudgetPage({
               >
                 <div className="space-y-1">
                   <Label htmlFor="client_budget" className="text-xs">
-                    Budget klant (&euro;)
+                    {t("Budget klant (€)")}
                   </Label>
                   <Input
                     id="client_budget"
@@ -268,7 +355,7 @@ export default async function ProjectBudgetPage({
                 </div>
                 <div className="space-y-1">
                   <Label htmlFor="default_margin_percentage" className="text-xs">
-                    Standaardmarge (%)
+                    {t("Standaardmarge (%)")}
                   </Label>
                   <Input
                     id="default_margin_percentage"
@@ -280,7 +367,7 @@ export default async function ProjectBudgetPage({
                   />
                 </div>
                 <Button type="submit" size="sm">
-                  Opslaan
+                  {t("Opslaan")}
                 </Button>
               </form>
             </div>
@@ -288,11 +375,11 @@ export default async function ProjectBudgetPage({
         </Card>
 
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold">Fase 1 — Materiaallijst &amp; begroting</h2>
+          <h2 className="text-lg font-semibold">{t("Fase 1 — Materiaallijst & begroting")}</h2>
           <p className="text-sm text-muted-foreground">
-            Materiaallijst uploaden en matchen met de catalogus, resulterend in een
-            kosteninschatting per categorie. Deze lijst is voor projectbrede materialen — voor
-            materiaal per podium, upload de lijst op de betreffende podiumpagina.
+            {t(
+              "Materiaallijst uploaden en matchen met de catalogus, resulterend in een kosteninschatting per categorie. Deze lijst is voor projectbrede materialen — voor materiaal per podium, upload de lijst op de betreffende podiumpagina."
+            )}
           </p>
         </div>
 
@@ -303,12 +390,13 @@ export default async function ProjectBudgetPage({
           suppliers={suppliers ?? []}
           rentalMultiplier={rentalMultiplier ?? 1}
           defaultMarginPercentage={project.default_margin_percentage}
+          t={t}
         />
 
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold">Fase 2 — Offertes</h2>
+          <h2 className="text-lg font-semibold">{t("Fase 2 — Offertes")}</h2>
           <p className="text-sm text-muted-foreground">
-            Offertes van leveranciers uitvragen en bevestigen, op basis van de begroting hierboven.
+            {t("Offertes van leveranciers uitvragen en bevestigen, op basis van de begroting hierboven.")}
           </p>
         </div>
 
@@ -317,15 +405,20 @@ export default async function ProjectBudgetPage({
           categories={categories ?? []}
           stages={stages ?? []}
           suppliers={suppliers ?? []}
+          labels={requestQuotesCardLabels}
         />
 
-        <QuotePdfImport projectId={project.id} stageId={null} suppliers={suppliers ?? []} />
+        <QuotePdfImport
+          projectId={project.id}
+          stageId={null}
+          suppliers={suppliers ?? []}
+          labels={quotePdfImportLabels}
+        />
 
         <div className="border-t pt-6">
-          <h2 className="text-lg font-semibold">Categorieën per podium</h2>
+          <h2 className="text-lg font-semibold">{t("Categorieën per podium")}</h2>
           <p className="text-sm text-muted-foreground">
-            Het resultaat van de offertes hierboven: gekozen en aangevraagde offertes per
-            categorie.
+            {t("Het resultaat van de offertes hierboven: gekozen en aangevraagde offertes per categorie.")}
           </p>
         </div>
 
@@ -338,6 +431,7 @@ export default async function ProjectBudgetPage({
             suppliers={suppliers ?? []}
             projectId={project.id}
             stageId={stage.id}
+            t={t}
           />
         ))}
 
@@ -348,6 +442,7 @@ export default async function ProjectBudgetPage({
           suppliers={suppliers ?? []}
           projectId={project.id}
           stageId={null}
+          t={t}
         />
       </main>
       <Footer />

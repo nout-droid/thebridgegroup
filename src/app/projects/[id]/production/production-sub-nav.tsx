@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 const TABS = [
   { key: "planning", label: "Planning" },
@@ -20,13 +22,16 @@ function tabHref(projectId: string, key: ProductionTabKey) {
   return key === "crew" ? base : `${base}/${key}`;
 }
 
-export function ProductionSubNav({
+export async function ProductionSubNav({
   projectId,
   active,
 }: {
   projectId: string;
   active: ProductionTabKey;
 }) {
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, TABS.map((tab) => tab.label));
+
   return (
     <div className="border-b">
       <div className="mx-auto max-w-5xl px-6 py-2">
@@ -42,7 +47,7 @@ export function ProductionSubNav({
                   : "text-muted-foreground hover:bg-muted"
               )}
             >
-              {tab.label}
+              {t(tab.label)}
             </Link>
           ))}
         </nav>

@@ -5,7 +5,9 @@ import { Footer } from "@/components/footer";
 import type { Category, CrewMember, Quote, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { HotelFlightsCard } from "../hotel-flights-card";
+import { HotelFlightsCard, HOTEL_FLIGHTS_CARD_LABELS } from "../hotel-flights-card";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 function pickQuote(quotes: Quote[]): Quote | null {
   return quotes.find((q) => q.status === "gekozen") ?? quotes[0] ?? null;
@@ -66,6 +68,9 @@ export default async function ProductionHotelPage({
     ? pickQuote((costQuotes ?? []).filter((q) => q.category_id === flightCategory.id))
     : null;
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, HOTEL_FLIGHTS_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -82,6 +87,7 @@ export default async function ProductionHotelPage({
           hotelQuote={hotelQuote}
           flightCategory={flightCategory}
           flightQuote={flightQuote}
+          t={t}
         />
       </main>
       <Footer />

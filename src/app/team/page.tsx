@@ -25,6 +25,45 @@ import {
   removeTeamMember,
 } from "./actions";
 import { updateOrganizationName, deleteOrganizationAccount } from "./organization-actions";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+
+const TEAM_PAGE_LABELS = [
+  "Team",
+  "Bedankt! Je abonnement wordt geactiveerd zodra Stripe de betaling bevestigt.",
+  "Organisatie & abonnement",
+  "Plan:",
+  "Status:",
+  "Proefperiode tot",
+  "Upgraden",
+  "Abonnement beheren",
+  "Organisatienaam",
+  "Opslaan",
+  "Teamlid uitnodigen",
+  "E-mail",
+  "Rol",
+  "Uitnodigen",
+  "Toegang tot projecten",
+  "Nog geen projecten aangemaakt.",
+  "Mag Begroting zien op zijn/haar projecten",
+  "Teamleden",
+  "Sinds",
+  "Eigenaar",
+  "Verwijderen",
+  "Toegang beheren voor",
+  "Toegang opslaan",
+  "Nog geen teamleden uitgenodigd.",
+  "Gegevens & account",
+  "Exporteer je gegevens",
+  "Download al je projecten, begrotingen, draaiboeken en teamgegevens als JSON-bestand.",
+  "Download export",
+  "Account verwijderen",
+  "Dit verwijdert direct en onomkeerbaar je hele organisatie: alle projecten, begrotingen, teamleden en klantaccounts. Typ de organisatienaam (",
+  ") ter bevestiging.",
+  "Organisatienaam ter bevestiging",
+  "Verwijder account definitief",
+  ...Object.values(TEAM_ROLE_LABELS),
+];
 
 export default async function TeamPage({
   searchParams,
@@ -84,37 +123,40 @@ export default async function TeamPage({
     accessByMember.set(row.team_member_id, set);
   }
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, TEAM_PAGE_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Team</h1>
+        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">{t("Team")}</h1>
 
         {error && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
         )}
         {checkout === "success" && (
           <p className="rounded-md bg-green-100 p-3 text-sm text-green-800">
-            Bedankt! Je abonnement wordt geactiveerd zodra Stripe de betaling bevestigt.
+            {t("Bedankt! Je abonnement wordt geactiveerd zodra Stripe de betaling bevestigt.")}
           </p>
         )}
 
         {organization && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Organisatie & abonnement</CardTitle>
+              <CardTitle className="text-base">{t("Organisatie & abonnement")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex flex-wrap items-center gap-3 text-sm">
                 <span className="rounded-full bg-muted px-3 py-1 font-medium capitalize">
-                  Plan: {organization.plan}
+                  {t("Plan:")} {organization.plan}
                 </span>
                 <span className="rounded-full bg-muted px-3 py-1 font-medium capitalize">
-                  Status: {organization.subscription_status}
+                  {t("Status:")} {organization.subscription_status}
                 </span>
                 {organization.trial_ends_at && (
                   <span className="text-muted-foreground">
-                    Proefperiode tot {new Date(organization.trial_ends_at).toLocaleDateString("nl-NL")}
+                    {t("Proefperiode tot")} {new Date(organization.trial_ends_at).toLocaleDateString("nl-NL")}
                   </span>
                 )}
                 {isOwner && organization.subscription_status !== "active" && (
@@ -122,7 +164,7 @@ export default async function TeamPage({
                     href="/api/stripe/checkout"
                     className="rounded-md bg-primary px-3 py-1 text-sm font-medium text-primary-foreground hover:opacity-90"
                   >
-                    Upgraden
+                    {t("Upgraden")}
                   </a>
                 )}
                 {isOwner && organization.subscription_status === "active" && (
@@ -130,18 +172,18 @@ export default async function TeamPage({
                     href="/api/stripe/portal"
                     className="rounded-md border px-3 py-1 text-sm font-medium hover:bg-muted"
                   >
-                    Abonnement beheren
+                    {t("Abonnement beheren")}
                   </a>
                 )}
               </div>
               {isOwner && (
                 <form action={updateOrganizationName} className="flex items-end gap-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="org-name">Organisatienaam</Label>
+                    <Label htmlFor="org-name">{t("Organisatienaam")}</Label>
                     <Input id="org-name" name="name" defaultValue={organization.name} className="w-64" required />
                   </div>
                   <Button type="submit" size="sm">
-                    Opslaan
+                    {t("Opslaan")}
                   </Button>
                 </form>
               )}
@@ -152,28 +194,28 @@ export default async function TeamPage({
         {isAdmin && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Teamlid uitnodigen</CardTitle>
+              <CardTitle className="text-base">{t("Teamlid uitnodigen")}</CardTitle>
             </CardHeader>
             <CardContent>
               <form action={inviteTeamMember} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto_auto]">
                   <div className="space-y-2">
-                    <Label htmlFor="email">E-mail</Label>
+                    <Label htmlFor="email">{t("E-mail")}</Label>
                     <Input id="email" name="email" type="email" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="role">Rol</Label>
-                    <TeamRoleSelect id="role" />
+                    <Label htmlFor="role">{t("Rol")}</Label>
+                    <TeamRoleSelect id="role" t={t} />
                   </div>
                   <Button type="submit" className="self-end">
-                    Uitnodigen
+                    {t("Uitnodigen")}
                   </Button>
                 </div>
 
                 <div className="space-y-2 rounded-md border p-3">
-                  <p className="text-sm font-medium">Toegang tot projecten</p>
+                  <p className="text-sm font-medium">{t("Toegang tot projecten")}</p>
                   {!projects?.length ? (
-                    <p className="text-xs text-muted-foreground">Nog geen projecten aangemaakt.</p>
+                    <p className="text-xs text-muted-foreground">{t("Nog geen projecten aangemaakt.")}</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                       {projects.map((project) => (
@@ -186,7 +228,7 @@ export default async function TeamPage({
                   )}
                   <label className="flex items-center gap-1.5 pt-1 text-sm">
                     <input type="checkbox" name="can_view_budget" defaultChecked />
-                    Mag Begroting zien op zijn/haar projecten
+                    {t("Mag Begroting zien op zijn/haar projecten")}
                   </label>
                 </div>
               </form>
@@ -196,22 +238,22 @@ export default async function TeamPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Teamleden</CardTitle>
+            <CardTitle className="text-base">{t("Teamleden")}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Sinds</TableHead>
+                  <TableHead>{t("E-mail")}</TableHead>
+                  <TableHead>{t("Rol")}</TableHead>
+                  <TableHead>{t("Sinds")}</TableHead>
                   <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 <TableRow>
                   <TableCell className="font-medium">{ownerEmail}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">Eigenaar</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{t("Eigenaar")}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">—</TableCell>
                   <TableCell />
                 </TableRow>
@@ -228,14 +270,15 @@ export default async function TeamPage({
                             key={member.role}
                             id={`role-${member.id}`}
                             defaultValue={member.role}
+                            t={t}
                           />
                           <Button type="submit" size="sm" variant="ghost">
-                            Opslaan
+                            {t("Opslaan")}
                           </Button>
                         </form>
                       ) : (
                         <span className="text-sm text-muted-foreground">
-                          {TEAM_ROLE_LABELS[member.role]}
+                          {t(TEAM_ROLE_LABELS[member.role])}
                         </span>
                       )}
                     </TableCell>
@@ -246,7 +289,7 @@ export default async function TeamPage({
                       {isAdmin && (
                         <form action={removeTeamMember.bind(null, member.id)}>
                           <Button type="submit" variant="ghost" size="sm">
-                            Verwijderen
+                            {t("Verwijderen")}
                           </Button>
                         </form>
                       )}
@@ -261,7 +304,7 @@ export default async function TeamPage({
                         <TableCell colSpan={4} className="bg-muted/30">
                           <details>
                             <summary className="cursor-pointer text-xs text-muted-foreground">
-                              Toegang beheren voor {member.invited_email}
+                              {t("Toegang beheren voor")} {member.invited_email}
                             </summary>
                             <form
                               action={updateTeamMemberAccess.bind(null, member.id)}
@@ -269,7 +312,7 @@ export default async function TeamPage({
                             >
                               {!projects?.length ? (
                                 <p className="text-xs text-muted-foreground">
-                                  Nog geen projecten aangemaakt.
+                                  {t("Nog geen projecten aangemaakt.")}
                                 </p>
                               ) : (
                                 <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
@@ -295,10 +338,10 @@ export default async function TeamPage({
                                   name="can_view_budget"
                                   defaultChecked={member.can_view_budget}
                                 />
-                                Mag Begroting zien op zijn/haar projecten
+                                {t("Mag Begroting zien op zijn/haar projecten")}
                               </label>
                               <Button type="submit" size="sm" variant="secondary">
-                                Toegang opslaan
+                                {t("Toegang opslaan")}
                               </Button>
                             </form>
                           </details>
@@ -310,7 +353,7 @@ export default async function TeamPage({
             </Table>
             {!members?.length && (
               <p className="mt-4 text-sm text-muted-foreground">
-                Nog geen teamleden uitgenodigd.
+                {t("Nog geen teamleden uitgenodigd.")}
               </p>
             )}
           </CardContent>
@@ -319,36 +362,38 @@ export default async function TeamPage({
         {isOwner && organization && (
           <Card className="border-destructive/40">
             <CardHeader>
-              <CardTitle className="text-base">Gegevens & account</CardTitle>
+              <CardTitle className="text-base">{t("Gegevens & account")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-sm font-medium">Exporteer je gegevens</p>
+                <p className="text-sm font-medium">{t("Exporteer je gegevens")}</p>
                 <p className="mb-2 text-sm text-muted-foreground">
-                  Download al je projecten, begrotingen, draaiboeken en teamgegevens als JSON-bestand.
+                  {t("Download al je projecten, begrotingen, draaiboeken en teamgegevens als JSON-bestand.")}
                 </p>
                 <a
                   href="/api/export"
                   className="inline-block rounded-md border px-3 py-1.5 text-sm font-medium hover:bg-muted"
                 >
-                  Download export
+                  {t("Download export")}
                 </a>
               </div>
 
               <div className="border-t pt-4">
-                <p className="text-sm font-medium text-destructive">Account verwijderen</p>
+                <p className="text-sm font-medium text-destructive">{t("Account verwijderen")}</p>
                 <p className="mb-2 text-sm text-muted-foreground">
-                  Dit verwijdert direct en onomkeerbaar je hele organisatie: alle projecten,
-                  begrotingen, teamleden en klantaccounts. Typ de organisatienaam (
-                  <strong>{organization.name}</strong>) ter bevestiging.
+                  {t(
+                    "Dit verwijdert direct en onomkeerbaar je hele organisatie: alle projecten, begrotingen, teamleden en klantaccounts. Typ de organisatienaam ("
+                  )}
+                  <strong>{organization.name}</strong>
+                  {t(") ter bevestiging.")}
                 </p>
                 <form action={deleteOrganizationAccount} className="flex items-end gap-2">
                   <div className="space-y-1.5">
-                    <Label htmlFor="confirmation_name">Organisatienaam ter bevestiging</Label>
+                    <Label htmlFor="confirmation_name">{t("Organisatienaam ter bevestiging")}</Label>
                     <Input id="confirmation_name" name="confirmation_name" className="w-64" required />
                   </div>
                   <Button type="submit" variant="destructive" size="sm">
-                    Verwijder account definitief
+                    {t("Verwijder account definitief")}
                   </Button>
                 </form>
               </div>

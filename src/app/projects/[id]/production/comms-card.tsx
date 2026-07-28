@@ -11,6 +11,38 @@ import { StageSelect } from "../stage-select";
 import { CrewMemberSelect } from "../crew-member-select";
 import { addCommsAssignment, deleteCommsAssignment, updateCommsAssignment } from "./comms-actions";
 
+export interface CommsCardLabels {
+  title: string;
+  description: string;
+  area: string;
+  allStages: string;
+  projectWide: string;
+  supplier: string;
+  allSuppliers: string;
+  searchUser: string;
+  downloadPdf: string;
+  user: string;
+  save: string;
+  remove: string;
+  crewMember: string;
+  add: string;
+  intercomTitle: string;
+  intercomDescription: string;
+  intercomDeviceLabel: string;
+  intercomDevicePlaceholder: string;
+  intercomChannelsLabel: string;
+  intercomChannelsPlaceholder: string;
+  portofoonTitle: string;
+  portofoonDescription: string;
+  portofoonDeviceLabel: string;
+  portofoonDevicePlaceholder: string;
+  portofoonChannelsLabel: string;
+  portofoonChannelsPlaceholder: string;
+  chooseStage: string;
+  chooseSupplier: string;
+  chooseCrewMember: string;
+}
+
 function CommsList({
   projectId,
   kind,
@@ -24,6 +56,7 @@ function CommsList({
   suppliers,
   crewMembers,
   stages,
+  labels,
 }: {
   projectId: string;
   kind: CommsKind;
@@ -37,6 +70,7 @@ function CommsList({
   suppliers: Supplier[];
   crewMembers: CrewMember[];
   stages: Stage[];
+  labels: CommsCardLabels;
 }) {
   return (
     <div className="space-y-3">
@@ -52,7 +86,7 @@ function CommsList({
           className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-4"
         >
           <div className="space-y-1">
-            <Label htmlFor={`user-${item.id}`} className="text-xs">Gebruiker</Label>
+            <Label htmlFor={`user-${item.id}`} className="text-xs">{labels.user}</Label>
             <Input
               id={`user-${item.id}`}
               name="user_name"
@@ -62,11 +96,12 @@ function CommsList({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor={`stage-${item.id}`} className="text-xs">Podium/area</Label>
+            <Label htmlFor={`stage-${item.id}`} className="text-xs">{labels.area}</Label>
             <StageSelect
               id={`stage-${item.id}`}
               defaultValue={item.stage_id ?? undefined}
               stages={stages}
+              placeholder={labels.chooseStage}
             />
           </div>
           <div className="space-y-1">
@@ -90,24 +125,26 @@ function CommsList({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor={`supplier-${item.id}`} className="text-xs">Leverancier</Label>
+            <Label htmlFor={`supplier-${item.id}`} className="text-xs">{labels.supplier}</Label>
             <SupplierSelect
               id={`supplier-${item.id}`}
               defaultValue={item.supplier_id ?? undefined}
               suppliers={suppliers}
+              placeholder={labels.chooseSupplier}
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor={`crew-${item.id}`} className="text-xs">Crewlid (optioneel)</Label>
+            <Label htmlFor={`crew-${item.id}`} className="text-xs">{labels.crewMember}</Label>
             <CrewMemberSelect
               id={`crew-${item.id}`}
               defaultValue={item.crew_member_id ?? undefined}
               members={crewMembers}
+              placeholder={labels.chooseCrewMember}
             />
           </div>
           <div className="flex items-end gap-2">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Opslaan
+              {labels.save}
             </Button>
             <Button
               type="submit"
@@ -116,7 +153,7 @@ function CommsList({
               variant="ghost"
               className="h-8 text-xs"
             >
-              Verwijderen
+              {labels.remove}
             </Button>
           </div>
         </form>
@@ -127,12 +164,12 @@ function CommsList({
         className="grid grid-cols-2 gap-2 border-t pt-3 sm:grid-cols-4"
       >
         <div className="space-y-1">
-          <Label htmlFor={`new-user-${kind}`} className="text-xs">Gebruiker</Label>
+          <Label htmlFor={`new-user-${kind}`} className="text-xs">{labels.user}</Label>
           <Input id={`new-user-${kind}`} name="user_name" className="h-8 text-xs" required />
         </div>
         <div className="space-y-1">
-          <Label htmlFor={`new-stage-${kind}`} className="text-xs">Podium/area</Label>
-          <StageSelect id={`new-stage-${kind}`} stages={stages} />
+          <Label htmlFor={`new-stage-${kind}`} className="text-xs">{labels.area}</Label>
+          <StageSelect id={`new-stage-${kind}`} stages={stages} placeholder={labels.chooseStage} />
         </div>
         <div className="space-y-1">
           <Label htmlFor={`new-device-${kind}`} className="text-xs">{deviceLabel}</Label>
@@ -153,16 +190,16 @@ function CommsList({
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor={`new-supplier-${kind}`} className="text-xs">Leverancier</Label>
-          <SupplierSelect id={`new-supplier-${kind}`} suppliers={suppliers} />
+          <Label htmlFor={`new-supplier-${kind}`} className="text-xs">{labels.supplier}</Label>
+          <SupplierSelect id={`new-supplier-${kind}`} suppliers={suppliers} placeholder={labels.chooseSupplier} />
         </div>
         <div className="space-y-1">
-          <Label htmlFor={`new-crew-${kind}`} className="text-xs">Crewlid (optioneel)</Label>
-          <CrewMemberSelect id={`new-crew-${kind}`} members={crewMembers} />
+          <Label htmlFor={`new-crew-${kind}`} className="text-xs">{labels.crewMember}</Label>
+          <CrewMemberSelect id={`new-crew-${kind}`} members={crewMembers} placeholder={labels.chooseCrewMember} />
         </div>
         <div className="flex items-end">
           <Button type="submit" size="sm" className="h-8 text-xs">
-            Toevoegen
+            {labels.add}
           </Button>
         </div>
       </form>
@@ -177,6 +214,7 @@ export function CommsCard({
   suppliers,
   crewMembers,
   stages,
+  labels,
 }: {
   projectId: string;
   intercomAssignments: CommsAssignment[];
@@ -184,6 +222,7 @@ export function CommsCard({
   suppliers: Supplier[];
   crewMembers: CrewMember[];
   stages: Stage[];
+  labels: CommsCardLabels;
 }) {
   const [areaFilter, setAreaFilter] = useState("alle");
   const [supplierFilter, setSupplierFilter] = useState("alle");
@@ -203,42 +242,40 @@ export function CommsCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Comms & Portofoons</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Wie zit op welk intercom-kanaal en welke portofoon-groep.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
         <div className="flex flex-wrap items-end gap-2 pt-2">
           <div className="space-y-1">
-            <Label htmlFor="comms-filter-area" className="text-xs">Podium/area</Label>
+            <Label htmlFor="comms-filter-area" className="text-xs">{labels.area}</Label>
             <select
               id="comms-filter-area"
               value={areaFilter}
               onChange={(e) => setAreaFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle podia</option>
-              <option value="algemeen">Projectbreed</option>
+              <option value="alle">{labels.allStages}</option>
+              <option value="algemeen">{labels.projectWide}</option>
               {stages.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="comms-filter-supplier" className="text-xs">Leverancier</Label>
+            <Label htmlFor="comms-filter-supplier" className="text-xs">{labels.supplier}</Label>
             <select
               id="comms-filter-supplier"
               value={supplierFilter}
               onChange={(e) => setSupplierFilter(e.target.value)}
               className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
             >
-              <option value="alle">Alle leveranciers</option>
+              <option value="alle">{labels.allSuppliers}</option>
               {suppliers.map((s) => (
                 <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="comms-filter-search" className="text-xs">Zoek op gebruiker</Label>
+            <Label htmlFor="comms-filter-search" className="text-xs">{labels.searchUser}</Label>
             <Input
               id="comms-filter-search"
               value={search}
@@ -257,36 +294,38 @@ export function CommsCard({
             rel="noopener noreferrer"
             className="text-sm text-primary underline"
           >
-            Comms & portofoons downloaden (PDF)
+            {labels.downloadPdf}
           </a>
         )}
         <CommsList
           projectId={projectId}
           kind="intercom"
-          title="Intercom-toewijzing"
-          description="Bijvoorbeeld Show, Audio, Video, Licht, Stage."
-          deviceLabel="Type"
-          devicePlaceholder="bv. Wireless"
-          channelsLabel="Kanalen"
-          channelsPlaceholder="bv. Show, Stage"
+          title={labels.intercomTitle}
+          description={labels.intercomDescription}
+          deviceLabel={labels.intercomDeviceLabel}
+          devicePlaceholder={labels.intercomDevicePlaceholder}
+          channelsLabel={labels.intercomChannelsLabel}
+          channelsPlaceholder={labels.intercomChannelsPlaceholder}
           items={applyFilters(intercomAssignments)}
           suppliers={suppliers}
           crewMembers={crewMembers}
           stages={stages}
+          labels={labels}
         />
         <CommsList
           projectId={projectId}
           kind="portofoon"
-          title="Portofoon-toewijzing"
-          description="Bijvoorbeeld 1: Productie, 2: Horeca, 3: Techniek, 4: Beveiliging, 5: Special FX."
-          deviceLabel="Portofoon"
-          devicePlaceholder="bv. kanaal 3"
-          channelsLabel="Groepen"
-          channelsPlaceholder="bv. 1: Productie, 4: Beveiliging"
+          title={labels.portofoonTitle}
+          description={labels.portofoonDescription}
+          deviceLabel={labels.portofoonDeviceLabel}
+          devicePlaceholder={labels.portofoonDevicePlaceholder}
+          channelsLabel={labels.portofoonChannelsLabel}
+          channelsPlaceholder={labels.portofoonChannelsPlaceholder}
           items={applyFilters(portofoonAssignments)}
           suppliers={suppliers}
           crewMembers={crewMembers}
           stages={stages}
+          labels={labels}
         />
       </CardContent>
     </Card>

@@ -27,14 +27,37 @@ import {
   type ParsedQuoteReviewLine,
 } from "./quote-pdf-actions";
 
+export interface QuotePdfImportLabels {
+  title: string;
+  description: string;
+  supplier: string;
+  chooseSupplier: string;
+  busy: string;
+  upload: string;
+  noLinesFound: string;
+  uploadFailed: string;
+  description2: string;
+  amount: string;
+  category: string;
+  recognizedAs: string;
+  remove: string;
+  readyToConfirm: string;
+  lines: string;
+  confirmAsQuote: string;
+  chooseSupplierFirst: string;
+  confirmFailed: string;
+}
+
 export function QuotePdfImport({
   projectId,
   stageId,
   suppliers,
+  labels,
 }: {
   projectId: string;
   stageId: string | null;
   suppliers: Supplier[];
+  labels: QuotePdfImportLabels;
 }) {
   const router = useRouter();
   const [supplierId, setSupplierId] = useState("");
@@ -54,12 +77,10 @@ export function QuotePdfImport({
       const parsed = await parseQuotePdf(formData);
       setLines(parsed);
       if (parsed.length === 0) {
-        setUploadError(
-          "Geen regels met bedragen gevonden in dit PDF-bestand. Mogelijk bevat het een gescande afbeelding zonder tekstlaag, of staan bedragen in een formaat dat niet herkend wordt."
-        );
+        setUploadError(labels.noLinesFound);
       }
     } catch {
-      setUploadError("Uploaden mislukt. Controleer of het bestand een geldig PDF-bestand is en probeer het opnieuw.");
+      setUploadError(labels.uploadFailed);
     } finally {
       setLoading(false);
     }
@@ -98,7 +119,7 @@ export function QuotePdfImport({
       setLines((prev) => prev.filter((line) => line.category.trim() !== category));
       router.refresh();
     } catch {
-      setConfirmError("Overnemen als offerte is mislukt. Probeer het opnieuw.");
+      setConfirmError(labels.confirmFailed);
     } finally {
       setConfirmingCategory(null);
     }
@@ -107,19 +128,16 @@ export function QuotePdfImport({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Offerte-PDF importeren</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op
-          basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt.
-        </p>
+        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <p className="text-sm text-muted-foreground">{labels.description}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-wrap items-end gap-2">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium">Leverancier</label>
+            <label className="text-sm font-medium">{labels.supplier}</label>
             <Select value={supplierId} onValueChange={(value) => setSupplierId(value ?? "")}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Kies leverancier" />
+                <SelectValue placeholder={labels.chooseSupplier} />
               </SelectTrigger>
               <SelectContent>
                 {suppliers.map((supplier) => (
@@ -133,7 +151,7 @@ export function QuotePdfImport({
           <form onSubmit={handleUpload} className="flex items-end gap-2">
             <Input type="file" name="file" accept=".pdf" required />
             <Button type="submit" disabled={loading}>
-              {loading ? "Bezig..." : "Uploaden"}
+              {loading ? labels.busy : labels.upload}
             </Button>
           </form>
         </div>
@@ -148,9 +166,9 @@ export function QuotePdfImport({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Omschrijving</TableHead>
-                <TableHead>Bedrag</TableHead>
-                <TableHead>Categorie</TableHead>
+                <TableHead>{labels.description2}</TableHead>
+                <TableHead>{labels.amount}</TableHead>
+                <TableHead>{labels.category}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -161,7 +179,7 @@ export function QuotePdfImport({
                     {line.raw_text}
                     {line.matched_label && (
                       <p className="text-xs text-muted-foreground">
-                        Herkend als: {line.matched_label}
+                        {labels.recognizedAs} {line.matched_label}
                       </p>
                     )}
                   </TableCell>
@@ -178,7 +196,7 @@ export function QuotePdfImport({
                     <Input
                       value={line.category}
                       onChange={(e) => updateLine(index, { category: e.target.value })}
-                      placeholder="Categorie"
+                      placeholder={labels.category}
                       className="h-8 w-32 text-xs"
                     />
                   </TableCell>
@@ -189,7 +207,7 @@ export function QuotePdfImport({
                       size="sm"
                       onClick={() => removeLine(index)}
                     >
-                      Verwijderen
+                      {labels.remove}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -200,12 +218,14 @@ export function QuotePdfImport({
 
         {groups.size > 0 && (
           <div className="space-y-2 border-t pt-4">
-            <p className="text-sm font-medium">Klaar om over te nemen</p>
+            <p className="text-sm font-medium">{labels.readyToConfirm}</p>
             {Array.from(groups.entries()).map(([category, group]) => (
               <div key={category} className="flex items-center justify-between text-sm">
                 <span>
                   {category}: <span className="font-medium">€ {group.total.toFixed(2)}</span>{" "}
-                  <span className="text-muted-foreground">({group.lines.length} regels)</span>
+                  <span className="text-muted-foreground">
+                    ({group.lines.length} {labels.lines})
+                  </span>
                 </span>
                 <Button
                   type="button"
@@ -214,12 +234,12 @@ export function QuotePdfImport({
                   disabled={!supplierId || confirmingCategory === category}
                   onClick={() => confirmGroup(category)}
                 >
-                  {confirmingCategory === category ? "Bezig..." : "Overnemen als offerte"}
+                  {confirmingCategory === category ? labels.busy : labels.confirmAsQuote}
                 </Button>
               </div>
             ))}
             {!supplierId && (
-              <p className="text-xs text-muted-foreground">Kies eerst een leverancier hierboven.</p>
+              <p className="text-xs text-muted-foreground">{labels.chooseSupplierFirst}</p>
             )}
             {confirmError && (
               <p className="rounded-md border border-destructive/50 bg-destructive/10 p-2 text-sm text-destructive">

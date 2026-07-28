@@ -5,7 +5,9 @@ import { Footer } from "@/components/footer";
 import type { CrewMember, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../project-sub-nav";
 import { ProductionSubNav } from "./production-sub-nav";
-import { CrewCard } from "./crew-card";
+import { CrewCard, CREW_CARD_LABELS } from "./crew-card";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionCrewPage({
   params,
@@ -30,13 +32,16 @@ export default async function ProductionCrewPage({
     .order("name", { ascending: true })
     .returns<Supplier[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, CREW_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="production" />
       <ProductionSubNav projectId={project.id} active="crew" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <CrewCard projectId={project.id} members={members ?? []} suppliers={suppliers ?? []} />
+        <CrewCard projectId={project.id} members={members ?? []} suppliers={suppliers ?? []} t={t} />
       </main>
       <Footer />
     </div>

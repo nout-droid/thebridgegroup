@@ -5,7 +5,9 @@ import { Footer } from "@/components/footer";
 import type { MeetingNote, OpenQuestion } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
-import { QuestionsCard } from "../questions-card";
+import { QuestionsCard, QUESTIONS_CARD_LABELS } from "../questions-card";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProductionQuestionsPage({
   params,
@@ -31,13 +33,16 @@ export default async function ProductionQuestionsPage({
     .order("sort_order", { ascending: true })
     .returns<MeetingNote[]>();
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, QUESTIONS_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="production" />
       <ProductionSubNav projectId={project.id} active="vragen" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <QuestionsCard projectId={project.id} questions={questions ?? []} notes={notes ?? []} />
+        <QuestionsCard projectId={project.id} questions={questions ?? []} notes={notes ?? []} t={t} />
       </main>
       <Footer />
     </div>

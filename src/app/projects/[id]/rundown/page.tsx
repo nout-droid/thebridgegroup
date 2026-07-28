@@ -7,9 +7,12 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { Rundown, RundownItem, Stage } from "@/lib/types";
 import { ProjectSubNav } from "../project-sub-nav";
-import { RundownLive } from "../rundown-live";
-import { RundownAccessCard } from "../rundown-access-card";
+import { RundownLive, type RundownLiveLabels } from "../rundown-live";
+import { RundownAccessCard, RUNDOWN_ACCESS_CARD_LABELS } from "../rundown-access-card";
 import { RundownDayTabs } from "../rundown-day-tabs";
+import { RUNDOWN_LIVE_LABELS } from "../translation-labels";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectRundownPage({
   params,
@@ -56,6 +59,51 @@ export default async function ProjectRundownPage({
         .returns<RundownItem[]>()
     : { data: [] as RundownItem[] };
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, [...RUNDOWN_ACCESS_CARD_LABELS, ...RUNDOWN_LIVE_LABELS]);
+
+  const rundownLiveLabels: RundownLiveLabels = {
+    title: t("Show rundown"),
+    description: t(
+      "Cue-tijden schuiven automatisch door. Live tracking sync't mee op elk scherm dat deze pagina open heeft."
+    ),
+    openClock: t("Open klok"),
+    startShow: t("Start show"),
+    busy: t("Bezig…"),
+    previous: t("Vorige"),
+    next: t("Volgende"),
+    stopShow: t("Stop show"),
+    totalOvertime: t("Totaal opgelopen:"),
+    startTimeLabel: t("Starttijd show"),
+    save: t("Opslaan"),
+    overTime: t("Over tijd:"),
+    remaining: t("Resterend:"),
+    cue: t("Cue"),
+    name: t("Naam"),
+    duration: t("Duur (mm:ss)"),
+    color: t("Kleur"),
+    notes: t("Notities"),
+    remove: t("Verwijderen"),
+    instructionsPerDivision: t("Opdrachten per devisie"),
+    division: t("Devisie"),
+    instruction: t("Opdracht"),
+    instructionPlaceholder: t("bv. HH 1 open zetten"),
+    add: t("Toevoegen"),
+    newCuePlaceholder: t("bv. 1"),
+    newNamePlaceholder: t("bv. Opening VJ set"),
+    newDurationPlaceholder: t("bv. 3:00"),
+    addCue: t("Cue toevoegen"),
+    colorLabels: {
+      none: t("Geen"),
+      red: t("Rood"),
+      orange: t("Oranje"),
+      yellow: t("Geel"),
+      green: t("Groen"),
+      blue: t("Blauw"),
+      purple: t("Paars"),
+    },
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -66,6 +114,7 @@ export default async function ProjectRundownPage({
           stages={stages ?? []}
           crewPortalUrl={crewPortalUrl}
           showcallerPortalUrl={showcallerPortalUrl}
+          t={t}
         />
 
         <RundownDayTabs
@@ -82,6 +131,7 @@ export default async function ProjectRundownPage({
             shareToken={project.share_token}
             initialRundown={rundown}
             initialItems={items ?? []}
+            labels={rundownLiveLabels}
           />
         )}
       </main>

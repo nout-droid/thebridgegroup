@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function ShareLinkBox({ url }: { url: string }) {
+export function ShareLinkBox({
+  url,
+  copyLabel = "Kopieer link",
+  copiedLabel = "Gekopieerd",
+}: {
+  url: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   return (
@@ -20,7 +28,7 @@ export function ShareLinkBox({ url }: { url: string }) {
           setTimeout(() => setCopied(false), 2000);
         }}
       >
-        {copied ? "Gekopieerd" : "Kopieer link"}
+        {copied ? copiedLabel : copyLabel}
       </Button>
     </div>
   );

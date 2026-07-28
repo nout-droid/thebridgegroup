@@ -5,8 +5,14 @@ import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { IntakeChecklistAnswer } from "@/lib/types";
-import { IntakeChecklistCard, type IntakeChecklistPhotoWithUrl } from "../intake-checklist-card";
+import {
+  IntakeChecklistCard,
+  INTAKE_CHECKLIST_CARD_LABELS,
+  type IntakeChecklistPhotoWithUrl,
+} from "../intake-checklist-card";
 import { ProjectSubNav } from "../project-sub-nav";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
 
 export default async function ProjectIntakePage({
   params,
@@ -46,12 +52,21 @@ export default async function ProjectIntakePage({
     }))
   );
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, INTAKE_CHECKLIST_CARD_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="intake" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <IntakeChecklistCard projectId={project.id} answers={answers ?? []} photos={photos} />
+        <IntakeChecklistCard
+          projectId={project.id}
+          answers={answers ?? []}
+          photos={photos}
+          lang={lang}
+          t={t}
+        />
       </main>
       <Footer />
     </div>

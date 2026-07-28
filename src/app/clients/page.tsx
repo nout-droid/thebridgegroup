@@ -15,6 +15,34 @@ import {
   setClientAccountPassword,
   updateClientAccountSettings,
 } from "./actions";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+
+const CLIENTS_PAGE_LABELS = [
+  "Klanten",
+  "Een klantaccount geeft een terugkerende opdrachtgever één inlog voor al hun projecten tegelijk, i.p.v. steeds een los Event ID per project. Het bestaande Event ID + wachtwoord per project blijft daarnaast gewoon bestaan als lichter alternatief.",
+  "Nieuw klantaccount",
+  "Naam",
+  "E-mailadres",
+  "Wachtwoord",
+  "Openheid begroting",
+  "Gesloten — alleen prijs per onderdeel",
+  "Open — incl. inkoopprijs, marge, leverancier",
+  "Mag aanvraag checklist invullen",
+  "Mag verzoeken indienen (Productie-tab)",
+  "Gekoppelde projecten",
+  "Nog geen projecten aangemaakt.",
+  "Klantaccount aanmaken",
+  "Klantaccounts",
+  "Nog geen klantaccounts aangemaakt.",
+  "Open begroting",
+  "Gesloten begroting",
+  "project(en)",
+  "Opslaan",
+  "Nieuw wachtwoord",
+  "Wachtwoord instellen",
+  "Klantaccount verwijderen",
+];
 
 export default async function ClientsPage({
   searchParams,
@@ -61,15 +89,18 @@ export default async function ClientsPage({
     linksByAccount.set(row.client_account_id, set);
   }
 
+  const lang = await getAppLang();
+  const t = await createTranslator(lang, CLIENTS_PAGE_LABELS);
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Klanten</h1>
+        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">{t("Klanten")}</h1>
         <p className="text-sm text-muted-foreground">
-          Een klantaccount geeft een terugkerende opdrachtgever één inlog voor al hun projecten
-          tegelijk, i.p.v. steeds een los Event ID per project. Het bestaande Event ID + wachtwoord
-          per project blijft daarnaast gewoon bestaan als lichter alternatief.
+          {t(
+            "Een klantaccount geeft een terugkerende opdrachtgever één inlog voor al hun projecten tegelijk, i.p.v. steeds een los Event ID per project. Het bestaande Event ID + wachtwoord per project blijft daarnaast gewoon bestaan als lichter alternatief."
+          )}
         </p>
 
         {error && (
@@ -78,51 +109,51 @@ export default async function ClientsPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Nieuw klantaccount</CardTitle>
+            <CardTitle className="text-base">{t("Nieuw klantaccount")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={createClientAccount} className="space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-name">Naam</Label>
+                  <Label htmlFor="new-name">{t("Naam")}</Label>
                   <Input id="new-name" name="name" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-email">E-mailadres</Label>
+                  <Label htmlFor="new-email">{t("E-mailadres")}</Label>
                   <Input id="new-email" name="email" type="email" required />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="new-password">Wachtwoord</Label>
+                  <Label htmlFor="new-password">{t("Wachtwoord")}</Label>
                   <Input id="new-password" name="password" type="password" required />
                 </div>
               </div>
 
               <div className="space-y-2 rounded-md border p-3">
-                <p className="text-sm font-medium">Openheid begroting</p>
+                <p className="text-sm font-medium">{t("Openheid begroting")}</p>
                 <select
                   name="budget_access"
                   defaultValue="closed"
                   className="h-9 rounded-md border bg-background px-2 text-sm"
                 >
-                  <option value="closed">Gesloten — alleen prijs per onderdeel</option>
-                  <option value="open">Open — incl. inkoopprijs, marge, leverancier</option>
+                  <option value="closed">{t("Gesloten — alleen prijs per onderdeel")}</option>
+                  <option value="open">{t("Open — incl. inkoopprijs, marge, leverancier")}</option>
                 </select>
                 <div className="flex flex-wrap gap-4 pt-1">
                   <label className="flex items-center gap-1.5 text-sm">
                     <input type="checkbox" name="can_edit_checklist" defaultChecked />
-                    Mag aanvraag checklist invullen
+                    {t("Mag aanvraag checklist invullen")}
                   </label>
                   <label className="flex items-center gap-1.5 text-sm">
                     <input type="checkbox" name="can_submit_requests" defaultChecked />
-                    Mag verzoeken indienen (Productie-tab)
+                    {t("Mag verzoeken indienen (Productie-tab)")}
                   </label>
                 </div>
               </div>
 
               <div className="space-y-2 rounded-md border p-3">
-                <p className="text-sm font-medium">Gekoppelde projecten</p>
+                <p className="text-sm font-medium">{t("Gekoppelde projecten")}</p>
                 {!projects?.length ? (
-                  <p className="text-xs text-muted-foreground">Nog geen projecten aangemaakt.</p>
+                  <p className="text-xs text-muted-foreground">{t("Nog geen projecten aangemaakt.")}</p>
                 ) : (
                   <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                     {projects.map((project) => (
@@ -135,18 +166,18 @@ export default async function ClientsPage({
                 )}
               </div>
 
-              <Button type="submit">Klantaccount aanmaken</Button>
+              <Button type="submit">{t("Klantaccount aanmaken")}</Button>
             </form>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Klantaccounts</CardTitle>
+            <CardTitle className="text-base">{t("Klantaccounts")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {!accounts?.length ? (
-              <p className="text-sm text-muted-foreground">Nog geen klantaccounts aangemaakt.</p>
+              <p className="text-sm text-muted-foreground">{t("Nog geen klantaccounts aangemaakt.")}</p>
             ) : (
               accounts.map((account) => {
                 const linkedProjects = linksByAccount.get(account.id) ?? new Set<string>();
@@ -159,9 +190,9 @@ export default async function ClientsPage({
                       </span>
                       <span className="flex items-center gap-2">
                         <Badge variant="secondary">
-                          {account.budget_access === "open" ? "Open begroting" : "Gesloten begroting"}
+                          {account.budget_access === "open" ? t("Open begroting") : t("Gesloten begroting")}
                         </Badge>
-                        <Badge variant="outline">{linkedProjects.size} project(en)</Badge>
+                        <Badge variant="outline">{linkedProjects.size} {t("project(en)")}</Badge>
                       </span>
                     </summary>
 
@@ -172,19 +203,19 @@ export default async function ClientsPage({
                       >
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div className="space-y-1.5">
-                            <Label htmlFor={`name-${account.id}`}>Naam</Label>
+                            <Label htmlFor={`name-${account.id}`}>{t("Naam")}</Label>
                             <Input id={`name-${account.id}`} name="name" defaultValue={account.name} />
                           </div>
                           <div className="space-y-1.5">
-                            <Label htmlFor={`budget-${account.id}`}>Openheid begroting</Label>
+                            <Label htmlFor={`budget-${account.id}`}>{t("Openheid begroting")}</Label>
                             <select
                               id={`budget-${account.id}`}
                               name="budget_access"
                               defaultValue={account.budget_access}
                               className="h-9 w-full rounded-md border bg-background px-2 text-sm"
                             >
-                              <option value="closed">Gesloten — alleen prijs per onderdeel</option>
-                              <option value="open">Open — incl. inkoopprijs, marge, leverancier</option>
+                              <option value="closed">{t("Gesloten — alleen prijs per onderdeel")}</option>
+                              <option value="open">{t("Open — incl. inkoopprijs, marge, leverancier")}</option>
                             </select>
                           </div>
                         </div>
@@ -195,7 +226,7 @@ export default async function ClientsPage({
                               name="can_edit_checklist"
                               defaultChecked={account.can_edit_checklist}
                             />
-                            Mag aanvraag checklist invullen
+                            {t("Mag aanvraag checklist invullen")}
                           </label>
                           <label className="flex items-center gap-1.5 text-sm">
                             <input
@@ -203,13 +234,13 @@ export default async function ClientsPage({
                               name="can_submit_requests"
                               defaultChecked={account.can_submit_requests}
                             />
-                            Mag verzoeken indienen (Productie-tab)
+                            {t("Mag verzoeken indienen (Productie-tab)")}
                           </label>
                         </div>
                         <div className="space-y-1.5">
-                          <p className="text-sm font-medium">Gekoppelde projecten</p>
+                          <p className="text-sm font-medium">{t("Gekoppelde projecten")}</p>
                           {!projects?.length ? (
-                            <p className="text-xs text-muted-foreground">Nog geen projecten aangemaakt.</p>
+                            <p className="text-xs text-muted-foreground">{t("Nog geen projecten aangemaakt.")}</p>
                           ) : (
                             <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
                               {projects.map((project) => (
@@ -227,7 +258,7 @@ export default async function ClientsPage({
                           )}
                         </div>
                         <Button type="submit" size="sm">
-                          Opslaan
+                          {t("Opslaan")}
                         </Button>
                       </form>
 
@@ -236,17 +267,17 @@ export default async function ClientsPage({
                         className="flex items-end gap-2"
                       >
                         <div className="space-y-1.5">
-                          <Label htmlFor={`pw-${account.id}`}>Nieuw wachtwoord</Label>
+                          <Label htmlFor={`pw-${account.id}`}>{t("Nieuw wachtwoord")}</Label>
                           <Input id={`pw-${account.id}`} name="password" type="password" className="w-48" />
                         </div>
                         <Button type="submit" size="sm" variant="secondary">
-                          Wachtwoord instellen
+                          {t("Wachtwoord instellen")}
                         </Button>
                       </form>
 
                       <form action={deleteClientAccount.bind(null, account.id)}>
                         <Button type="submit" size="sm" variant="ghost" className="text-destructive">
-                          Klantaccount verwijderen
+                          {t("Klantaccount verwijderen")}
                         </Button>
                       </form>
                     </div>

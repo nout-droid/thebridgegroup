@@ -5,6 +5,32 @@ import { Button } from "@/components/ui/button";
 import type { CateringOrder, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { addCateringOrder, deleteCateringOrder, updateCateringOrder } from "./catering-actions";
+import type { Translator } from "@/lib/server/translate";
+
+export const CATERING_CARD_LABELS = [
+  "Catering",
+  "Aantallen per dag en afnemer, voor lunch, diner en night snacks.",
+  "Catering downloaden (PDF)",
+  "Datum",
+  "Totaal lunch",
+  "Totaal diner",
+  "Totaal night snacks",
+  "Afnemer",
+  "Leverancier",
+  "Kies leverancier",
+  "Crew lunch",
+  "Veggie lunch",
+  "Crew diner",
+  "Veggie diner",
+  "Night snacks",
+  "Opmerkingen",
+  "Opslaan",
+  "Verwijderen",
+  "bv. Think",
+  "Order toevoegen",
+];
+
+const identity: Translator = (text) => text;
 
 function sortOrders(orders: CateringOrder[]): CateringOrder[] {
   return [...orders].sort((a, b) => {
@@ -41,10 +67,12 @@ export function CateringCard({
   projectId,
   orders,
   suppliers,
+  t = identity,
 }: {
   projectId: string;
   orders: CateringOrder[];
   suppliers: Supplier[];
+  t?: Translator;
 }) {
   const sorted = sortOrders(orders);
   const dailyTotals = totalsPerDate(orders);
@@ -52,9 +80,9 @@ export function CateringCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">Catering</CardTitle>
+        <CardTitle className="text-base">{t("Catering")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Aantallen per dag en afnemer, voor lunch, diner en night snacks.
+          {t("Aantallen per dag en afnemer, voor lunch, diner en night snacks.")}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -65,7 +93,7 @@ export function CateringCard({
             rel="noopener noreferrer"
             className="text-sm text-primary underline"
           >
-            Catering downloaden (PDF)
+            {t("Catering downloaden (PDF)")}
           </a>
         )}
         {dailyTotals.length > 0 && (
@@ -73,10 +101,10 @@ export function CateringCard({
             <table className="w-full text-xs">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="p-2 text-left font-medium">Datum</th>
-                  <th className="p-2 text-left font-medium">Totaal lunch</th>
-                  <th className="p-2 text-left font-medium">Totaal diner</th>
-                  <th className="p-2 text-left font-medium">Totaal night snacks</th>
+                  <th className="p-2 text-left font-medium">{t("Datum")}</th>
+                  <th className="p-2 text-left font-medium">{t("Totaal lunch")}</th>
+                  <th className="p-2 text-left font-medium">{t("Totaal diner")}</th>
+                  <th className="p-2 text-left font-medium">{t("Totaal night snacks")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,7 +128,7 @@ export function CateringCard({
             className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-8"
           >
             <div className="space-y-1">
-              <Label htmlFor={`date-${order.id}`} className="text-xs">Datum</Label>
+              <Label htmlFor={`date-${order.id}`} className="text-xs">{t("Datum")}</Label>
               <Input
                 id={`date-${order.id}`}
                 name="order_date"
@@ -111,7 +139,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`party-${order.id}`} className="text-xs">Afnemer</Label>
+              <Label htmlFor={`party-${order.id}`} className="text-xs">{t("Afnemer")}</Label>
               <Input
                 id={`party-${order.id}`}
                 name="party"
@@ -121,15 +149,16 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`supplier-${order.id}`} className="text-xs">Leverancier</Label>
+              <Label htmlFor={`supplier-${order.id}`} className="text-xs">{t("Leverancier")}</Label>
               <SupplierSelect
                 id={`supplier-${order.id}`}
                 defaultValue={order.supplier_id ?? undefined}
                 suppliers={suppliers}
+                placeholder={t("Kies leverancier")}
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`cl-${order.id}`} className="text-xs">Crew lunch</Label>
+              <Label htmlFor={`cl-${order.id}`} className="text-xs">{t("Crew lunch")}</Label>
               <Input
                 id={`cl-${order.id}`}
                 name="crew_lunch"
@@ -140,7 +169,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`vl-${order.id}`} className="text-xs">Veggie lunch</Label>
+              <Label htmlFor={`vl-${order.id}`} className="text-xs">{t("Veggie lunch")}</Label>
               <Input
                 id={`vl-${order.id}`}
                 name="veggie_lunch"
@@ -151,7 +180,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`cd-${order.id}`} className="text-xs">Crew diner</Label>
+              <Label htmlFor={`cd-${order.id}`} className="text-xs">{t("Crew diner")}</Label>
               <Input
                 id={`cd-${order.id}`}
                 name="crew_dinner"
@@ -162,7 +191,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`vd-${order.id}`} className="text-xs">Veggie diner</Label>
+              <Label htmlFor={`vd-${order.id}`} className="text-xs">{t("Veggie diner")}</Label>
               <Input
                 id={`vd-${order.id}`}
                 name="veggie_dinner"
@@ -173,7 +202,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`ns-${order.id}`} className="text-xs">Night snacks</Label>
+              <Label htmlFor={`ns-${order.id}`} className="text-xs">{t("Night snacks")}</Label>
               <Input
                 id={`ns-${order.id}`}
                 name="night_snacks"
@@ -184,7 +213,7 @@ export function CateringCard({
               />
             </div>
             <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor={`notes-${order.id}`} className="text-xs">Opmerkingen</Label>
+              <Label htmlFor={`notes-${order.id}`} className="text-xs">{t("Opmerkingen")}</Label>
               <Input
                 id={`notes-${order.id}`}
                 name="notes"
@@ -194,7 +223,7 @@ export function CateringCard({
             </div>
             <div className="flex items-end gap-2 sm:col-span-8">
               <Button type="submit" size="sm" className="h-8 text-xs">
-                Opslaan
+                {t("Opslaan")}
               </Button>
               <Button
                 type="submit"
@@ -203,7 +232,7 @@ export function CateringCard({
                 variant="ghost"
                 className="h-8 text-xs"
               >
-                Verwijderen
+                {t("Verwijderen")}
               </Button>
             </div>
           </form>
@@ -214,44 +243,44 @@ export function CateringCard({
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-8"
         >
           <div className="space-y-1">
-            <Label htmlFor="new-date" className="text-xs">Datum</Label>
+            <Label htmlFor="new-date" className="text-xs">{t("Datum")}</Label>
             <Input id="new-date" name="order_date" type="date" className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-party" className="text-xs">Afnemer</Label>
-            <Input id="new-party" name="party" placeholder="bv. Think" className="h-8 text-xs" required />
+            <Label htmlFor="new-party" className="text-xs">{t("Afnemer")}</Label>
+            <Input id="new-party" name="party" placeholder={t("bv. Think")} className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-supplier" className="text-xs">Leverancier</Label>
-            <SupplierSelect id="new-supplier" suppliers={suppliers} />
+            <Label htmlFor="new-supplier" className="text-xs">{t("Leverancier")}</Label>
+            <SupplierSelect id="new-supplier" suppliers={suppliers} placeholder={t("Kies leverancier")} />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-cl" className="text-xs">Crew lunch</Label>
+            <Label htmlFor="new-cl" className="text-xs">{t("Crew lunch")}</Label>
             <Input id="new-cl" name="crew_lunch" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-vl" className="text-xs">Veggie lunch</Label>
+            <Label htmlFor="new-vl" className="text-xs">{t("Veggie lunch")}</Label>
             <Input id="new-vl" name="veggie_lunch" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-cd" className="text-xs">Crew diner</Label>
+            <Label htmlFor="new-cd" className="text-xs">{t("Crew diner")}</Label>
             <Input id="new-cd" name="crew_dinner" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-vd" className="text-xs">Veggie diner</Label>
+            <Label htmlFor="new-vd" className="text-xs">{t("Veggie diner")}</Label>
             <Input id="new-vd" name="veggie_dinner" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-ns" className="text-xs">Night snacks</Label>
+            <Label htmlFor="new-ns" className="text-xs">{t("Night snacks")}</Label>
             <Input id="new-ns" name="night_snacks" type="number" min={0} defaultValue={0} className="h-8 text-xs" />
           </div>
           <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="new-notes" className="text-xs">Opmerkingen</Label>
+            <Label htmlFor="new-notes" className="text-xs">{t("Opmerkingen")}</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
           </div>
           <div className="sm:col-span-8">
             <Button type="submit" size="sm" className="h-8 text-xs">
-              Order toevoegen
+              {t("Order toevoegen")}
             </Button>
           </div>
         </form>
