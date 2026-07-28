@@ -14,4 +14,9 @@ export const TRANSLATION_OVERRIDES: Record<string, string> = {
   "Bijvoorbeeld Show, Audio, Video, Licht, Stage.": "For example Show, Audio, Video, Light, Stage.",
   "bv. Show, Stage": "e.g. Show, Stage",
   "bv. Stage links": "e.g. Stage left",
+
+  // Zelfde probleem met het Nederlandse "vlucht" (luchtvaart) — DeepL leest het los, of in
+  // "vlucht nodig", als de vluchtelingen-/wegvluchten-betekenis en vertaalt naar "escape".
+  Vlucht: "Flight",
+  "Vlucht nodig": "Flight needed",
 };
