@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SubmitButton } from "@/components/submit-button";
@@ -8,7 +9,14 @@ import { Footer } from "@/components/footer";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 
-const STATIC_LABELS = ["The Bridge Group B.V.", "Wachtwoord", "Inloggen", "Bezig met inloggen…"];
+const STATIC_LABELS = [
+  "The Bridge Group B.V.",
+  "Wachtwoord",
+  "Inloggen",
+  "Bezig met inloggen…",
+  "Zelf ook zo'n tool voor je eigen events?",
+  "Bekijk de abonnementen",
+];
 
 export function PortalLogin({
   description,
@@ -87,6 +95,13 @@ export function PortalLogin({
             {t("Inloggen")}
           </SubmitButton>
         </form>
+
+        <p className="mt-6 text-center text-xs text-white/40">
+          {t("Zelf ook zo'n tool voor je eigen events?")}{" "}
+          <Link href="/pricing" className="text-white/70 underline-offset-4 hover:text-white hover:underline">
+            {t("Bekijk de abonnementen")}
+          </Link>
+        </p>
       </div>
       <Footer variant="dark" />
     </div>

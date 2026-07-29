@@ -18,6 +18,8 @@ const STATIC_LABELS = [
   "Inloggen",
   "Toegang tot één specifiek project?",
   "Log hier in",
+  "Zelf ook zo'n tool voor je eigen events?",
+  "Bekijk de abonnementen",
 ];
 
 export function ClientPortalLoginView({
@@ -90,6 +92,13 @@ export function ClientPortalLoginView({
           {t("Toegang tot één specifiek project?")}{" "}
           <Link href="/portal" className="underline-offset-4 hover:text-white hover:underline">
             {t("Log hier in")}
+          </Link>
+        </p>
+
+        <p className="mt-6 text-center text-xs text-white/40">
+          {t("Zelf ook zo'n tool voor je eigen events?")}{" "}
+          <Link href="/pricing" className="text-white/70 underline-offset-4 hover:text-white hover:underline">
+            {t("Bekijk de abonnementen")}
           </Link>
         </p>
       </div>
