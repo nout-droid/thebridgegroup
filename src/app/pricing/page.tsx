@@ -6,7 +6,7 @@ import { TRIAL_PROJECT_LIMIT } from "@/lib/server/subscription";
 import { PRICING_TIERS } from "@/lib/pricing";
 import { SeatCalculator } from "./seat-calculator";
 
-const SALES_EMAIL = "sales@thebridgeavgroup.com";
+const SALES_EMAIL = "order@thebridgeavgroup.com";
 
 async function getLivePricePerSeat(envVar: string | null): Promise<number | null> {
   if (!envVar || !isStripeConfigured || !process.env[envVar]) return null;
