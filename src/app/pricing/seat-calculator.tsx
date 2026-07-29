@@ -52,8 +52,8 @@ export function SeatCalculator({
         />
       </div>
       <p className="text-sm text-white/60">
-        {totalLabel} <span className="font-semibold text-white">&euro; {total.toLocaleString("nl-NL")}</span>{" "}
-        / maand
+        {totalLabel} <span className="font-semibold text-white">&euro; {total.toLocaleString("en-GB")}</span>{" "}
+        / month
       </p>
       <a
         href={checkoutEnabled ? `/api/stripe/checkout?tier=${tier}&seats=${seats}` : "/signup"}
