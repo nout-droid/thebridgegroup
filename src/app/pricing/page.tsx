@@ -205,11 +205,11 @@ export default async function PricingPage() {
                 </div>
                 <div className="flex w-full flex-1 items-center justify-center">
                   {pillar.image ? (
-                    <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 shadow-2xl shadow-black/40">
+                    <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 bg-white shadow-2xl shadow-black/40">
                       <img
                         src={pillar.image}
                         alt={`${pillar.title} in The Bridge Production OS`}
-                        className="h-72 w-full object-cover object-left-top"
+                        className="h-72 w-full object-contain"
                       />
                     </div>
                   ) : (
