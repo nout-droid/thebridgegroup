@@ -23,6 +23,14 @@ export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   gekozen: "Gekozen",
 };
 
+export type InvoiceStatus = "draft" | "sent" | "paid";
+
+export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
+  draft: "Concept",
+  sent: "Verstuurd",
+  paid: "Betaald",
+};
+
 export type ShowType = "dag" | "nacht" | "beide";
 
 export const GUEST_TYPES = ["gast", "vip", "pers", "sponsor", "overig"] as const;
@@ -123,6 +131,9 @@ export interface Project {
   client_budget: number | null;
   default_margin_percentage: number;
   venue_id: string | null;
+  invoice_number: string | null;
+  invoice_status: InvoiceStatus;
+  invoice_date: string | null;
   created_at: string;
 }
 
@@ -743,6 +754,27 @@ export interface QuoteLineItem {
   quantity: number;
   unit_price: number;
   created_at: string;
+}
+
+// Werkelijk gefactureerde kosten door een leverancier, los van de begrote kosten
+// (categories.manual_cost / gekozen quote.cost_price) — zie budget-pagina voor de
+// begroot-vs-werkelijk vergelijking. category_id is nullable: niet elke werkelijke kost
+// hoort bij een categorie (bv. algemene/overheadkosten). document_url bevat het
+// bucket-relatieve pad in de "portal-documents" storage bucket (niet een publieke URL —
+// die bucket is privé, downloads lopen via een signed URL, zelfde patroon als
+// project_documents.storage_path).
+export interface ActualCost {
+  id: string;
+  project_id: string;
+  category_id: string | null;
+  supplier_id: string | null;
+  description: string;
+  amount: number;
+  invoice_number: string | null;
+  invoice_date: string | null;
+  document_url: string | null;
+  created_at: string;
+  supplier?: Supplier;
 }
 
 export interface SharedLineItem {

@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -29,6 +30,7 @@ import {
   CATEGORY_STATUS_LABELS,
   QUOTE_STATUS_LABELS,
   computeClientPrice,
+  type ActualCost,
   type Category,
   type Quote,
   type Supplier,
@@ -40,12 +42,23 @@ import {
   deleteQuote,
   updateCategory,
 } from "./actions";
+import { addActualCost, deleteActualCost } from "./actual-costs-actions";
 import { QuoteLineItems, QUOTE_LINE_ITEMS_LABELS } from "./quote-line-items";
 import type { Translator } from "@/lib/server/translate";
 import type { SupplierConflict } from "@/lib/server/supplier-conflicts";
 
+// Werkelijke kost + evt. een vooraf opgehaalde signed download-URL (portal-documents is een
+// privé bucket — zie src/lib/server/portal-storage.ts). De URL wordt op paginaniveau
+// opgehaald (Promise.all, zelfde patroon als src/app/projects/[id]/documents/page.tsx) en
+// hier alleen doorgegeven, zodat deze server component zelf geen extra round-trip doet.
+export type ActualCostRow = ActualCost & { url: string | null };
+
 function formatConflictDate(value: string) {
   return new Date(`${value}T00:00:00`).toLocaleDateString("nl-NL", { day: "numeric", month: "short" });
+}
+
+function euro(value: number) {
+  return `€ ${value.toFixed(2)}`;
 }
 
 export const CATEGORY_CARD_LABELS = [
@@ -82,6 +95,24 @@ export const CATEGORY_CARD_LABELS = [
   ...QUOTE_LINE_ITEMS_LABELS,
   "is ook bevestigd op",
   "— controleer op een planningsconflict.",
+  "Werkelijke kosten",
+  "Wat leveranciers daadwerkelijk factureren voor deze categorie, ter vergelijking met de begroting hierboven.",
+  "Nog geen werkelijke kosten geregistreerd.",
+  "Begroot",
+  "Werkelijk",
+  "Verschil",
+  "binnen budget",
+  "boven budget",
+  "Factuurnr.",
+  "Factuurdatum",
+  "Bestand",
+  "Bekijken",
+  "Omschrijving",
+  "Bedrag (€)",
+  "Factuurnummer (optioneel)",
+  "Factuurdatum (optioneel)",
+  "Bestand (optioneel)",
+  "Kosten toevoegen",
 ];
 
 export function CategoryCard({
@@ -90,6 +121,7 @@ export function CategoryCard({
   quotes,
   suppliers,
   conflictsBySupplier,
+  actualCosts,
   t,
 }: {
   projectId: string;
@@ -97,12 +129,17 @@ export function CategoryCard({
   quotes: Quote[];
   suppliers: Supplier[];
   conflictsBySupplier?: Map<string, SupplierConflict[]>;
+  actualCosts?: ActualCostRow[];
   t: Translator;
 }) {
   const chosenQuote = quotes.find((q) => q.status === "gekozen");
   const effectiveCost = chosenQuote?.cost_price ?? category.manual_cost ?? null;
   const clientPrice = effectiveCost !== null ? computeClientPrice(category, effectiveCost) : null;
   const conflicts = chosenQuote ? conflictsBySupplier?.get(chosenQuote.supplier_id) : undefined;
+
+  const costRows = actualCosts ?? [];
+  const totalActual = costRows.reduce((sum, row) => sum + row.amount, 0);
+  const variance = effectiveCost !== null ? totalActual - effectiveCost : null;
 
   return (
     <Card>
@@ -354,6 +391,124 @@ export function CategoryCard({
             </span>
           </p>
         )}
+
+        <div className="space-y-3 border-t pt-4">
+          <div>
+            <h4 className="text-sm font-semibold">{t("Werkelijke kosten")}</h4>
+            <p className="text-xs text-muted-foreground">
+              {t(
+                "Wat leveranciers daadwerkelijk factureren voor deze categorie, ter vergelijking met de begroting hierboven."
+              )}
+            </p>
+          </div>
+
+          {effectiveCost !== null && (
+            <p className="text-sm">
+              {t("Begroot")} <span className="font-medium">{euro(effectiveCost)}</span> ·{" "}
+              {t("Werkelijk")} <span className="font-medium">{euro(totalActual)}</span>
+              {variance !== null && (
+                <>
+                  {" · "}
+                  {t("Verschil")}{" "}
+                  <span
+                    className={cn(
+                      "font-medium",
+                      variance > 0 ? "text-destructive" : "text-green-600"
+                    )}
+                  >
+                    {variance > 0 ? "+" : ""}
+                    {euro(variance)} ({variance > 0 ? t("boven budget") : t("binnen budget")})
+                  </span>
+                </>
+              )}
+            </p>
+          )}
+
+          {costRows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t("Nog geen werkelijke kosten geregistreerd.")}
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("Omschrijving")}</TableHead>
+                  <TableHead>{t("Bedrag (€)")}</TableHead>
+                  <TableHead>{t("Factuurnr.")}</TableHead>
+                  <TableHead>{t("Factuurdatum")}</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {costRows.map((row) => (
+                  <TableRow key={row.id}>
+                    <TableCell className="font-medium">{row.description}</TableCell>
+                    <TableCell>{euro(row.amount)}</TableCell>
+                    <TableCell>{row.invoice_number || "—"}</TableCell>
+                    <TableCell>{row.invoice_date || "—"}</TableCell>
+                    <TableCell className="flex justify-end gap-2">
+                      {row.url && (
+                        <a
+                          href={row.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {t("Bekijken")}
+                        </a>
+                      )}
+                      <form action={deleteActualCost.bind(null, projectId, row.id)}>
+                        <Button type="submit" size="sm" variant="ghost">
+                          {t("Verwijderen")}
+                        </Button>
+                      </form>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          <form
+            action={addActualCost.bind(null, projectId)}
+            className="grid grid-cols-2 gap-3 sm:grid-cols-5"
+          >
+            <input type="hidden" name="category_id" value={category.id} />
+            <div className="col-span-2 space-y-1.5 sm:col-span-1">
+              <Label htmlFor={`ac-description-${category.id}`}>{t("Omschrijving")}</Label>
+              <Input id={`ac-description-${category.id}`} name="description" required />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`ac-amount-${category.id}`}>{t("Bedrag (€)")}</Label>
+              <Input
+                id={`ac-amount-${category.id}`}
+                name="amount"
+                type="number"
+                step="0.01"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`ac-invoice-number-${category.id}`}>
+                {t("Factuurnummer (optioneel)")}
+              </Label>
+              <Input id={`ac-invoice-number-${category.id}`} name="invoice_number" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`ac-invoice-date-${category.id}`}>
+                {t("Factuurdatum (optioneel)")}
+              </Label>
+              <Input id={`ac-invoice-date-${category.id}`} name="invoice_date" type="date" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`ac-file-${category.id}`}>{t("Bestand (optioneel)")}</Label>
+              <Input id={`ac-file-${category.id}`} name="file" type="file" />
+            </div>
+            <Button type="submit" size="sm" className="col-span-2 sm:col-span-5 sm:w-fit">
+              {t("Kosten toevoegen")}
+            </Button>
+          </form>
+        </div>
       </CardContent>
     </Card>
   );

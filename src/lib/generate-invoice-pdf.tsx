@@ -22,6 +22,8 @@ export interface InvoicePdfData {
   generatedAt: Date;
   groups: InvoicePdfGroup[];
   totalClientPrice: number;
+  invoiceNumber: string;
+  invoiceDate: string;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -153,6 +155,11 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
         year: "numeric",
       })
     : "—";
+  const invoiceDateFormatted = new Date(`${data.invoiceDate}T00:00:00`).toLocaleDateString("nl-NL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
   // Accentkleur is per-organisatie (huisstijl) — StyleSheet.create() moet daarom per render
   // opnieuw met de juiste kleur, i.p.v. module-scope zoals de rest van `styles` hierboven.
   const brand = StyleSheet.create({
@@ -168,15 +175,17 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <Image src={logoBuffer} style={styles.logo} />
             <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
           </View>
-          <Text style={styles.headerMeta}>gegenereerd op {generatedAt}</Text>
+          <Text style={styles.headerMeta}>
+            {data.invoiceNumber} · gegenereerd op {generatedAt}
+          </Text>
         </View>
 
         <View style={styles.titleBlock}>
           <Text style={styles.tagline}>We innovate your event</Text>
-          <Text style={styles.eyebrow}>Offerte</Text>
+          <Text style={styles.eyebrow}>Factuur</Text>
           <Text style={styles.title}>{data.projectName}</Text>
           <Text style={styles.subtitle}>
-            Deze offerte geeft een overzicht van de begrote kosten voor dit event.
+            Deze factuur geeft een overzicht van de kosten voor dit event.
           </Text>
         </View>
         <View style={[styles.accentLine, brand.line]} />
@@ -184,12 +193,20 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
         <View style={styles.body}>
           <View style={styles.summary}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Project</Text>
-              <Text style={styles.summaryValue}>{data.projectName}</Text>
+              <Text style={styles.summaryLabel}>Factuurnummer</Text>
+              <Text style={styles.summaryValue}>{data.invoiceNumber}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Factuurdatum</Text>
+              <Text style={styles.summaryValue}>{invoiceDateFormatted}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Klant</Text>
               <Text style={styles.summaryValue}>{data.clientName || "—"}</Text>
+            </View>
+            <View style={styles.summaryItem}>
+              <Text style={styles.summaryLabel}>Project</Text>
+              <Text style={styles.summaryValue}>{data.projectName}</Text>
             </View>
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Event datum</Text>
