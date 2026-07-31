@@ -122,6 +122,7 @@ export interface Project {
   budget_approval_at: string | null;
   client_budget: number | null;
   default_margin_percentage: number;
+  venue_id: string | null;
   created_at: string;
 }
 
@@ -147,6 +148,24 @@ export interface Supplier {
   default_discount_percentage: number;
   portal_code: string | null;
   portal_password_hash: string | null;
+  created_at: string;
+}
+
+export interface Venue {
+  id: string;
+  user_id: string;
+  name: string;
+  address: string | null;
+  capacity: number | null;
+  power_availability: string | null;
+  load_in_access: string | null;
+  dimensions: string | null;
+  rigging_notes: string | null;
+  wifi_notes: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  notes: string | null;
   created_at: string;
 }
 

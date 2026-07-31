@@ -17,6 +17,7 @@ import {
   type ClientRequest,
   type Quote,
   type Stage,
+  type Venue,
 } from "@/lib/types";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { computeRentalDays } from "@/lib/rental-days";
@@ -99,6 +100,20 @@ const STATIC_LABELS = [
   "Dag",
   "Nacht",
   "Beide",
+  "Locatie",
+  "Geen locatie geselecteerd",
+  "Locatiespecificaties",
+  "Adres",
+  "Capaciteit",
+  "personen",
+  "Stroomvoorziening",
+  "Laad-in toegang",
+  "Afmetingen",
+  "Rigging",
+  "Wifi",
+  "Contact",
+  "Notities",
+  "Bewerken in locatiecatalogus →",
   "Totaal aantal huurdagen voor prijsberekening:",
   "Opslaan",
   "Klanttoegang",
@@ -193,6 +208,7 @@ export default async function ProjectPage({
     { data: pendingProjectDocuments },
     { data: activity },
     { data: clientRequests },
+    { data: venues },
     headersList,
     lang,
   ] = await Promise.all([
@@ -261,9 +277,12 @@ export default async function ProjectPage({
       .eq("project_id", id)
       .order("created_at", { ascending: false })
       .returns<ClientRequest[]>(),
+    supabase.from("venues").select("*").order("name", { ascending: true }).returns<Venue[]>(),
     headers(),
     getAppLang(),
   ]);
+
+  const selectedVenue = (venues ?? []).find((v) => v.id === project.venue_id) ?? null;
 
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
@@ -505,6 +524,22 @@ export default async function ProjectPage({
                 <Label htmlFor="status">{t("Status")}</Label>
                 <Input id="status" name="status" defaultValue={project.status} />
               </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="venue_id">{t("Locatie")}</Label>
+                <select
+                  id="venue_id"
+                  name="venue_id"
+                  defaultValue={project.venue_id ?? ""}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                >
+                  <option value="">{t("Geen locatie geselecteerd")}</option>
+                  {(venues ?? []).map((venue) => (
+                    <option key={venue.id} value={venue.id}>
+                      {venue.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
                 <p className="text-sm font-medium">{t("Op-/afbouwperiode")}</p>
@@ -652,6 +687,75 @@ export default async function ProjectPage({
             )}
           </CardContent>
         </Card>
+
+        {selectedVenue && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-2">
+              <CardTitle className="text-base">{t("Locatiespecificaties")}</CardTitle>
+              <a href="/venues" className="text-sm text-muted-foreground hover:underline">
+                {t("Bewerken in locatiecatalogus →")}
+              </a>
+            </CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <p className="font-medium">
+                {selectedVenue.name}
+                {selectedVenue.address ? (
+                  <span className="font-normal text-muted-foreground"> ({selectedVenue.address})</span>
+                ) : null}
+              </p>
+              {selectedVenue.capacity && (
+                <p>
+                  <span className="text-muted-foreground">{t("Capaciteit")}: </span>
+                  {selectedVenue.capacity} {t("personen")}
+                </p>
+              )}
+              {selectedVenue.power_availability && (
+                <p>
+                  <span className="text-muted-foreground">{t("Stroomvoorziening")}: </span>
+                  {selectedVenue.power_availability}
+                </p>
+              )}
+              {selectedVenue.load_in_access && (
+                <p>
+                  <span className="text-muted-foreground">{t("Laad-in toegang")}: </span>
+                  {selectedVenue.load_in_access}
+                </p>
+              )}
+              {selectedVenue.dimensions && (
+                <p>
+                  <span className="text-muted-foreground">{t("Afmetingen")}: </span>
+                  {selectedVenue.dimensions}
+                </p>
+              )}
+              {selectedVenue.rigging_notes && (
+                <p>
+                  <span className="text-muted-foreground">{t("Rigging")}: </span>
+                  {selectedVenue.rigging_notes}
+                </p>
+              )}
+              {selectedVenue.wifi_notes && (
+                <p>
+                  <span className="text-muted-foreground">{t("Wifi")}: </span>
+                  {selectedVenue.wifi_notes}
+                </p>
+              )}
+              {(selectedVenue.contact_name || selectedVenue.contact_email || selectedVenue.contact_phone) && (
+                <p>
+                  <span className="text-muted-foreground">{t("Contact")}: </span>
+                  {[selectedVenue.contact_name, selectedVenue.contact_email, selectedVenue.contact_phone]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
+              {selectedVenue.notes && (
+                <p>
+                  <span className="text-muted-foreground">{t("Notities")}: </span>
+                  {selectedVenue.notes}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {(pendingDocuments.length > 0 || (pendingProjectDocuments?.length ?? 0) > 0) && (
           <Card>

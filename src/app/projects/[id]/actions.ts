@@ -191,6 +191,7 @@ export async function updateProjectDetails(projectId: string, formData: FormData
   const showType = (["dag", "nacht", "beide"] as const).includes(showTypeRaw as "dag" | "nacht" | "beide")
     ? showTypeRaw
     : "dag";
+  const venueId = String(formData.get("venue_id") ?? "").trim() || null;
 
   if (!name) return;
 
@@ -207,6 +208,7 @@ export async function updateProjectDetails(projectId: string, formData: FormData
       show_start_date: showStartDate,
       show_end_date: showEndDate,
       show_type: showType,
+      venue_id: venueId,
     })
     .eq("id", projectId);
 
