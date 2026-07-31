@@ -9,10 +9,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   CATEGORY_STATUS_LABELS,
+  INVOICE_STATUS_LABELS,
   computeClientPrice,
+  type ActualCost,
   type Category,
   type MaterialListItem,
   type Quote,
@@ -20,14 +30,17 @@ import {
   type Supplier,
 } from "@/lib/types";
 import { getSupplierConflicts, type SupplierConflict } from "@/lib/server/supplier-conflicts";
-import { CategoryCard, CATEGORY_CARD_LABELS } from "../category-card";
+import { getSignedPortalUrl } from "@/lib/server/portal-storage";
+import { CategoryCard, CATEGORY_CARD_LABELS, type ActualCostRow } from "../category-card";
 import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../add-category-form";
 import { MaterialList, MATERIAL_LIST_LABELS } from "../material-list";
 import { QuotePdfImport, type QuotePdfImportLabels } from "../quote-pdf-import";
 import { RequestQuotesCard, type RequestQuotesCardLabels } from "../request-quotes-card";
 import { QUOTE_PDF_IMPORT_LABELS, REQUEST_QUOTES_CARD_LABELS } from "../translation-labels";
+import { ActualCostsSummaryCard, ACTUAL_COSTS_SUMMARY_LABELS } from "../actual-costs-summary-card";
 import { ProjectSubNav } from "../project-sub-nav";
 import { updateProjectBudget } from "../actions";
+import { setInvoiceStatus } from "../invoice-actions";
 import { computeRentalDays } from "@/lib/rental-days";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator, type Translator } from "@/lib/server/translate";
@@ -43,7 +56,11 @@ interface Totals {
 }
 
 const BUDGET_PAGE_LABELS = [
-  "Offerte downloaden (PDF)",
+  "Factuur downloaden (PDF)",
+  "Factuurstatus",
+  "Bijwerken",
+  "Factuurnr.",
+  "wordt aangemaakt bij eerste download",
   "Totaaloverzicht",
   "Totaal inkoop",
   "Totaal marge",
@@ -69,6 +86,7 @@ const BUDGET_PAGE_LABELS = [
   "marge",
   "Nog geen categorieën.",
   ...Object.values(CATEGORY_STATUS_LABELS),
+  ...Object.values(INVOICE_STATUS_LABELS),
 ];
 
 function euro(value: number) {
@@ -95,6 +113,7 @@ function BudgetGroup({
   quotesByCategory,
   suppliers,
   conflictsBySupplier,
+  actualCostsByCategory,
   projectId,
   stageId,
   t,
@@ -104,6 +123,7 @@ function BudgetGroup({
   quotesByCategory: Map<string, Quote[]>;
   suppliers: Supplier[];
   conflictsBySupplier: Map<string, SupplierConflict[]>;
+  actualCostsByCategory: Map<string, ActualCostRow[]>;
   projectId: string;
   stageId: string | null;
   t: Translator;
@@ -144,6 +164,7 @@ function BudgetGroup({
           quotes={quotesByCategory.get(category.id) ?? []}
           suppliers={suppliers}
           conflictsBySupplier={conflictsBySupplier}
+          actualCosts={actualCostsByCategory.get(category.id) ?? []}
           t={t}
         />
       ))}
@@ -173,6 +194,7 @@ export default async function ProjectBudgetPage({
     conflictsBySupplier,
     { data: materialListItems },
     { data: rentalMultiplier },
+    { data: actualCosts },
     lang,
   ] = await Promise.all([
     checkCanViewBudget(supabase, id),
@@ -198,6 +220,12 @@ export default async function ProjectBudgetPage({
       .order("created_at", { ascending: true })
       .returns<MaterialListItem[]>(),
     supabase.rpc("rental_multiplier", { p_days: computeRentalDays(project) }),
+    supabase
+      .from("actual_costs")
+      .select("*, supplier:suppliers(*)")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .returns<ActualCost[]>(),
     getAppLang(),
   ]);
 
@@ -229,6 +257,30 @@ export default async function ProjectBudgetPage({
     quotesByCategory.set(quote.category_id, list);
   }
 
+  // Signed download-URL's voor eventuele bijgevoegde factuur-PDF's per werkelijke kost
+  // worden hier al opgehaald (Promise.all, "portal-documents" is een privé bucket) —
+  // zelfde patroon als src/app/projects/[id]/documents/page.tsx — zodat category-card.tsx
+  // en de projectbrede samenvattingskaart hieronder zelf geen extra round-trip nodig hebben.
+  const actualCostsWithUrls: ActualCostRow[] = await Promise.all(
+    (actualCosts ?? []).map(async (actualCost) => ({
+      ...actualCost,
+      url: actualCost.document_url ? await getSignedPortalUrl(actualCost.document_url) : null,
+    }))
+  );
+
+  const actualCostsByCategory = new Map<string, ActualCostRow[]>();
+  const unlinkedActualCosts: ActualCostRow[] = [];
+  for (const actualCost of actualCostsWithUrls) {
+    if (actualCost.category_id) {
+      const list = actualCostsByCategory.get(actualCost.category_id) ?? [];
+      list.push(actualCost);
+      actualCostsByCategory.set(actualCost.category_id, list);
+    } else {
+      unlinkedActualCosts.push(actualCost);
+    }
+  }
+  const totalActualCost = actualCostsWithUrls.reduce((sum, actualCost) => sum + actualCost.amount, 0);
+
   const grandTotal = sumCategories(categories ?? [], quotesByCategory);
   const openCategories = (categories ?? []).filter((c) => c.status !== "bevestigd");
   const t = await createTranslator(lang, [
@@ -238,6 +290,7 @@ export default async function ProjectBudgetPage({
     ...MATERIAL_LIST_LABELS,
     ...QUOTE_PDF_IMPORT_LABELS,
     ...REQUEST_QUOTES_CARD_LABELS,
+    ...ACTUAL_COSTS_SUMMARY_LABELS,
     ...(categories ?? []).map((c) => c.name),
     ...(stages ?? []).map((s) => s.name),
   ]);
@@ -289,14 +342,52 @@ export default async function ProjectBudgetPage({
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
             <CardTitle className="text-base">{t("Totaaloverzicht")}</CardTitle>
-            <a
-              href={`/projects/${project.id}/budget/invoice`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-            >
-              {t("Offerte downloaden (PDF)")}
-            </a>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{t("Factuurnr.")}</span>
+                <span className="font-medium text-foreground">
+                  {project.invoice_number ?? t("wordt aangemaakt bij eerste download")}
+                </span>
+                <Badge variant={project.invoice_status === "paid" ? "default" : "secondary"}>
+                  {t(INVOICE_STATUS_LABELS[project.invoice_status])}
+                </Badge>
+              </div>
+              <form
+                action={setInvoiceStatus.bind(null, project.id)}
+                className="flex items-center gap-1.5"
+              >
+                <Select
+                  name="invoice_status"
+                  defaultValue={project.invoice_status}
+                  items={Object.entries(INVOICE_STATUS_LABELS).map(([value, label]) => ({
+                    value,
+                    label: t(label),
+                  }))}
+                >
+                  <SelectTrigger className="h-8 w-32 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(INVOICE_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {t(label)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button type="submit" size="sm" variant="secondary">
+                  {t("Bijwerken")}
+                </Button>
+              </form>
+              <a
+                href={`/projects/${project.id}/budget/invoice`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+              >
+                {t("Factuur downloaden (PDF)")}
+              </a>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -393,6 +484,14 @@ export default async function ProjectBudgetPage({
           </CardContent>
         </Card>
 
+        <ActualCostsSummaryCard
+          projectId={project.id}
+          totalBudgeted={grandTotal.cost}
+          totalActual={totalActualCost}
+          unlinkedActualCosts={unlinkedActualCosts}
+          t={t}
+        />
+
         <div className="border-t pt-6">
           <h2 className="text-lg font-semibold">{t("Fase 1 — Materiaallijst & begroting")}</h2>
           <p className="text-sm text-muted-foreground">
@@ -451,6 +550,7 @@ export default async function ProjectBudgetPage({
             quotesByCategory={quotesByCategory}
             suppliers={suppliers ?? []}
             conflictsBySupplier={conflictsBySupplier}
+            actualCostsByCategory={actualCostsByCategory}
             projectId={project.id}
             stageId={stage.id}
             t={t}
@@ -463,6 +563,7 @@ export default async function ProjectBudgetPage({
           quotesByCategory={quotesByCategory}
           suppliers={suppliers ?? []}
           conflictsBySupplier={conflictsBySupplier}
+          actualCostsByCategory={actualCostsByCategory}
           projectId={project.id}
           stageId={null}
           t={t}
