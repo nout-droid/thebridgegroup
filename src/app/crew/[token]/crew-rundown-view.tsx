@@ -51,6 +51,11 @@ const STATIC_LABELS = [
   "klein",
   "normaal",
   "groot",
+  "Sprekers",
+  "Presentatie: ontvangen",
+  "Presentatie: nog niet ontvangen",
+  "Downloaden",
+  "Nog geen sprekers voor dit podium.",
   ...DIVISIONS,
 ];
 
@@ -170,6 +175,7 @@ export function CrewRundownView({
           )
         ),
         ...data.notes.map((n) => n.note),
+        ...data.speakers.map((s) => s.name),
       ]
     : [];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
@@ -216,6 +222,14 @@ export function CrewRundownView({
       })
     : 0;
   const visibleNotes = data.notes.filter((n) => visibleDivisions.includes(n.division));
+  const stageNameById = new Map(
+    data.scopes.filter((s) => s.stage_id).map((s) => [s.stage_id as string, s.stage_name ?? ""])
+  );
+  // Sprekers voor deze scope: projectbrede sprekers (geen podium) horen overal thuis, plus de
+  // sprekers die specifiek aan het geselecteerde podium hangen.
+  const visibleSpeakers = data.speakers.filter(
+    (s) => s.stage_id === null || s.stage_id === scope?.stage_id
+  );
 
   return (
     <div className="min-h-screen bg-black text-white" style={{ zoom: FONT_SCALES[fontScale] }}>
@@ -388,6 +402,51 @@ export function CrewRundownView({
                 </div>
               );
             })}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle className="text-base text-white">{t("Sprekers")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {visibleSpeakers.map((speaker) => (
+              <div
+                key={speaker.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-white/10 p-2 text-sm"
+              >
+                <div>
+                  <p className="font-medium">{t(speaker.name)}</p>
+                  <p className="text-xs text-white/60">
+                    {speaker.stage_id ? t(stageNameById.get(speaker.stage_id) ?? "") : t("Projectbreed")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {speaker.has_presentation ? (
+                    <>
+                      <span className="text-xs font-medium text-green-400">
+                        {t("Presentatie: ontvangen")}
+                      </span>
+                      <a
+                        href={`/crew/${token}/speakers/${speaker.id}/download`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-medium text-primary hover:underline"
+                      >
+                        {t("Downloaden")}
+                      </a>
+                    </>
+                  ) : (
+                    <span className="text-xs font-medium text-red-400">
+                      {t("Presentatie: nog niet ontvangen")}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+            {!visibleSpeakers.length && (
+              <p className="text-sm text-white/60">{t("Nog geen sprekers voor dit podium.")}</p>
+            )}
           </CardContent>
         </Card>
 

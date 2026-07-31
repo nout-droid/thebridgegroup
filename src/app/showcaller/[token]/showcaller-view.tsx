@@ -98,6 +98,11 @@ const STATIC_LABELS = [
   "Cue toevoegen",
   "Notes van crew",
   "Nog geen notes.",
+  "Sprekers",
+  "Presentatie: ontvangen",
+  "Presentatie: nog niet ontvangen",
+  "Downloaden",
+  "Nog geen sprekers voor dit podium.",
   ...COLOR_OPTIONS.map((c) => c.label),
   ...DIVISIONS,
 ];
@@ -189,6 +194,7 @@ export function ShowcallerView({
           )
         ),
         ...data.notes.map((n) => n.note),
+        ...data.speakers.flatMap((s) => [s.name, s.title, s.company, s.notes_for_showcaller]),
       ]
     : [];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
@@ -224,6 +230,15 @@ export function ShowcallerView({
         now: Date.now(),
       })
     : 0;
+
+  const stageNameById = new Map(
+    data.scopes.filter((s) => s.stage_id).map((s) => [s.stage_id as string, s.stage_name ?? ""])
+  );
+  // Sprekers voor deze scope: projectbrede sprekers (geen podium) horen overal thuis, plus de
+  // sprekers die specifiek aan het geselecteerde podium hangen.
+  const visibleSpeakers = data.speakers.filter(
+    (s) => s.stage_id === null || s.stage_id === scope?.stage_id
+  );
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -555,6 +570,61 @@ export function ShowcallerView({
             </form>
           </div>
         )}
+
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle className="text-base text-white">{t("Sprekers")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {visibleSpeakers.map((speaker) => {
+              const meta = [speaker.title, speaker.company].filter(Boolean).map((x) => t(x)).join(", ");
+              return (
+                <div key={speaker.id} className="space-y-1.5 rounded-md border border-white/10 p-3 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">
+                        {t(speaker.name)}
+                        {meta && <span className="ml-1 font-normal text-white/60">— {meta}</span>}
+                      </p>
+                      <p className="text-xs text-white/60">
+                        {speaker.stage_id ? t(stageNameById.get(speaker.stage_id) ?? "") : t("Projectbreed")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {speaker.has_presentation ? (
+                        <>
+                          <span className="text-xs font-medium text-green-400">
+                            {t("Presentatie: ontvangen")}
+                          </span>
+                          <a
+                            href={`/showcaller/${token}/speakers/${speaker.id}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-primary hover:underline"
+                          >
+                            {t("Downloaden")}
+                          </a>
+                        </>
+                      ) : (
+                        <span className="text-xs font-medium text-red-400">
+                          {t("Presentatie: nog niet ontvangen")}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {speaker.notes_for_showcaller && (
+                    <p className="rounded bg-yellow-500/10 px-2 py-1.5 text-sm font-medium text-yellow-200">
+                      {t(speaker.notes_for_showcaller)}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+            {!visibleSpeakers.length && (
+              <p className="text-sm text-white/60">{t("Nog geen sprekers voor dit podium.")}</p>
+            )}
+          </CardContent>
+        </Card>
 
         <RundownChat
           token={token}
