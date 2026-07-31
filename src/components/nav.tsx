@@ -28,6 +28,7 @@ export async function Nav() {
   const co2 = computeCo2Total(flightResult.count ?? 0, totalKm, totalQuoteKg);
 
   const t = await createTranslator(lang, [
+    "Dashboard",
     "Projecten",
     "Kalender",
     "Leveranciers",
@@ -41,13 +42,16 @@ export async function Nav() {
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
         <nav className="flex items-center gap-6 text-sm uppercase tracking-wide">
           <Link
-            href="/projects"
+            href="/dashboard"
             className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight normal-case"
             style={{ color: branding.brandColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- org-uploaded logo, unknown domain */}
             <img src={branding.logoUrl} alt={branding.name} width={28} height={21} className="object-contain" />
             {branding.name} &mdash; Productie
+          </Link>
+          <Link href="/dashboard" className="text-white/70 transition-colors hover:text-white">
+            {t("Dashboard")}
           </Link>
           <Link href="/projects" className="text-white/70 transition-colors hover:text-white">
             {t("Projecten")}
