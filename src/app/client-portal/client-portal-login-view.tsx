@@ -20,6 +20,7 @@ const STATIC_LABELS = [
   "Log hier in",
   "Zelf ook zo'n tool voor je eigen events?",
   "Bekijk de abonnementen",
+  "Handleiding",
 ];
 
 export function ClientPortalLoginView({
@@ -36,7 +37,13 @@ export function ClientPortalLoginView({
       className="flex min-h-screen flex-col items-center bg-black bg-cover bg-center px-6 text-white"
       style={{ backgroundImage: "url(/login-background.jpg)" }}
     >
-      <div className="flex w-full justify-end px-2 pt-4">
+      <div className="flex w-full items-center justify-end gap-3 px-2 pt-4">
+        <Link
+          href="/guide"
+          className="rounded-full border border-white/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/80 hover:bg-white/10 hover:text-white"
+        >
+          {t("Handleiding")}
+        </Link>
         <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
       </div>
       <div className="flex h-[68vh] shrink-0 items-end" />
