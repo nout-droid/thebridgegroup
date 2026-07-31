@@ -69,6 +69,71 @@ export interface EventGuest {
   created_at: string;
 }
 
+export interface EventAttendee {
+  id: string;
+  project_id: string;
+  name: string;
+  email: string | null;
+  company: string | null;
+  title: string | null;
+  bio: string | null;
+  photo_url: string | null;
+  networking_opt_in: boolean;
+  access_code: string;
+  created_at: string;
+}
+
+export interface AttendeeSavedContact {
+  id: string;
+  attendee_id: string;
+  saved_attendee_id: string;
+  created_at: string;
+}
+
+// Publiek profiel zoals de directory/opgeslagen-contacten-RPC's het teruggeven aan andere
+// attendees — bewust zonder e-mail en zonder access_code (zie get_attendee_directory).
+export interface AttendeePublicProfile {
+  id: string;
+  name: string;
+  company: string | null;
+  title: string | null;
+  bio: string | null;
+  photo_url: string | null;
+}
+
+export interface AttendeeSavedProfile extends AttendeePublicProfile {
+  saved_at: string;
+}
+
+export interface AttendeeAgendaItem {
+  id: string;
+  stage_name: string | null;
+  activity_date: string;
+  activity_time: string;
+  activity: string;
+}
+
+// Wat get_attendee_home(p_attendee_id) teruggeeft: eigen volledige profiel (inclusief
+// e-mail — alleen voor zichzelf zichtbaar), projectkerngegevens en het publieke draaiboek.
+export interface AttendeeHome {
+  attendee: {
+    id: string;
+    name: string;
+    email: string | null;
+    company: string | null;
+    title: string | null;
+    bio: string | null;
+    photo_url: string | null;
+    networking_opt_in: boolean;
+  };
+  project: {
+    id: string;
+    name: string;
+    event_date: string | null;
+  };
+  agenda: AttendeeAgendaItem[];
+}
+
 export interface Organization {
   id: string;
   owner_user_id: string;
@@ -134,6 +199,7 @@ export interface Project {
   invoice_number: string | null;
   invoice_status: InvoiceStatus;
   invoice_date: string | null;
+  attendee_app_enabled: boolean;
   created_at: string;
 }
 
