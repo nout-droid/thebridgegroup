@@ -23,4 +23,9 @@ export const TRANSLATION_OVERRIDES: Record<string, string> = {
   // "Actie" los (zonder verdere context, zoals een tabelkolomkop) wordt door DeepL soms als
   // "promotion/deal" gelezen (reclame-actie) i.p.v. "action" (handeling).
   Actie: "Action",
+
+  // Los "Bio" (spreker-biografie veldlabel) wordt door DeepL zonder context vertaald als
+  // "Was" (bio -> "was" in de zin van duurzaam/organisch wordt fout gelezen). Forceer de
+  // juiste vertaling i.p.v. het Nederlandse label te wijzigen.
+  Bio: "Biography",
 };
