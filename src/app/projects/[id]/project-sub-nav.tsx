@@ -17,6 +17,7 @@ const TABS = [
   { key: "documents", label: "Documenten" },
   { key: "evaluation", label: "Evaluatie" },
   { key: "guests", label: "Gastenportaal" },
+  { key: "attendees", label: "Attendee app" },
 ] as const;
 
 export type ProjectTabKey = (typeof TABS)[number]["key"];
