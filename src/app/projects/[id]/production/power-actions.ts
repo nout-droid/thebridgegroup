@@ -8,6 +8,8 @@ function revalidate(projectId: string) {
 }
 
 function parseFormFields(formData: FormData) {
+  const rawAmps = String(formData.get("amps") ?? "").trim();
+  const rawPhase = Number(formData.get("phase") ?? 1);
   return {
     stage_id: String(formData.get("stage_id") ?? "") || null,
     supplier_id: String(formData.get("supplier_id") ?? "") || null,
@@ -15,6 +17,8 @@ function parseFormFields(formData: FormData) {
     quantity: Math.max(1, Number(formData.get("quantity") ?? 1)),
     position: String(formData.get("position") ?? "").trim(),
     notes: String(formData.get("notes") ?? "").trim(),
+    amps: rawAmps ? Math.max(0, Number(rawAmps)) : null,
+    phase: rawPhase === 3 ? 3 : 1,
   };
 }
 

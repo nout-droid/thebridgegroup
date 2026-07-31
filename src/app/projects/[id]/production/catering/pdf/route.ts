@@ -31,7 +31,7 @@ export async function GET(
   const { data: items } = await supabase
     .from("catering_orders")
     .select(
-      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, supplier:suppliers(name)"
+      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, supplier:suppliers(name), stage:stages(name)"
     )
     .eq("project_id", id)
     .order("order_date", { ascending: true })
@@ -47,6 +47,7 @@ export async function GET(
     night_snacks: item.night_snacks,
     notes: item.notes,
     supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
+    stage_name: (item.stage as unknown as { name: string } | null)?.name ?? null,
   }));
 
   const pdfBuffer = await generateCateringPdf(

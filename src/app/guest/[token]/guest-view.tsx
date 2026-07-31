@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -10,21 +11,51 @@ interface GuestDocumentWithUrl {
   url: string | null;
 }
 
-const STATIC_LABELS = ["Er zijn nog geen documenten geplaatst.", "Downloaden"];
+const STATIC_LABELS = [
+  "Er zijn nog geen documenten geplaatst.",
+  "Downloaden",
+  "Jouw documenten",
+  "Upload hier accreditatiedocumenten (bv. ID-bewijs, verzekering) vóór het event.",
+  "Nog geen documenten geüpload.",
+  "Titel",
+  "bv. ID-bewijs",
+  "Uploaden",
+  "Bezig met uploaden...",
+  "Geüpload.",
+];
 
 export function GuestView({
   projectName,
   eventDate,
   documents,
+  uploadedDocuments,
   organizationName,
+  uploadAction,
 }: {
   projectName: string;
   eventDate: string | null;
   documents: GuestDocumentWithUrl[];
+  uploadedDocuments: GuestDocumentWithUrl[];
   organizationName: string;
+  uploadAction: (formData: FormData) => Promise<void>;
 }) {
-  const dynamicTexts = [projectName, ...documents.map((d) => d.title)];
+  const dynamicTexts = [
+    projectName,
+    ...documents.map((d) => d.title),
+    ...uploadedDocuments.map((d) => d.title),
+  ];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
+  const [isPending, startTransition] = useTransition();
+  const [uploaded, setUploaded] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  function handleSubmit(formData: FormData) {
+    startTransition(async () => {
+      await uploadAction(formData);
+      formRef.current?.reset();
+      setUploaded(true);
+    });
+  }
 
   return (
     <div>
@@ -64,6 +95,70 @@ export function GuestView({
             ))}
           </ul>
         )}
+
+        <div className="space-y-3 border-t pt-6">
+          <div>
+            <h2 className="font-heading text-lg font-bold uppercase tracking-tight">
+              {t("Jouw documenten")}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {t("Upload hier accreditatiedocumenten (bv. ID-bewijs, verzekering) vóór het event.")}
+            </p>
+          </div>
+
+          {uploadedDocuments.length > 0 && (
+            <ul className="space-y-2">
+              {uploadedDocuments.map((doc) => (
+                <li key={doc.id} className="flex items-center justify-between rounded-md border p-3">
+                  <span>{t(doc.title)}</span>
+                  {doc.url && (
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary underline"
+                    >
+                      {t("Downloaden")}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <form ref={formRef} action={handleSubmit} className="flex flex-wrap items-end gap-2">
+            <div className="space-y-1.5">
+              <label htmlFor="guest-doc-title" className="text-sm">
+                {t("Titel")}
+              </label>
+              <input
+                id="guest-doc-title"
+                name="title"
+                placeholder={t("bv. ID-bewijs")}
+                required
+                onChange={() => setUploaded(false)}
+                className="h-9 w-48 rounded-md border border-input bg-transparent px-2 text-sm"
+              />
+            </div>
+            <input
+              type="file"
+              name="file"
+              required
+              onChange={() => setUploaded(false)}
+              className="max-w-xs text-sm"
+            />
+            <button
+              type="submit"
+              disabled={isPending}
+              className="h-9 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+            >
+              {isPending ? t("Bezig met uploaden...") : t("Uploaden")}
+            </button>
+            {uploaded && !isPending && (
+              <span className="text-sm text-primary">{t("Geüpload.")}</span>
+            )}
+          </form>
+        </div>
       </div>
     </div>
   );

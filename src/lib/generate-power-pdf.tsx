@@ -11,12 +11,21 @@ export interface PowerPdfEntry {
   position: string;
   supplier_name: string | null;
   notes: string;
+  amps: number | null;
+  phase: 1 | 3;
+}
+
+export interface PowerPdfAreaLoad {
+  areaName: string;
+  kw: number;
 }
 
 export interface PowerPdfData {
   projectName: string;
   generatedAt: Date;
   entries: PowerPdfEntry[];
+  areaLoads: PowerPdfAreaLoad[];
+  totalKw: number;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -61,12 +70,19 @@ const styles = StyleSheet.create({
   tableRow: { flexDirection: "row", borderBottom: 1, borderBottomColor: "#eee", paddingVertical: 6 },
   tableHeaderRow: { flexDirection: "row", paddingVertical: 6, backgroundColor: "#f7f7f7" },
   headerCell: { fontSize: 8, fontWeight: 700, textTransform: "uppercase", color: "#555" },
-  colStage: { width: "16%", fontSize: 9 },
-  colDesc: { width: "26%", fontSize: 9 },
-  colQty: { width: "8%", fontSize: 9 },
-  colPosition: { width: "18%", fontSize: 9 },
-  colSupplier: { width: "16%", fontSize: 9 },
+  colStage: { width: "14%", fontSize: 9 },
+  colDesc: { width: "22%", fontSize: 9 },
+  colQty: { width: "7%", fontSize: 9 },
+  colLoad: { width: "11%", fontSize: 9 },
+  colPosition: { width: "15%", fontSize: 9 },
+  colSupplier: { width: "15%", fontSize: 9 },
   colNotes: { width: "16%", fontSize: 8, color: "#666" },
+  loadTable: { marginTop: 16, borderTop: 1, borderTopColor: "#eee" },
+  loadRow: { flexDirection: "row", borderBottom: 1, borderBottomColor: "#eee", paddingVertical: 5 },
+  loadHeaderRow: { flexDirection: "row", paddingVertical: 5, backgroundColor: "#f7f7f7" },
+  loadColArea: { width: "70%", fontSize: 9 },
+  loadColKw: { width: "30%", fontSize: 9 },
+  sectionTitle: { fontSize: 11, fontWeight: 700, marginTop: 4, marginBottom: 4 },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -116,6 +132,7 @@ export function buildPowerPage(
             <Text style={[styles.colStage, styles.headerCell]}>Podium</Text>
             <Text style={[styles.colDesc, styles.headerCell]}>Wat</Text>
             <Text style={[styles.colQty, styles.headerCell]}>Aantal</Text>
+            <Text style={[styles.colLoad, styles.headerCell]}>Belasting</Text>
             <Text style={[styles.colPosition, styles.headerCell]}>Positie</Text>
             <Text style={[styles.colSupplier, styles.headerCell]}>Leverancier</Text>
             <Text style={[styles.colNotes, styles.headerCell]}>Opmerkingen</Text>
@@ -125,12 +142,37 @@ export function buildPowerPage(
               <Text style={styles.colStage}>{entry.stage_name ?? "Projectbreed"}</Text>
               <Text style={styles.colDesc}>{entry.description}</Text>
               <Text style={styles.colQty}>{entry.quantity}</Text>
+              <Text style={styles.colLoad}>
+                {entry.amps ? `${entry.amps}A / ${entry.phase}-fase` : "—"}
+              </Text>
               <Text style={styles.colPosition}>{entry.position || "—"}</Text>
               <Text style={styles.colSupplier}>{entry.supplier_name ?? "—"}</Text>
               <Text style={styles.colNotes}>{entry.notes || "—"}</Text>
             </View>
           ))}
         </View>
+
+        {data.areaLoads.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Belasting per area</Text>
+            <View style={styles.loadTable}>
+              <View style={styles.loadHeaderRow}>
+                <Text style={[styles.loadColArea, styles.headerCell]}>Area</Text>
+                <Text style={[styles.loadColKw, styles.headerCell]}>kW</Text>
+              </View>
+              {data.areaLoads.map((entry, index) => (
+                <View key={index} style={styles.loadRow}>
+                  <Text style={styles.loadColArea}>{entry.areaName}</Text>
+                  <Text style={styles.loadColKw}>{entry.kw.toFixed(1)}</Text>
+                </View>
+              ))}
+              <View style={styles.loadRow}>
+                <Text style={[styles.loadColArea, { fontWeight: 700 }]}>Totaal</Text>
+                <Text style={[styles.loadColKw, { fontWeight: 700 }]}>{data.totalKw.toFixed(1)}</Text>
+              </View>
+            </View>
+          </>
+        )}
       </View>
 
       <View style={styles.footer} fixed>

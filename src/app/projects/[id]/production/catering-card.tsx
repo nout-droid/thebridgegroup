@@ -2,22 +2,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { CateringOrder, Supplier } from "@/lib/types";
+import type { CateringOrder, Stage, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
+import { StageSelect } from "../stage-select";
 import { addCateringOrder, deleteCateringOrder, updateCateringOrder } from "./catering-actions";
 import type { Translator } from "@/lib/server/translate";
 
 export const CATERING_CARD_LABELS = [
   "Catering",
-  "Aantallen per dag en afnemer, voor lunch, diner en night snacks.",
+  "Aantallen per dag, area en afnemer, voor lunch, diner en night snacks.",
   "Catering downloaden (PDF)",
   "Datum",
+  "Area",
   "Totaal lunch",
   "Totaal diner",
   "Totaal night snacks",
   "Afnemer",
   "Leverancier",
   "Kies leverancier",
+  "Kies podium",
+  "Projectbreed",
   "Crew lunch",
   "Veggie lunch",
   "Crew diner",
@@ -41,16 +45,22 @@ function sortOrders(orders: CateringOrder[]): CateringOrder[] {
 
 interface DailyTotal {
   date: string;
+  areaName: string;
   lunch: number;
   dinner: number;
   nightSnacks: number;
 }
 
-function totalsPerDate(orders: CateringOrder[]): DailyTotal[] {
-  const byDate = new Map<string, DailyTotal>();
+function totalsPerDate(orders: CateringOrder[], stages: Stage[], projectWideLabel: string): DailyTotal[] {
+  const byKey = new Map<string, DailyTotal>();
   for (const order of orders) {
-    const entry = byDate.get(order.order_date) ?? {
+    const areaName = order.stage_id
+      ? stages.find((s) => s.id === order.stage_id)?.name ?? projectWideLabel
+      : projectWideLabel;
+    const key = `${order.order_date}__${areaName}`;
+    const entry = byKey.get(key) ?? {
       date: order.order_date,
+      areaName,
       lunch: 0,
       dinner: 0,
       nightSnacks: 0,
@@ -58,31 +68,34 @@ function totalsPerDate(orders: CateringOrder[]): DailyTotal[] {
     entry.lunch += order.crew_lunch + order.veggie_lunch;
     entry.dinner += order.crew_dinner + order.veggie_dinner;
     entry.nightSnacks += order.night_snacks;
-    byDate.set(order.order_date, entry);
+    byKey.set(key, entry);
   }
-  return [...byDate.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+  return [...byKey.values()].sort((a, b) => (a.date === b.date ? a.areaName.localeCompare(b.areaName) : a.date < b.date ? -1 : 1));
 }
 
 export function CateringCard({
   projectId,
   orders,
   suppliers,
+  stages,
   t = identity,
 }: {
   projectId: string;
   orders: CateringOrder[];
   suppliers: Supplier[];
+  stages: Stage[];
   t?: Translator;
 }) {
   const sorted = sortOrders(orders);
-  const dailyTotals = totalsPerDate(orders);
+  const projectWideLabel = t("Projectbreed");
+  const dailyTotals = totalsPerDate(orders, stages, projectWideLabel);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-base">{t("Catering")}</CardTitle>
         <p className="text-sm text-muted-foreground">
-          {t("Aantallen per dag en afnemer, voor lunch, diner en night snacks.")}
+          {t("Aantallen per dag, area en afnemer, voor lunch, diner en night snacks.")}
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -102,6 +115,7 @@ export function CateringCard({
               <thead>
                 <tr className="border-b bg-muted/50">
                   <th className="p-2 text-left font-medium">{t("Datum")}</th>
+                  <th className="p-2 text-left font-medium">{t("Area")}</th>
                   <th className="p-2 text-left font-medium">{t("Totaal lunch")}</th>
                   <th className="p-2 text-left font-medium">{t("Totaal diner")}</th>
                   <th className="p-2 text-left font-medium">{t("Totaal night snacks")}</th>
@@ -109,8 +123,9 @@ export function CateringCard({
               </thead>
               <tbody>
                 {dailyTotals.map((day) => (
-                  <tr key={day.date} className="border-b last:border-0">
+                  <tr key={`${day.date}__${day.areaName}`} className="border-b last:border-0">
                     <td className="p-2">{day.date}</td>
+                    <td className="p-2">{day.areaName}</td>
                     <td className="p-2">{day.lunch}</td>
                     <td className="p-2">{day.dinner}</td>
                     <td className="p-2">{day.nightSnacks}</td>
@@ -146,6 +161,15 @@ export function CateringCard({
                 defaultValue={order.party}
                 className="h-8 text-xs"
                 required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`stage-${order.id}`} className="text-xs">{t("Area")}</Label>
+              <StageSelect
+                id={`stage-${order.id}`}
+                defaultValue={order.stage_id ?? undefined}
+                stages={stages}
+                placeholder={t("Kies podium")}
               />
             </div>
             <div className="space-y-1">
@@ -249,6 +273,10 @@ export function CateringCard({
           <div className="space-y-1">
             <Label htmlFor="new-party" className="text-xs">{t("Afnemer")}</Label>
             <Input id="new-party" name="party" placeholder={t("bv. Think")} className="h-8 text-xs" required />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-stage" className="text-xs">{t("Area")}</Label>
+            <StageSelect id="new-stage" stages={stages} placeholder={t("Kies podium")} />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-supplier" className="text-xs">{t("Leverancier")}</Label>

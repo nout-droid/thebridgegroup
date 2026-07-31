@@ -7,6 +7,7 @@ import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { getOrganizationName } from "@/lib/server/organization";
 import { Footer } from "@/components/footer";
 import { GuestView } from "./guest-view";
+import { uploadGuestOwnDocument } from "./actions";
 
 export default async function GuestPage({
   params,
@@ -68,13 +69,18 @@ export default async function GuestPage({
     }))
   );
 
+  const ownerDocuments = documentsWithUrls.filter((doc) => doc.uploaded_by !== "guest");
+  const guestUploadedDocuments = documentsWithUrls.filter((doc) => doc.uploaded_by === "guest");
+
   return (
     <>
       <GuestView
         projectName={project.name}
         eventDate={project.event_date}
-        documents={documentsWithUrls}
+        documents={ownerDocuments}
+        uploadedDocuments={guestUploadedDocuments}
         organizationName={orgName}
+        uploadAction={uploadGuestOwnDocument.bind(null, token)}
       />
       <Footer />
     </>

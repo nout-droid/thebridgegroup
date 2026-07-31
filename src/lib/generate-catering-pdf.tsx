@@ -7,6 +7,7 @@ import { resolveLogoBuffer } from "./pdf-branding";
 export interface CateringPdfEntry {
   order_date: string;
   party: string;
+  stage_name: string | null;
   supplier_name: string | null;
   crew_lunch: number;
   veggie_lunch: number;
@@ -64,9 +65,10 @@ const styles = StyleSheet.create({
   tableRow: { flexDirection: "row", borderBottom: 1, borderBottomColor: "#eee", paddingVertical: 6 },
   tableHeaderRow: { flexDirection: "row", paddingVertical: 6, backgroundColor: "#f7f7f7" },
   headerCell: { fontSize: 8, fontWeight: 700, textTransform: "uppercase", color: "#555" },
-  colDate: { width: "12%", fontSize: 9 },
-  colParty: { width: "18%", fontSize: 9 },
-  colSupplier: { width: "16%", fontSize: 9 },
+  colDate: { width: "10%", fontSize: 9 },
+  colParty: { width: "14%", fontSize: 9 },
+  colStage: { width: "12%", fontSize: 9 },
+  colSupplier: { width: "14%", fontSize: 9 },
   colNum: { width: "10%", fontSize: 9, textAlign: "center" },
   colNotes: { width: "16%", fontSize: 8, color: "#666" },
   footer: {
@@ -117,6 +119,7 @@ export function buildCateringPage(
           <View style={styles.tableHeaderRow}>
             <Text style={[styles.colDate, styles.headerCell]}>Datum</Text>
             <Text style={[styles.colParty, styles.headerCell]}>Afnemer</Text>
+            <Text style={[styles.colStage, styles.headerCell]}>Area</Text>
             <Text style={[styles.colSupplier, styles.headerCell]}>Leverancier</Text>
             <Text style={[styles.colNum, styles.headerCell]}>Lunch</Text>
             <Text style={[styles.colNum, styles.headerCell]}>Veggie L.</Text>
@@ -128,6 +131,7 @@ export function buildCateringPage(
             <View key={index} style={styles.tableRow}>
               <Text style={styles.colDate}>{entry.order_date}</Text>
               <Text style={styles.colParty}>{entry.party}</Text>
+              <Text style={styles.colStage}>{entry.stage_name ?? "Projectbreed"}</Text>
               <Text style={styles.colSupplier}>{entry.supplier_name ?? "—"}</Text>
               <Text style={styles.colNum}>{entry.crew_lunch}</Text>
               <Text style={styles.colNum}>{entry.veggie_lunch}</Text>

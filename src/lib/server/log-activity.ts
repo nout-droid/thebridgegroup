@@ -5,9 +5,13 @@ type LogActivityParams = {
   projectId: string;
   category: string;
   description: string;
-} & ({ actorType: "client" } | { actorType: "supplier"; supplierId: string });
+} & (
+  | { actorType: "client" }
+  | { actorType: "supplier"; supplierId: string }
+  | { actorType: "guest" }
+);
 
-// Logt een wijziging door een klant of leverancier, zodat de eigenaar dit terugziet
+// Logt een wijziging door een klant, leverancier of gast, zodat de eigenaar dit terugziet
 // op het projectdashboard en in de dagelijkse samenvattingsmail. Alleen echte
 // project-aanpassingen — geen live show-bediening (crew-notes, rundown-chat,
 // showcaller-cues), die zou de log alleen maar vervuilen.
@@ -24,6 +28,8 @@ export async function logActivity(
       .eq("id", params.supplierId)
       .maybeSingle();
     actorLabel = supplier?.name ?? "Leverancier";
+  } else if (params.actorType === "guest") {
+    actorLabel = "Gast";
   }
 
   await admin.from("activity_log").insert({

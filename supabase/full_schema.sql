@@ -1265,6 +1265,7 @@ create table if not exists public.guest_documents (
   title text not null,
   storage_path text not null,
   original_filename text not null default '',
+  uploaded_by text not null default 'owner' check (uploaded_by in ('owner', 'guest')),
   created_at timestamptz not null default now()
 );
 
@@ -1714,12 +1715,14 @@ create table if not exists public.catering_orders (
   night_snacks int not null default 0,
   notes text not null default '',
   supplier_id uuid references public.suppliers(id) on delete set null,
+  stage_id uuid references public.stages(id) on delete set null,
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
 
 create index if not exists catering_orders_project_id_idx on public.catering_orders(project_id);
 create index if not exists catering_orders_supplier_id_idx on public.catering_orders(supplier_id);
+create index if not exists catering_orders_stage_id_idx on public.catering_orders(stage_id);
 
 alter table public.catering_orders enable row level security;
 
@@ -1809,6 +1812,8 @@ create table if not exists public.power_requests (
   quantity int not null default 1,
   position text not null default '',
   notes text not null default '',
+  amps numeric,
+  phase smallint not null default 1 check (phase in (1, 3)),
   sort_order int not null default 0,
   created_at timestamptz not null default now()
 );
@@ -2796,7 +2801,7 @@ create policy "owner full access on intake_checklist_photos" on public.intake_ch
 create table if not exists public.activity_log (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects(id) on delete cascade,
-  actor_type text not null check (actor_type in ('client', 'supplier')),
+  actor_type text not null check (actor_type in ('client', 'supplier', 'guest')),
   actor_label text not null,
   category text not null,
   description text not null,

@@ -59,6 +59,13 @@ export default async function ProductionPowerPage({
     addRequest: t("Aanvraag toevoegen"),
     chooseStage: t("Kies podium"),
     chooseSupplier: t("Kies leverancier"),
+    amps: t("Ampère"),
+    ampsPlaceholder: t("bv. 32"),
+    phase: t("Fase"),
+    singlePhase: t("1-fase"),
+    threePhase: t("3-fase"),
+    loadPerArea: t("Belasting per area (kW)"),
+    totalLoad: t("Totale belasting"),
   };
 
   return (

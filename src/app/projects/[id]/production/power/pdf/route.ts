@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generatePowerPdf } from "@/lib/generate-power-pdf";
 import { getOrgBranding } from "@/lib/server/organization";
+import { computePowerLoadKw } from "@/lib/types";
 
 export async function GET(
   _request: Request,
@@ -30,7 +31,7 @@ export async function GET(
 
   const { data: items } = await supabase
     .from("power_requests")
-    .select("description, quantity, position, notes, supplier:suppliers(name), stage:stages(name)")
+    .select("description, quantity, position, notes, amps, phase, supplier:suppliers(name), stage:stages(name)")
     .eq("project_id", id)
     .order("sort_order", { ascending: true });
 
@@ -39,15 +40,31 @@ export async function GET(
     quantity: item.quantity,
     position: item.position,
     notes: item.notes,
+    amps: item.amps as number | null,
+    phase: (item.phase as 1 | 3) ?? 1,
     supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
     stage_name: (item.stage as unknown as { name: string } | null)?.name ?? null,
   }));
+
+  const areaLoadMap = new Map<string, number>();
+  for (const entry of entries) {
+    const areaName = entry.stage_name ?? "Projectbreed";
+    const kw = computePowerLoadKw(entry.amps, entry.phase, entry.quantity);
+    areaLoadMap.set(areaName, (areaLoadMap.get(areaName) ?? 0) + kw);
+  }
+  const areaLoads = [...areaLoadMap.entries()]
+    .map(([areaName, kw]) => ({ areaName, kw }))
+    .filter((entry) => entry.kw > 0)
+    .sort((a, b) => a.areaName.localeCompare(b.areaName));
+  const totalKw = areaLoads.reduce((sum, entry) => sum + entry.kw, 0);
 
   const pdfBuffer = await generatePowerPdf(
     {
       projectName: project.name,
       generatedAt: new Date(),
       entries,
+      areaLoads,
+      totalKw,
     },
     branding
   );

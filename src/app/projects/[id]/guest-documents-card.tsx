@@ -17,6 +17,7 @@ export const GUEST_DOCUMENTS_CARD_LABELS = [
   "Titel",
   "bv. Technical rider",
   "Document toevoegen",
+  "Door gast geüpload",
 ];
 
 const identity: Translator = (text) => text;
@@ -68,6 +69,11 @@ export function GuestDocumentsCard({
                     <span className="text-xs text-muted-foreground">
                       ({new Date(document.created_at).toLocaleDateString("nl-NL")})
                     </span>
+                    {document.uploaded_by === "guest" && (
+                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        {t("Door gast geüpload")}
+                      </span>
+                    )}
                   </span>
                   <form action={deleteGuestDocument.bind(null, project.id, document.id)}>
                     <Button type="submit" size="sm" variant="ghost">

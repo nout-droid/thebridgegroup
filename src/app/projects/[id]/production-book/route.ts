@@ -11,6 +11,7 @@ import { generateCateringPdf } from "@/lib/generate-catering-pdf";
 import { mergePdfBuffers } from "@/lib/merge-pdfs";
 import { computeNights } from "@/lib/nights";
 import { getOrgBranding } from "@/lib/server/organization";
+import { computePowerLoadKw } from "@/lib/types";
 
 function formatDateTime(value: string | null): string {
   if (!value) return "";
@@ -232,23 +233,40 @@ export async function GET(
   // Stroom
   const { data: power } = await supabase
     .from("power_requests")
-    .select("description, quantity, position, notes, supplier:suppliers(name), stage:stages(name)")
+    .select("description, quantity, position, notes, amps, phase, supplier:suppliers(name), stage:stages(name)")
     .eq("project_id", id)
     .order("sort_order", { ascending: true });
   if (power?.length) {
+    const powerEntries = power.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      position: item.position,
+      notes: item.notes,
+      amps: item.amps as number | null,
+      phase: (item.phase as 1 | 3) ?? 1,
+      supplier_name: name(item.supplier),
+      stage_name: name(item.stage),
+    }));
+    const powerAreaLoadMap = new Map<string, number>();
+    for (const entry of powerEntries) {
+      const areaName = entry.stage_name ?? "Projectbreed";
+      const kw = computePowerLoadKw(entry.amps, entry.phase, entry.quantity);
+      powerAreaLoadMap.set(areaName, (powerAreaLoadMap.get(areaName) ?? 0) + kw);
+    }
+    const powerAreaLoads = [...powerAreaLoadMap.entries()]
+      .map(([areaName, kw]) => ({ areaName, kw }))
+      .filter((entry) => entry.kw > 0)
+      .sort((a, b) => a.areaName.localeCompare(b.areaName));
+    const powerTotalKw = powerAreaLoads.reduce((sum, entry) => sum + entry.kw, 0);
+
     buffers.push(
       await generatePowerPdf(
         {
           projectName: project.name,
           generatedAt,
-          entries: power.map((item) => ({
-            description: item.description,
-            quantity: item.quantity,
-            position: item.position,
-            notes: item.notes,
-            supplier_name: name(item.supplier),
-            stage_name: name(item.stage),
-          })),
+          entries: powerEntries,
+          areaLoads: powerAreaLoads,
+          totalKw: powerTotalKw,
         },
         branding
       )
@@ -259,7 +277,7 @@ export async function GET(
   const { data: catering } = await supabase
     .from("catering_orders")
     .select(
-      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, supplier:suppliers(name)"
+      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, supplier:suppliers(name), stage:stages(name)"
     )
     .eq("project_id", id)
     .order("order_date", { ascending: true })
@@ -280,6 +298,7 @@ export async function GET(
             night_snacks: item.night_snacks,
             notes: item.notes,
             supplier_name: name(item.supplier),
+            stage_name: name(item.stage),
           })),
         },
         branding

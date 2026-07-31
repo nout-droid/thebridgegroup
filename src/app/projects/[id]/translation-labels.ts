@@ -145,6 +145,13 @@ export const POWER_CARD_LABELS = [
   "Aanvraag toevoegen",
   "Kies podium",
   "Kies leverancier",
+  "Ampère",
+  "bv. 32",
+  "Fase",
+  "1-fase",
+  "3-fase",
+  "Belasting per area (kW)",
+  "Totale belasting",
 ];
 
 export const CREW_PLANNING_CARD_LABELS = [

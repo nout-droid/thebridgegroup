@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import type { PowerRequest, Stage, Supplier } from "@/lib/types";
+import { computePowerLoadKw, type PowerRequest, type Stage, type Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { StageSelect } from "../stage-select";
 import { addPowerRequest, deletePowerRequest, updatePowerRequest } from "./power-actions";
@@ -30,6 +30,33 @@ export interface PowerCardLabels {
   addRequest: string;
   chooseStage: string;
   chooseSupplier: string;
+  amps: string;
+  ampsPlaceholder: string;
+  phase: string;
+  singlePhase: string;
+  threePhase: string;
+  loadPerArea: string;
+  totalLoad: string;
+}
+
+interface AreaLoad {
+  areaId: string;
+  areaName: string;
+  kw: number;
+}
+
+function loadPerArea(requests: PowerRequest[], stages: Stage[], labels: PowerCardLabels): AreaLoad[] {
+  const byArea = new Map<string, AreaLoad>();
+  for (const request of requests) {
+    const areaId = request.stage_id ?? "algemeen";
+    const areaName = request.stage_id
+      ? stages.find((s) => s.id === request.stage_id)?.name ?? labels.allStages
+      : labels.projectWide;
+    const entry = byArea.get(areaId) ?? { areaId, areaName, kw: 0 };
+    entry.kw += computePowerLoadKw(request.amps, request.phase, request.quantity);
+    byArea.set(areaId, entry);
+  }
+  return [...byArea.values()].filter((entry) => entry.kw > 0).sort((a, b) => a.areaName.localeCompare(b.areaName));
 }
 
 export function PowerCard({
@@ -50,6 +77,8 @@ export function PowerCard({
     areaFilter === "alle"
       ? requests
       : requests.filter((r) => (r.stage_id ?? "algemeen") === areaFilter);
+  const areaLoads = loadPerArea(requests, stages, labels);
+  const totalKw = areaLoads.reduce((sum, entry) => sum + entry.kw, 0);
 
   return (
     <Card>
@@ -82,6 +111,30 @@ export function PowerCard({
           >
             {labels.downloadPdf}
           </a>
+        )}
+        {areaLoads.length > 0 && (
+          <div className="overflow-x-auto rounded-md border">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="p-2 text-left font-medium">{labels.loadPerArea}</th>
+                  <th className="p-2 text-left font-medium">kW</th>
+                </tr>
+              </thead>
+              <tbody>
+                {areaLoads.map((entry) => (
+                  <tr key={entry.areaId} className="border-b last:border-0">
+                    <td className="p-2">{entry.areaName}</td>
+                    <td className="p-2">{entry.kw.toFixed(1)}</td>
+                  </tr>
+                ))}
+                <tr className="font-semibold">
+                  <td className="p-2">{labels.totalLoad}</td>
+                  <td className="p-2">{totalKw.toFixed(1)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
         {filteredRequests.map((request) => (
           <form
@@ -139,6 +192,31 @@ export function PowerCard({
                 placeholder={labels.chooseSupplier}
               />
             </div>
+            <div className="space-y-1">
+              <Label htmlFor={`amps-${request.id}`} className="text-xs">{labels.amps}</Label>
+              <Input
+                id={`amps-${request.id}`}
+                name="amps"
+                type="number"
+                step="0.1"
+                min={0}
+                defaultValue={request.amps ?? undefined}
+                placeholder={labels.ampsPlaceholder}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`phase-${request.id}`} className="text-xs">{labels.phase}</Label>
+              <select
+                id={`phase-${request.id}`}
+                name="phase"
+                defaultValue={request.phase}
+                className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs"
+              >
+                <option value={1}>{labels.singlePhase}</option>
+                <option value={3}>{labels.threePhase}</option>
+              </select>
+            </div>
             <div className="flex items-end gap-2">
               <Button type="submit" size="sm" className="h-8 text-xs">
                 {labels.save}
@@ -188,6 +266,30 @@ export function PowerCard({
           <div className="space-y-1">
             <Label htmlFor="new-supplier" className="text-xs">{labels.supplier}</Label>
             <SupplierSelect id="new-supplier" suppliers={suppliers} placeholder={labels.chooseSupplier} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-amps" className="text-xs">{labels.amps}</Label>
+            <Input
+              id="new-amps"
+              name="amps"
+              type="number"
+              step="0.1"
+              min={0}
+              placeholder={labels.ampsPlaceholder}
+              className="h-8 text-xs"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-phase" className="text-xs">{labels.phase}</Label>
+            <select
+              id="new-phase"
+              name="phase"
+              defaultValue={1}
+              className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs"
+            >
+              <option value={1}>{labels.singlePhase}</option>
+              <option value={3}>{labels.threePhase}</option>
+            </select>
           </div>
           <div className="flex items-end">
             <Button type="submit" size="sm" className="h-8 text-xs">

@@ -49,6 +49,7 @@ const QUICK_FEATURES = [
 const PILLARS = [
   {
     icon: Wallet,
+    image: "/screenshots/budgeting.png",
     title: "Budgeting & Supplier Sourcing",
     lead:
       "Build a watertight budget by category, invite the right suppliers, and never lose track of margin.",
@@ -62,6 +63,7 @@ const PILLARS = [
   },
   {
     icon: HardHat,
+    image: "/screenshots/production.png",
     title: "Full Production Planning — Every Department",
     lead:
       "Everything a technical producer juggles across spreadsheets, WhatsApp groups and email — in one place, per event, per stage, per day.",
@@ -77,6 +79,7 @@ const PILLARS = [
   },
   {
     icon: RadioIcon,
+    image: "/screenshots/rundown.png",
     title: "Live Show Rundown & Show-Calling",
     lead: "The moment doors open, everyone — from showcaller to stage crew — is looking at the exact same cue.",
     points: [
@@ -88,6 +91,7 @@ const PILLARS = [
   },
   {
     icon: Users,
+    image: "/screenshots/portals.png",
     title: "A Portal for Every Stakeholder",
     lead:
       "Clients, suppliers, crew, guests and showcallers each get a portal built exactly for their role — in their own language.",
@@ -134,12 +138,12 @@ export default async function PricingPage() {
         {/* Hero */}
         <div className="mb-10 text-center">
           <h1 className="font-heading text-4xl font-extrabold uppercase tracking-tight sm:text-5xl">
-            The Bridge Production Platform
+            The Bridge Production OS
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-white/60">
             Budgeting. Rundown. Equipment, catering, hotels, flights, comms and power. Client,
             supplier, crew and guest portals. Everything a technical producer needs to run an
-            event — in one platform, instead of a dozen spreadsheets and email threads.
+            event — in one system, instead of a dozen spreadsheets and email threads.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -200,9 +204,19 @@ export default async function PricingPage() {
                   </ul>
                 </div>
                 <div className="flex w-full flex-1 items-center justify-center">
-                  <div className="grid aspect-video w-full max-w-md place-items-center rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent">
-                    <Icon className="h-16 w-16 text-white/10" strokeWidth={1} />
-                  </div>
+                  {pillar.image ? (
+                    <div className="w-full max-w-md overflow-hidden rounded-xl border border-white/10 shadow-2xl shadow-black/40">
+                      <img
+                        src={pillar.image}
+                        alt={`${pillar.title} in The Bridge Production OS`}
+                        className="h-72 w-full object-cover object-left-top"
+                      />
+                    </div>
+                  ) : (
+                    <div className="grid aspect-video w-full max-w-md place-items-center rounded-xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent">
+                      <Icon className="h-16 w-16 text-white/10" strokeWidth={1} />
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -398,6 +398,7 @@ export interface GuestDocument {
   title: string;
   storage_path: string;
   original_filename: string;
+  uploaded_by: "owner" | "guest";
   created_at: string;
 }
 
@@ -546,9 +547,11 @@ export interface CateringOrder {
   night_snacks: number;
   notes: string;
   supplier_id: string | null;
+  stage_id: string | null;
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
+  stage?: Stage;
 }
 
 export interface PowerRequest {
@@ -560,10 +563,21 @@ export interface PowerRequest {
   quantity: number;
   position: string;
   notes: string;
+  amps: number | null;
+  phase: 1 | 3;
   sort_order: number;
   created_at: string;
   supplier?: Supplier;
   stage?: Stage;
+}
+
+// 230V voor 1-fase, 400V lijnspanning voor 3-fase (standaard EU-netspanning) — genoeg voor
+// een indicatieve belasting per aanvraag/area, geen vervanging voor een echte elektrotechnische
+// berekening door de leverancier.
+export function computePowerLoadKw(amps: number | null, phase: 1 | 3, quantity: number): number {
+  if (!amps) return 0;
+  const voltage = phase === 3 ? 400 * Math.sqrt(3) : 230;
+  return (voltage * amps * quantity) / 1000;
 }
 
 export interface ArtistRider {
