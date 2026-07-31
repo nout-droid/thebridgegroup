@@ -593,6 +593,21 @@ export interface ArtistRider {
   created_at: string;
 }
 
+export interface Speaker {
+  id: string;
+  project_id: string;
+  stage_id: string | null;
+  name: string;
+  title: string;
+  company: string;
+  bio: string;
+  presentation_url: string;
+  presentation_filename: string;
+  notes_for_showcaller: string;
+  sort_order: number;
+  created_at: string;
+}
+
 export interface OpenQuestion {
   id: string;
   project_id: string;
@@ -688,11 +703,24 @@ export interface RundownChatMessage {
   created_at: string;
 }
 
+export interface SharedSpeaker {
+  id: string;
+  stage_id: string | null;
+  name: string;
+  title: string;
+  company: string;
+  bio: string;
+  presentation_filename: string;
+  has_presentation: boolean;
+  notes_for_showcaller: string;
+}
+
 export interface SharedRundowns {
   project: { name: string; event_date: string | null };
   scopes: SharedRundownScope[];
   notes: CrewNote[];
   chat: RundownChatMessage[];
+  speakers: SharedSpeaker[];
 }
 
 export function computeClientPrice(category: Category, costPrice: number) {
