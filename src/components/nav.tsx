@@ -40,39 +40,42 @@ export async function Nav() {
 
   return (
     <header className="border-b border-black bg-black text-white">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-        <nav className="flex items-center gap-6 text-sm uppercase tracking-wide">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+        <nav className="flex items-center gap-5 text-sm uppercase tracking-wide">
           <Link
             href="/dashboard"
-            className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight normal-case"
+            className="flex shrink-0 items-center gap-2 whitespace-nowrap font-heading text-base font-extrabold tracking-tight normal-case"
             style={{ color: branding.brandColor }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- org-uploaded logo, unknown domain */}
             <img src={branding.logoUrl} alt={branding.name} width={28} height={21} className="object-contain" />
             {branding.name} &mdash; Productie
           </Link>
-          <Link href="/dashboard" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/dashboard" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Dashboard")}
           </Link>
-          <Link href="/projects" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/projects" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Projecten")}
           </Link>
-          <Link href="/calendar" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/calendar" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Kalender")}
           </Link>
-          <Link href="/suppliers" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/suppliers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Leveranciers")}
           </Link>
-          <Link href="/venues" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/venues" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Locaties")}
           </Link>
-          <Link href="/clients" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/clients" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Klanten")}
           </Link>
-          <Link href="/team" className="text-white/70 transition-colors hover:text-white">
+          <Link href="/team" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Team")}
           </Link>
-          <Link href="/co2" className="flex items-center gap-2 text-white/70 transition-colors hover:text-white">
+          <Link
+            href="/co2"
+            className="flex items-center gap-2 whitespace-nowrap text-white/70 transition-colors hover:text-white"
+          >
             CO2
             <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[11px] normal-case tracking-normal text-primary">
               🌱 {Math.round(co2.totalKg).toLocaleString("nl-NL")} kg
