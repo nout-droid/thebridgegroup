@@ -334,6 +334,7 @@ export default async function ProjectPage({
     ...(activity ?? []).flatMap((entry) => [entry.actor_label, entry.description]),
     ...(clientRequests ?? []).flatMap((request) => [request.description, request.notes ?? ""]),
     project.budget_approval_comment ?? "",
+    project.status,
     ...SUPPLIER_DOCUMENT_REVIEW_LABELS,
     ...SUPPLIER_PROJECT_DOCUMENT_REVIEW_LABELS,
   ]);
@@ -522,7 +523,19 @@ export default async function ProjectPage({
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="status">{t("Status")}</Label>
-                <Input id="status" name="status" defaultValue={project.status} />
+                {lang === "en" ? (
+                  // De status is vrije Nederlandse tekst zonder vast enum (zie schema.sql —
+                  // geen check-constraint zoals bij category/quote status). In EN tonen we 'm
+                  // daarom net als op /calendar en /projects vertaald via t(), maar read-only:
+                  // anders zou opslaan de vertaalde EN-tekst terugschrijven als nieuwe (foutieve)
+                  // Nederlandse status. Wijzigen kan gewoon in NL.
+                  <>
+                    <Input id="status" defaultValue={t(project.status)} readOnly className="bg-muted" />
+                    <input type="hidden" name="status" value={project.status} />
+                  </>
+                ) : (
+                  <Input id="status" name="status" defaultValue={project.status} />
+                )}
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="venue_id">{t("Locatie")}</Label>
