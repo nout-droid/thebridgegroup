@@ -30,3 +30,24 @@ export const TRANSLATION_OVERRIDES: Record<string, string> = {
   // juiste vertaling i.p.v. het Nederlandse label te wijzigen.
   Bio: "Biography",
 };
+
+// De TRANSLATION_OVERRIDES hierboven vangen alleen EXACTE hele-string matches af - dat werkt
+// voor vaste UI-labels, maar niet voor vrije tekst die een producer zelf typt (rundown-
+// notities, rider-tekst, klantverzoeken, crew-notities...) waar "stage" of "vlucht" gewoon
+// ergens middenin een zin staat. DeepL vertaalt dat ingebedde woord dan nog steeds fout,
+// override of niet. Generieke oplossing: DeepL's eigen ignore_tags-mechanisme (tag_handling:
+// "xml") - het woord voor de aanroep in een <keep>-tag wikkelen, DeepL laat de inhoud van die
+// tag dan gegarandeerd ongemoeid, en na vertaling strippen we de tags weer. Robuuster dan een
+// eigen placeholder-truc, en de Engelse schrijfwijze is toch identiek aan de Nederlandse
+// ("stage"/"vlucht"), dus de oorspronkelijke hoofdlettering blijft vanzelf behouden.
+const PROTECTED_WORDS = ["stage", "vlucht"];
+const PROTECTED_WORD_RE = new RegExp(`\\b(${PROTECTED_WORDS.join("|")})\\b`, "gi");
+export const DEEPL_IGNORE_TAG = "keep";
+
+export function wrapAmbiguousWords(text: string): string {
+  return text.replace(PROTECTED_WORD_RE, (match) => `<${DEEPL_IGNORE_TAG}>${match}</${DEEPL_IGNORE_TAG}>`);
+}
+
+export function unwrapAmbiguousWords(text: string): string {
+  return text.replace(new RegExp(`</?${DEEPL_IGNORE_TAG}>`, "g"), "");
+}

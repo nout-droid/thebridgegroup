@@ -1,6 +1,11 @@
 import "server-only";
 import type { AppLang } from "./lang";
-import { TRANSLATION_OVERRIDES } from "../translation-overrides";
+import {
+  TRANSLATION_OVERRIDES,
+  DEEPL_IGNORE_TAG,
+  wrapAmbiguousWords,
+  unwrapAmbiguousWords,
+} from "../translation-overrides";
 
 export type Translator = (text: string) => string;
 
@@ -31,13 +36,18 @@ async function translateBatch(texts: string[]): Promise<string[]> {
           Authorization: `DeepL-Auth-Key ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: stillMissing, target_lang: "EN" }),
+        body: JSON.stringify({
+          text: stillMissing.map(wrapAmbiguousWords),
+          target_lang: "EN",
+          tag_handling: "xml",
+          ignore_tags: [DEEPL_IGNORE_TAG],
+        }),
         cache: "no-store",
       });
       if (response.ok) {
         const data = await response.json();
-        const translations: string[] = (data.translations ?? []).map(
-          (item: { text: string }) => item.text
+        const translations: string[] = (data.translations ?? []).map((item: { text: string }) =>
+          unwrapAmbiguousWords(item.text)
         );
         stillMissing.forEach((text, i) => cache.set(text, translations[i] ?? text));
       }

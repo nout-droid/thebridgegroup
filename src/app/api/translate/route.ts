@@ -1,5 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { TRANSLATION_OVERRIDES } from "@/lib/translation-overrides";
+import {
+  TRANSLATION_OVERRIDES,
+  DEEPL_IGNORE_TAG,
+  wrapAmbiguousWords,
+  unwrapAmbiguousWords,
+} from "@/lib/translation-overrides";
 
 export async function POST(request: NextRequest) {
   const apiKey = process.env.DEEPL_API_KEY;
@@ -25,7 +30,12 @@ export async function POST(request: NextRequest) {
         Authorization: `DeepL-Auth-Key ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ text: toTranslate, target_lang: "EN" }),
+      body: JSON.stringify({
+        text: toTranslate.map(wrapAmbiguousWords),
+        target_lang: "EN",
+        tag_handling: "xml",
+        ignore_tags: [DEEPL_IGNORE_TAG],
+      }),
     });
 
     if (!response.ok) {
@@ -33,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await response.json();
-    translations = (data.translations ?? []).map((item: { text: string }) => item.text);
+    translations = (data.translations ?? []).map((item: { text: string }) => unwrapAmbiguousWords(item.text));
   }
 
   const translationByText = new Map(toTranslate.map((text: string, i: number) => [text, translations[i]]));
