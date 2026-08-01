@@ -29,6 +29,8 @@ export const SPEAKER_CARD_LABELS = [
   "Opslaan",
   "Verwijderen",
   "Spreker toevoegen",
+  "Bezig met opslaan…",
+  "Bezig met toevoegen…",
 ];
 
 const identity: Translator = (text) => text;
@@ -154,7 +156,7 @@ export function SpeakerCard({
               />
             </div>
             <div className="flex items-end gap-2 sm:col-span-4">
-              <SubmitButton size="sm" className="h-8 text-xs">
+              <SubmitButton size="sm" className="h-8 text-xs" pendingText={t("Bezig met opslaan…")}>
                 {t("Opslaan")}
               </SubmitButton>
               <Button
@@ -213,7 +215,7 @@ export function SpeakerCard({
             <Input id="new-speaker-file" name="file" type="file" className="h-8 text-xs" />
           </div>
           <div className="sm:col-span-4">
-            <SubmitButton size="sm" className="h-8 text-xs">
+            <SubmitButton size="sm" className="h-8 text-xs" pendingText={t("Bezig met toevoegen…")}>
               {t("Spreker toevoegen")}
             </SubmitButton>
           </div>
