@@ -23,6 +23,35 @@ import {
   updateSupplierPortalCode,
   uploadCatalog,
 } from "./actions";
+import { getAppLang } from "@/lib/server/lang";
+import { createTranslator } from "@/lib/server/translate";
+
+const SUPPLIERS_PAGE_LABELS = [
+  "Leveranciers",
+  "Nieuwe leverancier",
+  "Naam",
+  "Specialismen",
+  "bv. audio, licht",
+  "E-mail",
+  "Telefoon",
+  "Standaard korting (%)",
+  "Toevoegen",
+  "Alle leveranciers",
+  "Nog geen leveranciers toegevoegd.",
+  "Contact",
+  "Korting",
+  "Catalogus",
+  "Portaal",
+  "Opslaan",
+  "artikelen",
+  "Uploaden",
+  "Portaal: ingesteld",
+  "Portaal: wachtwoord ontbreekt",
+  "Portaal instellen",
+  "Code",
+  "Wachtwoord",
+  "Verwijderen",
+];
 
 export default async function SuppliersPage({
   searchParams,
@@ -34,13 +63,16 @@ export default async function SuppliersPage({
 
   // headers() en de suppliers-query hebben geen onderlinge afhankelijkheid — parallel
   // opvragen i.p.v. na elkaar.
-  const [headersList, { data: suppliers }] = await Promise.all([
+  const [headersList, { data: suppliers }, lang] = await Promise.all([
     headers(),
     supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    getAppLang(),
   ]);
   const host = headersList.get("host");
   const protocol = host?.startsWith("localhost") ? "http" : "https";
   const supplierPortalUrl = `${protocol}://${host}/supplier-portal`;
+
+  const t = await createTranslator(lang, SUPPLIERS_PAGE_LABELS);
 
   // Per leverancier het aantal catalogusartikelen tellen — deze tellingen zijn onderling
   // onafhankelijk, dus parallel i.p.v. één voor één na elkaar (N sequentiële round-trips).
@@ -59,7 +91,7 @@ export default async function SuppliersPage({
     <div className="flex min-h-screen flex-col">
       <Nav />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-6 px-6 py-8">
-        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">Leveranciers</h1>
+        <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">{t("Leveranciers")}</h1>
 
         {error && (
           <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>
@@ -67,28 +99,28 @@ export default async function SuppliersPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Nieuwe leverancier</CardTitle>
+            <CardTitle className="text-base">{t("Nieuwe leverancier")}</CardTitle>
           </CardHeader>
           <CardContent>
             <form action={createSupplier} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Naam</Label>
+                <Label htmlFor="name">{t("Naam")}</Label>
                 <Input id="name" name="name" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="specialties">Specialismen</Label>
-                <Input id="specialties" name="specialties" placeholder="bv. audio, licht" />
+                <Label htmlFor="specialties">{t("Specialismen")}</Label>
+                <Input id="specialties" name="specialties" placeholder={t("bv. audio, licht")} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_email">E-mail</Label>
+                <Label htmlFor="contact_email">{t("E-mail")}</Label>
                 <Input id="contact_email" name="contact_email" type="email" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="contact_phone">Telefoon</Label>
+                <Label htmlFor="contact_phone">{t("Telefoon")}</Label>
                 <Input id="contact_phone" name="contact_phone" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="default_discount_percentage">Standaard korting (%)</Label>
+                <Label htmlFor="default_discount_percentage">{t("Standaard korting (%)")}</Label>
                 <Input
                   id="default_discount_percentage"
                   name="default_discount_percentage"
@@ -100,7 +132,7 @@ export default async function SuppliersPage({
                 />
               </div>
               <Button type="submit" className="sm:col-span-2">
-                Toevoegen
+                {t("Toevoegen")}
               </Button>
             </form>
           </CardContent>
@@ -108,21 +140,21 @@ export default async function SuppliersPage({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Alle leveranciers</CardTitle>
+            <CardTitle className="text-base">{t("Alle leveranciers")}</CardTitle>
           </CardHeader>
           <CardContent>
             {!suppliers?.length ? (
-              <p className="text-sm text-muted-foreground">Nog geen leveranciers toegevoegd.</p>
+              <p className="text-sm text-muted-foreground">{t("Nog geen leveranciers toegevoegd.")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Naam</TableHead>
-                    <TableHead>Specialismen</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Korting</TableHead>
-                    <TableHead>Catalogus</TableHead>
-                    <TableHead>Portaal</TableHead>
+                    <TableHead>{t("Naam")}</TableHead>
+                    <TableHead>{t("Specialismen")}</TableHead>
+                    <TableHead>{t("Contact")}</TableHead>
+                    <TableHead>{t("Korting")}</TableHead>
+                    <TableHead>{t("Catalogus")}</TableHead>
+                    <TableHead>{t("Portaal")}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -151,14 +183,16 @@ export default async function SuppliersPage({
                             className="h-8 w-16 text-xs"
                           />
                           <span className="text-xs text-muted-foreground">%</span>
-                          <Button type="submit" size="sm" variant="ghost">
-                            Opslaan
+                          <Button type="submit" size="sm" variant="ghost" className="shrink-0 whitespace-nowrap">
+                            {t("Opslaan")}
                           </Button>
                         </form>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
-                          <span>{catalogCounts.get(supplier.id) ?? 0} artikelen</span>
+                          <span>
+                            {catalogCounts.get(supplier.id) ?? 0} {t("artikelen")}
+                          </span>
                           <form action={uploadCatalog.bind(null, supplier.id)} className="flex items-center gap-1">
                             <Input
                               type="file"
@@ -167,8 +201,8 @@ export default async function SuppliersPage({
                               required
                               className="h-8 w-40 text-xs"
                             />
-                            <Button type="submit" size="sm" variant="secondary">
-                              Uploaden
+                            <Button type="submit" size="sm" variant="secondary" className="shrink-0 whitespace-nowrap">
+                              {t("Uploaden")}
                             </Button>
                           </form>
                         </div>
@@ -178,9 +212,9 @@ export default async function SuppliersPage({
                           <summary className="inline-flex cursor-pointer items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium hover:bg-muted">
                             {supplier.portal_code
                               ? supplier.portal_password_hash
-                                ? "Portaal: ingesteld"
-                                : "Portaal: wachtwoord ontbreekt"
-                              : "Portaal instellen"}
+                                ? t("Portaal: ingesteld")
+                                : t("Portaal: wachtwoord ontbreekt")
+                              : t("Portaal instellen")}
                           </summary>
                           <div className="mt-2 space-y-2">
                             <p className="text-xs text-muted-foreground">
@@ -193,12 +227,12 @@ export default async function SuppliersPage({
                               <Input
                                 name="portal_code"
                                 defaultValue={supplier.portal_code ?? ""}
-                                placeholder="Code"
+                                placeholder={t("Code")}
                                 className="h-8 w-24 font-mono text-xs uppercase"
                                 required
                               />
-                              <Button type="submit" size="sm" variant="ghost">
-                                Opslaan
+                              <Button type="submit" size="sm" variant="ghost" className="shrink-0 whitespace-nowrap">
+                                {t("Opslaan")}
                               </Button>
                             </form>
                             <form
@@ -208,12 +242,12 @@ export default async function SuppliersPage({
                               <Input
                                 name="password"
                                 type="password"
-                                placeholder="Wachtwoord"
+                                placeholder={t("Wachtwoord")}
                                 className="h-8 w-28 text-xs"
                                 required
                               />
-                              <Button type="submit" size="sm" variant="ghost">
-                                Opslaan
+                              <Button type="submit" size="sm" variant="ghost" className="shrink-0 whitespace-nowrap">
+                                {t("Opslaan")}
                               </Button>
                             </form>
                           </div>
@@ -222,7 +256,7 @@ export default async function SuppliersPage({
                       <TableCell className="text-right">
                         <form action={deleteSupplier.bind(null, supplier.id)}>
                           <Button type="submit" variant="ghost" size="sm">
-                            Verwijderen
+                            {t("Verwijderen")}
                           </Button>
                         </form>
                       </TableCell>
