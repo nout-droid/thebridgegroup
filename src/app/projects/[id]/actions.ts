@@ -178,6 +178,20 @@ export async function deleteQuote(projectId: string, quoteId: string) {
   revalidatePath(path);
 }
 
+export async function updateQuoteSchedule(projectId: string, quoteId: string, formData: FormData) {
+  const loadInTime = String(formData.get("load_in_time") ?? "").trim() || null;
+  const loadOutTime = String(formData.get("load_out_time") ?? "").trim() || null;
+
+  const supabase = await createClient();
+  const path = await quoteRevalidationPath(supabase, projectId, quoteId);
+  await supabase
+    .from("quotes")
+    .update({ load_in_time: loadInTime, load_out_time: loadOutTime })
+    .eq("id", quoteId);
+  revalidatePath(`/projects/${projectId}/budget`);
+  revalidatePath(path);
+}
+
 export async function updateProjectDetails(projectId: string, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const clientName = String(formData.get("client_name") ?? "").trim();

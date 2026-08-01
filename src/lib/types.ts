@@ -516,6 +516,35 @@ export interface ParkingPass {
   created_at: string;
 }
 
+export interface IncidentReport {
+  id: string;
+  project_id: string;
+  stage_id: string | null;
+  division: string;
+  description: string;
+  photo_path: string | null;
+  reported_by: string;
+  created_at: string;
+}
+
+export interface LostFoundItem {
+  id: string;
+  project_id: string;
+  description: string;
+  photo_path: string | null;
+  status: "lost" | "found" | "claimed";
+  created_at: string;
+}
+
+export interface SupplierRating {
+  id: string;
+  project_id: string;
+  supplier_id: string;
+  rating: number;
+  note: string;
+  created_at: string;
+}
+
 export interface Stage {
   id: string;
   project_id: string;
@@ -861,6 +890,8 @@ export interface Quote {
   status: QuoteStatus;
   received_at: string | null;
   co2_kg: number | null;
+  load_in_time: string | null;
+  load_out_time: string | null;
   created_at: string;
   supplier?: Supplier;
   line_items?: QuoteLineItem[];

@@ -34,5 +34,7 @@ export const BEGROTING_VIEW_LABELS = [
   "Totaal",
   "Totaal deze categorie",
   "Totaal project",
+  "Opbouw vanaf",
+  "Afbouw vanaf",
   ...Object.values(QUOTE_STATUS_LABELS),
 ];

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { uploadProjectDocument, deleteProjectDocument } from "../documents-actions";
 import { uploadParkingPass, deleteParkingPass } from "../parking-passes-actions";
+import { addLostFoundItem, updateLostFoundStatus, deleteLostFoundItem } from "../lost-found-actions";
 import { ProjectSubNav } from "../project-sub-nav";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
@@ -36,6 +37,16 @@ const DOCUMENTS_PAGE_LABELS = [
   "Zichtbaar voor gasten",
   "Zichtbaar voor aanwezigen",
   "Nog geen parkeerpassen.",
+  "Lost & found",
+  "Kwijtgeraakte spullen — zichtbaar in het gastenportaal zodat gasten kunnen checken of iets van hen gevonden is.",
+  "Omschrijving",
+  "Bv. Zwarte jas, maat M",
+  "Foto (optioneel)",
+  "Toevoegen",
+  "Nog geen lost & found items.",
+  "Kwijt",
+  "Gevonden",
+  "Opgehaald",
 ];
 
 type DocRow = {
@@ -66,6 +77,7 @@ export default async function ProjectDocumentsPage({
     { data: guestDocuments },
     { data: checklist },
     { data: parkingPasses },
+    { data: lostFoundItems },
   ] = await Promise.all([
     getProjectOrNotFound(supabase, id),
     getAppLang(),
@@ -93,9 +105,17 @@ export default async function ProjectDocumentsPage({
       .select("id, title, storage_path, visible_to_crew, visible_to_guests, visible_to_attendees, created_at")
       .eq("project_id", id)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("lost_found_items")
+      .select("id, description, photo_path, status, created_at")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
-  const t = await createTranslator(lang, DOCUMENTS_PAGE_LABELS);
+  const t = await createTranslator(lang, [
+    ...DOCUMENTS_PAGE_LABELS,
+    ...(lostFoundItems ?? []).map((item) => item.description),
+  ]);
 
   const rows: DocRow[] = [];
 
@@ -203,6 +223,13 @@ export default async function ProjectDocumentsPage({
     (parkingPasses ?? []).map(async (pass) => ({
       ...pass,
       url: await getSignedPortalUrl(pass.storage_path),
+    }))
+  );
+
+  const lostFoundWithUrls = await Promise.all(
+    (lostFoundItems ?? []).map(async (item) => ({
+      ...item,
+      url: item.photo_path ? await getSignedPortalUrl(item.photo_path) : null,
     }))
   );
 
@@ -344,6 +371,82 @@ export default async function ProjectDocumentsPage({
                         </a>
                       )}
                       <form action={deleteParkingPass.bind(null, project.id, pass.id)}>
+                        <Button type="submit" size="sm" variant="ghost">
+                          {t("Verwijderen")}
+                        </Button>
+                      </form>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Lost & found")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Kwijtgeraakte spullen — zichtbaar in het gastenportaal zodat gasten kunnen checken of iets van hen gevonden is."
+              )}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form
+              action={addLostFoundItem.bind(null, project.id)}
+              className="flex flex-wrap items-end gap-3"
+            >
+              <div className="flex-1 min-w-[200px] space-y-1">
+                <label className="text-sm font-medium">{t("Omschrijving")}</label>
+                <Input name="description" placeholder={t("Bv. Zwarte jas, maat M")} required />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("Foto (optioneel)")}</label>
+                <Input name="photo" type="file" />
+              </div>
+              <Button type="submit" size="sm">
+                {t("Toevoegen")}
+              </Button>
+            </form>
+
+            {lostFoundWithUrls.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("Nog geen lost & found items.")}</p>
+            ) : (
+              <ul className="divide-y">
+                {lostFoundWithUrls.map((item) => (
+                  <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <span className="truncate text-sm">{t(item.description)}</span>
+                      <Badge variant={item.status === "claimed" ? "secondary" : "default"}>
+                        {item.status === "lost" && t("Kwijt")}
+                        {item.status === "found" && t("Gevonden")}
+                        {item.status === "claimed" && t("Opgehaald")}
+                      </Badge>
+                    </div>
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      {item.url && (
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {t("Bekijken")}
+                        </a>
+                      )}
+                      {(["lost", "found", "claimed"] as const)
+                        .filter((s) => s !== item.status)
+                        .map((s) => (
+                          <form key={s} action={updateLostFoundStatus.bind(null, project.id, item.id, s)}>
+                            <Button type="submit" size="sm" variant="outline">
+                              {s === "lost" && t("Kwijt")}
+                              {s === "found" && t("Gevonden")}
+                              {s === "claimed" && t("Opgehaald")}
+                            </Button>
+                          </form>
+                        ))}
+                      <form action={deleteLostFoundItem.bind(null, project.id, item.id)}>
                         <Button type="submit" size="sm" variant="ghost">
                           {t("Verwijderen")}
                         </Button>

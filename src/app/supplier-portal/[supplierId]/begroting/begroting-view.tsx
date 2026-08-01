@@ -15,6 +15,8 @@ export interface BegrotingQuoteRow {
   categoryName: string;
   status: string;
   costPrice: number;
+  loadInTime: string | null;
+  loadOutTime: string | null;
   lineItems: QuoteLineItem[];
 }
 
@@ -97,6 +99,20 @@ export function SupplierBegrotingView({
                         </Badge>
                       </CardHeader>
                       <CardContent className="space-y-3">
+                        {(quote.loadInTime || quote.loadOutTime) && (
+                          <div className="flex flex-wrap gap-x-4 gap-y-1 rounded-md bg-muted/40 px-3 py-2 text-sm">
+                            {quote.loadInTime && (
+                              <span>
+                                {t("Opbouw vanaf")}: <strong>{quote.loadInTime}</strong>
+                              </span>
+                            )}
+                            {quote.loadOutTime && (
+                              <span>
+                                {t("Afbouw vanaf")}: <strong>{quote.loadOutTime}</strong>
+                              </span>
+                            )}
+                          </div>
+                        )}
                         {quote.lineItems.length > 0 && (
                           <ul className="space-y-1 text-sm">
                             {quote.lineItems.map((item) => (

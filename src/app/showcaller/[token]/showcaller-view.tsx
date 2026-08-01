@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
 import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
+import { WeatherStrip } from "@/components/weather-strip";
 import { Footer } from "@/components/footer";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
@@ -103,6 +104,7 @@ const STATIC_LABELS = [
   "Presentatie: nog niet ontvangen",
   "Downloaden",
   "Nog geen sprekers voor dit podium.",
+  "regen",
   ...COLOR_OPTIONS.map((c) => c.label),
   ...DIVISIONS,
 ];
@@ -287,6 +289,10 @@ export function ShowcallerView({
             ))}
           </div>
         )}
+
+        <div className="mx-auto w-full max-w-5xl px-6 py-2">
+          <WeatherStrip token={token} activeDate={activeDate} rainLabel={t("regen")} dark />
+        </div>
 
         {rundown && (
           <div className="mx-auto flex w-full max-w-5xl flex-wrap items-center justify-between gap-3 border-t border-white/10 px-6 py-3">

@@ -53,7 +53,7 @@ export default async function GuestPage({
 
   // Deze drie hangen alleen af van `project` (hierboven al opgehaald) en niet van elkaar —
   // parallel opvragen i.p.v. na elkaar.
-  const [orgName, { data: documents }, { data: parkingPasses }] = await Promise.all([
+  const [orgName, { data: documents }, { data: parkingPasses }, { data: lostFoundItems }] = await Promise.all([
     getOrganizationName(project.user_id),
     admin
       .from("guest_documents")
@@ -65,6 +65,11 @@ export default async function GuestPage({
       .select("id, title, storage_path")
       .eq("project_id", project.id)
       .eq("visible_to_guests", true)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("lost_found_items")
+      .select("id, description, photo_path, status")
+      .eq("project_id", project.id)
       .order("created_at", { ascending: false }),
   ]);
 
@@ -86,6 +91,15 @@ export default async function GuestPage({
     }))
   );
 
+  const lostFoundWithUrls = await Promise.all(
+    (lostFoundItems ?? []).map(async (item) => ({
+      id: item.id,
+      description: item.description,
+      status: item.status,
+      url: item.photo_path ? await getSignedPortalUrl(item.photo_path) : null,
+    }))
+  );
+
   return (
     <>
       <GuestView
@@ -94,6 +108,7 @@ export default async function GuestPage({
         documents={ownerDocuments}
         uploadedDocuments={guestUploadedDocuments}
         parkingPasses={parkingPassesWithUrls}
+        lostFoundItems={lostFoundWithUrls}
         organizationName={orgName}
         uploadAction={uploadGuestOwnDocument.bind(null, token)}
       />

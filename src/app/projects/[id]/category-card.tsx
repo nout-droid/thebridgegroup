@@ -41,6 +41,7 @@ import {
   deleteCategory,
   deleteQuote,
   updateCategory,
+  updateQuoteSchedule,
 } from "./actions";
 import { addActualCost, deleteActualCost } from "./actual-costs-actions";
 import { QuoteLineItems, QUOTE_LINE_ITEMS_LABELS } from "./quote-line-items";
@@ -113,6 +114,8 @@ export const CATEGORY_CARD_LABELS = [
   "Factuurdatum (optioneel)",
   "Bestand (optioneel)",
   "Kosten toevoegen",
+  "Opbouw vanaf",
+  "Afbouw vanaf",
 ];
 
 export function CategoryCard({
@@ -307,6 +310,42 @@ export function CategoryCard({
                         lineItems={quote.line_items ?? []}
                         t={t}
                       />
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={4} className="bg-muted/10 px-4 py-2">
+                      <form
+                        action={updateQuoteSchedule.bind(null, projectId, quote.id)}
+                        className="flex flex-wrap items-end gap-2"
+                      >
+                        <div className="space-y-1">
+                          <Label htmlFor={`load-in-${quote.id}`} className="text-xs">
+                            {t("Opbouw vanaf")}
+                          </Label>
+                          <Input
+                            id={`load-in-${quote.id}`}
+                            name="load_in_time"
+                            type="time"
+                            defaultValue={quote.load_in_time ?? ""}
+                            className="h-8 w-28"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`load-out-${quote.id}`} className="text-xs">
+                            {t("Afbouw vanaf")}
+                          </Label>
+                          <Input
+                            id={`load-out-${quote.id}`}
+                            name="load_out_time"
+                            type="time"
+                            defaultValue={quote.load_out_time ?? ""}
+                            className="h-8 w-28"
+                          />
+                        </div>
+                        <Button type="submit" size="sm" variant="secondary" className="h-8">
+                          {t("Opslaan")}
+                        </Button>
+                      </form>
                     </TableCell>
                   </TableRow>
                 </Fragment>

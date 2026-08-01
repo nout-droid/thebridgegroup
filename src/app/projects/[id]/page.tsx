@@ -15,11 +15,13 @@ import {
   type ActivityLogEntry,
   type Category,
   type ClientRequest,
+  type IncidentReport,
   type Quote,
   type Stage,
   type Venue,
 } from "@/lib/types";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
+import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { computeRentalDays } from "@/lib/rental-days";
 import { computeCo2Total } from "@/lib/co2";
 import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
@@ -85,6 +87,9 @@ const STATIC_LABELS = [
   "Klantinvoer",
   "In behandeling nemen",
   "Afgehandeld",
+  "Incidenten",
+  "Meldingen van crew tijdens op-/afbouw of show.",
+  "Foto bekijken",
   "Projectgegevens",
   "Projectnaam",
   "Klant",
@@ -208,6 +213,7 @@ export default async function ProjectPage({
     { data: pendingProjectDocuments },
     { data: activity },
     { data: clientRequests },
+    { data: incidentReports },
     { data: venues },
     headersList,
     lang,
@@ -277,12 +283,25 @@ export default async function ProjectPage({
       .eq("project_id", id)
       .order("created_at", { ascending: false })
       .returns<ClientRequest[]>(),
+    supabase
+      .from("incident_reports")
+      .select("*")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false })
+      .returns<IncidentReport[]>(),
     supabase.from("venues").select("*").order("name", { ascending: true }).returns<Venue[]>(),
     headers(),
     getAppLang(),
   ]);
 
   const selectedVenue = (venues ?? []).find((v) => v.id === project.venue_id) ?? null;
+
+  const incidentReportsWithUrl = await Promise.all(
+    (incidentReports ?? []).map(async (report) => ({
+      ...report,
+      photoUrl: report.photo_path ? await getSignedPortalUrl(report.photo_path) : null,
+    }))
+  );
 
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
@@ -333,6 +352,11 @@ export default async function ProjectPage({
     ...(stages ?? []).map((s) => s.name),
     ...(activity ?? []).flatMap((entry) => [entry.actor_label, entry.description]),
     ...(clientRequests ?? []).flatMap((request) => [request.description, request.notes ?? ""]),
+    ...incidentReportsWithUrl.flatMap((report) => [
+      report.description,
+      report.division,
+      report.reported_by,
+    ]),
     project.budget_approval_comment ?? "",
     project.status,
     ...SUPPLIER_DOCUMENT_REVIEW_LABELS,
@@ -488,6 +512,43 @@ export default async function ProjectPage({
                         {request.status === "new" ? t("In behandeling nemen") : t("Afgehandeld")}
                       </Button>
                     </form>
+                  )}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
+
+        {incidentReportsWithUrl.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("Incidenten")}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {t("Meldingen van crew tijdens op-/afbouw of show.")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {incidentReportsWithUrl.map((report) => (
+                <div key={report.id} className="space-y-1 rounded-md border p-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {report.division && <Badge variant="secondary">{t(report.division)}</Badge>}
+                    <span className="text-xs text-muted-foreground">
+                      {relativeTime(report.created_at)}
+                    </span>
+                    {report.reported_by && (
+                      <span className="text-xs text-muted-foreground">— {t(report.reported_by)}</span>
+                    )}
+                  </div>
+                  <p>{t(report.description)}</p>
+                  {report.photoUrl && (
+                    <a
+                      href={report.photoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium underline underline-offset-2"
+                    >
+                      {t("Foto bekijken")}
+                    </a>
                   )}
                 </div>
               ))}

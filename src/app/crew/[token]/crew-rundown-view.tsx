@@ -20,7 +20,10 @@ import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/li
 import { pickDefaultShowDate } from "@/lib/show-dates";
 import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
+import { WeatherStrip } from "@/components/weather-strip";
 import { Footer } from "@/components/footer";
+import { Textarea } from "@/components/ui/textarea";
+import { submitIncidentReport } from "./incident-actions";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
 
@@ -58,6 +61,14 @@ const STATIC_LABELS = [
   "Nog geen sprekers voor dit podium.",
   "Parking",
   "Nog geen parkeerpassen beschikbaar.",
+  "regen",
+  "Incident melden",
+  "Schade, defect of ander incident — optioneel met foto. Alleen zichtbaar voor de organisator.",
+  "Omschrijving",
+  "bv. Statief gevallen, poot verbogen",
+  "Foto (optioneel)",
+  "Je naam (optioneel)",
+  "Melding versturen",
   ...DIVISIONS,
 ];
 
@@ -278,6 +289,8 @@ export function CrewRundownView({
             ))}
           </div>
         )}
+
+        <WeatherStrip token={token} activeDate={activeDate} rainLabel={t("regen")} dark />
 
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>
@@ -547,6 +560,54 @@ export function CrewRundownView({
                 </p>
               )}
             </ul>
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle className="text-base text-white">{t("Incident melden")}</CardTitle>
+            <p className="text-sm text-white/60">
+              {t("Schade, defect of ander incident — optioneel met foto. Alleen zichtbaar voor de organisator.")}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <form
+              action={submitIncidentReport.bind(null, token)}
+              className="space-y-3"
+            >
+              <input type="hidden" name="stage_id" value={scope?.stage_id ?? ""} />
+              <input type="hidden" name="division" value={division} />
+              <div className="space-y-1">
+                <Label className="text-xs text-white/70">{t("Omschrijving")}</Label>
+                <Textarea
+                  name="description"
+                  required
+                  placeholder={t("bv. Statief gevallen, poot verbogen")}
+                  className="border-white/20 bg-white/5 text-sm text-white placeholder:text-white/30"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-xs text-white/70">{t("Foto (optioneel)")}</Label>
+                  <Input
+                    type="file"
+                    name="photo"
+                    accept="image/*,application/pdf"
+                    className="h-9 border-white/20 bg-white/5 text-sm text-white"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-white/70">{t("Je naam (optioneel)")}</Label>
+                  <Input
+                    name="reported_by"
+                    className="h-9 border-white/20 bg-white/5 text-sm text-white"
+                  />
+                </div>
+              </div>
+              <Button type="submit" size="sm">
+                {t("Melding versturen")}
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>

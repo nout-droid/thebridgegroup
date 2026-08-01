@@ -11,6 +11,13 @@ interface GuestDocumentWithUrl {
   url: string | null;
 }
 
+interface LostFoundItemWithUrl {
+  id: string;
+  description: string;
+  status: "lost" | "found" | "claimed";
+  url: string | null;
+}
+
 const STATIC_LABELS = [
   "Er zijn nog geen documenten geplaatst.",
   "Downloaden",
@@ -24,6 +31,11 @@ const STATIC_LABELS = [
   "Geüpload.",
   "Parking",
   "Er zijn nog geen parkeerpassen beschikbaar.",
+  "Lost & found",
+  "Iets kwijt? Bekijk of het hierbij staat.",
+  "Nog niets gemeld.",
+  "Gevonden",
+  "Opgehaald",
 ];
 
 export function GuestView({
@@ -32,6 +44,7 @@ export function GuestView({
   documents,
   uploadedDocuments,
   parkingPasses,
+  lostFoundItems,
   organizationName,
   uploadAction,
 }: {
@@ -40,14 +53,17 @@ export function GuestView({
   documents: GuestDocumentWithUrl[];
   uploadedDocuments: GuestDocumentWithUrl[];
   parkingPasses: GuestDocumentWithUrl[];
+  lostFoundItems: LostFoundItemWithUrl[];
   organizationName: string;
   uploadAction: (formData: FormData) => Promise<void>;
 }) {
+  const visibleLostFoundItems = lostFoundItems.filter((item) => item.status !== "claimed");
   const dynamicTexts = [
     projectName,
     ...documents.map((d) => d.title),
     ...uploadedDocuments.map((d) => d.title),
     ...parkingPasses.map((p) => p.title),
+    ...visibleLostFoundItems.map((item) => item.description),
   ];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
   const [isPending, startTransition] = useTransition();
@@ -115,6 +131,43 @@ export function GuestView({
                   {pass.url && (
                     <a
                       href={pass.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary underline"
+                    >
+                      {t("Downloaden")}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="space-y-3 border-t pt-6">
+          <div>
+            <h2 className="font-heading text-lg font-bold uppercase tracking-tight">
+              {t("Lost & found")}
+            </h2>
+            <p className="text-sm text-muted-foreground">{t("Iets kwijt? Bekijk of het hierbij staat.")}</p>
+          </div>
+          {!visibleLostFoundItems.length ? (
+            <p className="text-sm text-muted-foreground">{t("Nog niets gemeld.")}</p>
+          ) : (
+            <ul className="space-y-2">
+              {visibleLostFoundItems.map((item) => (
+                <li key={item.id} className="flex items-center justify-between rounded-md border p-3">
+                  <span>
+                    {t(item.description)}
+                    {item.status === "found" && (
+                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                        {t("Gevonden")}
+                      </span>
+                    )}
+                  </span>
+                  {item.url && (
+                    <a
+                      href={item.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary underline"

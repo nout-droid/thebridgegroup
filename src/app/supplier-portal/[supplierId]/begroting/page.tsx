@@ -10,6 +10,8 @@ interface RawQuoteRow {
   id: string;
   cost_price: number;
   status: string;
+  load_in_time: string | null;
+  load_out_time: string | null;
   category: { name: string; project_id: string } | null;
   line_items: QuoteLineItem[];
 }
@@ -37,7 +39,9 @@ export default async function SupplierBegrotingPage({
     const admin = createAdminClient();
     const { data } = await admin
       .from("quotes")
-      .select("id, cost_price, status, category:categories(name, project_id), line_items:quote_line_items(*)")
+      .select(
+        "id, cost_price, status, load_in_time, load_out_time, category:categories(name, project_id), line_items:quote_line_items(*)"
+      )
       .eq("supplier_id", supplierId)
       .returns<RawQuoteRow[]>();
 
@@ -48,6 +52,8 @@ export default async function SupplierBegrotingPage({
         categoryName: q.category?.name ?? "—",
         status: q.status,
         costPrice: q.cost_price,
+        loadInTime: q.load_in_time,
+        loadOutTime: q.load_out_time,
         lineItems: (q.line_items ?? []).sort((a, b) => a.description.localeCompare(b.description)),
       }));
   }

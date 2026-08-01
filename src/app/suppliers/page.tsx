@@ -87,6 +87,31 @@ export default async function SuppliersPage({
     })
   );
 
+  // Gemiddelde beoordeling over alle projecten heen — ingevuld op de evaluatiepagina per
+  // project (zie src/app/projects/[id]/supplier-rating-actions.ts).
+  const avgRatings = new Map<string, { avg: number; count: number }>();
+  if (suppliers?.length) {
+    const { data: ratings } = await supabase
+      .from("supplier_ratings")
+      .select("supplier_id, rating")
+      .in(
+        "supplier_id",
+        suppliers.map((s) => s.id)
+      );
+    const bySupplier = new Map<string, number[]>();
+    for (const r of ratings ?? []) {
+      const list = bySupplier.get(r.supplier_id) ?? [];
+      list.push(r.rating);
+      bySupplier.set(r.supplier_id, list);
+    }
+    for (const [supplierId, list] of bySupplier) {
+      avgRatings.set(supplierId, {
+        avg: list.reduce((sum, n) => sum + n, 0) / list.length,
+        count: list.length,
+      });
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -159,9 +184,18 @@ export default async function SuppliersPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {suppliers.map((supplier) => (
+                  {suppliers.map((supplier) => {
+                    const rating = avgRatings.get(supplier.id);
+                    return (
                     <TableRow key={supplier.id}>
-                      <TableCell className="font-medium">{supplier.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {supplier.name}
+                        {rating && (
+                          <span className="ml-2 whitespace-nowrap text-xs font-normal text-muted-foreground">
+                            ★ {rating.avg.toFixed(1)} ({rating.count})
+                          </span>
+                        )}
+                      </TableCell>
                       <TableCell>{supplier.specialties}</TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {[supplier.contact_email, supplier.contact_phone]
@@ -261,7 +295,8 @@ export default async function SuppliersPage({
                         </form>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
