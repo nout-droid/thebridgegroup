@@ -78,6 +78,12 @@ export async function inviteTeamMember(formData: FormData) {
   }
 
   await syncSubscriptionSeats(ownerId);
+  await logAudit(admin, {
+    ownerId,
+    actorLabel: user.email ?? "Onbekend",
+    action: "Teamlid uitgenodigd",
+    details: email,
+  });
   revalidatePath("/team");
 }
 
@@ -115,6 +121,15 @@ export async function updateTeamMemberAccess(teamMemberId: string, formData: For
   const projectIds = formData.getAll("project_id").map(String);
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("owner_user_id, invited_email")
+    .eq("id", teamMemberId)
+    .maybeSingle();
 
   await supabase.from("team_members").update({ can_view_budget: canViewBudget }).eq("id", teamMemberId);
 
@@ -123,6 +138,16 @@ export async function updateTeamMemberAccess(teamMemberId: string, formData: For
     await supabase.from("team_member_project_access").insert(
       projectIds.map((projectId) => ({ team_member_id: teamMemberId, project_id: projectId }))
     );
+  }
+
+  if (user && member?.owner_user_id) {
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId: member.owner_user_id,
+      actorLabel: user.email ?? "Onbekend",
+      action: "Toegang aangepast",
+      details: member.invited_email ?? "",
+    });
   }
 
   revalidatePath("/team");
