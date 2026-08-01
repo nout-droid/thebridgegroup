@@ -26,16 +26,17 @@ export async function POST(request: Request) {
     const ownerUserId = session.metadata?.owner_user_id;
     const tier = session.metadata?.tier;
     if (ownerUserId) {
-      await admin
-        .from("organizations")
-        .update({
-          stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
-          stripe_subscription_id:
-            typeof session.subscription === "string" ? session.subscription : null,
-          subscription_status: "active",
-          plan: tier || "team",
-        })
-        .eq("owner_user_id", ownerUserId);
+      const update: Record<string, unknown> = {
+        stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
+        stripe_subscription_id:
+          typeof session.subscription === "string" ? session.subscription : null,
+        subscription_status: "active",
+        plan: tier || "team",
+      };
+      // Alleen ooit op true zetten, nooit terug op false hier — een latere, niet-early-
+      // adopter checkout (bv. seats aanpassen) mag een eerder toegekende plek niet intrekken.
+      if (session.metadata?.early_adopter === "true") update.early_adopter = true;
+      await admin.from("organizations").update(update).eq("owner_user_id", ownerUserId);
     }
   }
 

@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { uploadProjectDocument, deleteProjectDocument } from "../documents-actions";
+import { uploadParkingPass, deleteParkingPass } from "../parking-passes-actions";
 import { ProjectSubNav } from "../project-sub-nav";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
@@ -28,6 +29,13 @@ const DOCUMENTS_PAGE_LABELS = [
   "Gastenportaal",
   "Checklist",
   "nog te splitsen",
+  "Parkeerpassen",
+  "Voeg een parkeerpas toe (PDF of afbeelding) en kies welke portalen 'm mogen zien.",
+  "Bv. Parkeerpas VIP",
+  "Zichtbaar voor crew",
+  "Zichtbaar voor gasten",
+  "Zichtbaar voor aanwezigen",
+  "Nog geen parkeerpassen.",
 ];
 
 type DocRow = {
@@ -57,6 +65,7 @@ export default async function ProjectDocumentsPage({
     { data: unsplitQuoteDocuments },
     { data: guestDocuments },
     { data: checklist },
+    { data: parkingPasses },
   ] = await Promise.all([
     getProjectOrNotFound(supabase, id),
     getAppLang(),
@@ -79,6 +88,11 @@ export default async function ProjectDocumentsPage({
       .select("id")
       .eq("project_id", id)
       .maybeSingle<{ id: string }>(),
+    supabase
+      .from("parking_passes")
+      .select("id, title, storage_path, visible_to_crew, visible_to_guests, visible_to_attendees, created_at")
+      .eq("project_id", id)
+      .order("created_at", { ascending: false }),
   ]);
 
   const t = await createTranslator(lang, DOCUMENTS_PAGE_LABELS);
@@ -185,6 +199,13 @@ export default async function ProjectDocumentsPage({
     }))
   );
 
+  const parkingPassesWithUrls = await Promise.all(
+    (parkingPasses ?? []).map(async (pass) => ({
+      ...pass,
+      url: await getSignedPortalUrl(pass.storage_path),
+    }))
+  );
+
   return (
     <div className="flex min-h-screen flex-col">
       <Nav />
@@ -250,6 +271,83 @@ export default async function ProjectDocumentsPage({
                           </Button>
                         </form>
                       )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Parkeerpassen")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t("Voeg een parkeerpas toe (PDF of afbeelding) en kies welke portalen 'm mogen zien.")}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <form
+              action={uploadParkingPass.bind(null, project.id)}
+              className="flex flex-wrap items-end gap-3"
+            >
+              <div className="flex-1 min-w-[200px] space-y-1">
+                <label className="text-sm font-medium">{t("Titel")}</label>
+                <Input name="title" placeholder={t("Bv. Parkeerpas VIP")} required />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium">{t("Bestand")}</label>
+                <Input name="file" type="file" required />
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="visible_to_crew" defaultChecked />
+                  {t("Zichtbaar voor crew")}
+                </label>
+                <label className="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="visible_to_guests" defaultChecked />
+                  {t("Zichtbaar voor gasten")}
+                </label>
+                <label className="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="visible_to_attendees" defaultChecked />
+                  {t("Zichtbaar voor aanwezigen")}
+                </label>
+              </div>
+              <Button type="submit" size="sm">
+                {t("Uploaden")}
+              </Button>
+            </form>
+
+            {parkingPassesWithUrls.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("Nog geen parkeerpassen.")}</p>
+            ) : (
+              <ul className="divide-y">
+                {parkingPassesWithUrls.map((pass) => (
+                  <li key={pass.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <span className="truncate text-sm">{pass.title}</span>
+                      {pass.visible_to_crew && <Badge variant="secondary">{t("Zichtbaar voor crew")}</Badge>}
+                      {pass.visible_to_guests && <Badge variant="secondary">{t("Zichtbaar voor gasten")}</Badge>}
+                      {pass.visible_to_attendees && (
+                        <Badge variant="secondary">{t("Zichtbaar voor aanwezigen")}</Badge>
+                      )}
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      {pass.url && (
+                        <a
+                          href={pass.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {t("Bekijken")}
+                        </a>
+                      )}
+                      <form action={deleteParkingPass.bind(null, project.id, pass.id)}>
+                        <Button type="submit" size="sm" variant="ghost">
+                          {t("Verwijderen")}
+                        </Button>
+                      </form>
                     </div>
                   </li>
                 ))}

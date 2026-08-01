@@ -22,6 +22,8 @@ const STATIC_LABELS = [
   "Uploaden",
   "Bezig met uploaden...",
   "Geüpload.",
+  "Parking",
+  "Er zijn nog geen parkeerpassen beschikbaar.",
 ];
 
 export function GuestView({
@@ -29,6 +31,7 @@ export function GuestView({
   eventDate,
   documents,
   uploadedDocuments,
+  parkingPasses,
   organizationName,
   uploadAction,
 }: {
@@ -36,6 +39,7 @@ export function GuestView({
   eventDate: string | null;
   documents: GuestDocumentWithUrl[];
   uploadedDocuments: GuestDocumentWithUrl[];
+  parkingPasses: GuestDocumentWithUrl[];
   organizationName: string;
   uploadAction: (formData: FormData) => Promise<void>;
 }) {
@@ -43,6 +47,7 @@ export function GuestView({
     projectName,
     ...documents.map((d) => d.title),
     ...uploadedDocuments.map((d) => d.title),
+    ...parkingPasses.map((p) => p.title),
   ];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
   const [isPending, startTransition] = useTransition();
@@ -95,6 +100,33 @@ export function GuestView({
             ))}
           </ul>
         )}
+
+        <div className="space-y-3 border-t pt-6">
+          <h2 className="font-heading text-lg font-bold uppercase tracking-tight">{t("Parking")}</h2>
+          {!parkingPasses.length ? (
+            <p className="text-sm text-muted-foreground">
+              {t("Er zijn nog geen parkeerpassen beschikbaar.")}
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {parkingPasses.map((pass) => (
+                <li key={pass.id} className="flex items-center justify-between rounded-md border p-3">
+                  <span>{t(pass.title)}</span>
+                  {pass.url && (
+                    <a
+                      href={pass.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary underline"
+                    >
+                      {t("Downloaden")}
+                    </a>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
         <div className="space-y-3 border-t pt-6">
           <div>

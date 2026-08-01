@@ -56,6 +56,8 @@ const STATIC_LABELS = [
   "Presentatie: nog niet ontvangen",
   "Downloaden",
   "Nog geen sprekers voor dit podium.",
+  "Parking",
+  "Nog geen parkeerpassen beschikbaar.",
   ...DIVISIONS,
 ];
 
@@ -176,6 +178,7 @@ export function CrewRundownView({
         ),
         ...data.notes.map((n) => n.note),
         ...data.speakers.map((s) => s.name),
+        ...data.parking_passes.map((p) => p.title),
       ]
     : [];
   const { lang, setLang, t } = useTranslator(STATIC_LABELS, dynamicTexts);
@@ -446,6 +449,33 @@ export function CrewRundownView({
             ))}
             {!visibleSpeakers.length && (
               <p className="text-sm text-white/60">{t("Nog geen sprekers voor dit podium.")}</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/10 bg-white/5 text-white">
+          <CardHeader>
+            <CardTitle className="text-base text-white">{t("Parking")}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {data.parking_passes.map((pass) => (
+              <div
+                key={pass.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-white/10 p-2 text-sm"
+              >
+                <p className="font-medium">{t(pass.title)}</p>
+                <a
+                  href={`/crew/${token}/parking/${pass.id}/download`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  {t("Downloaden")}
+                </a>
+              </div>
+            ))}
+            {!data.parking_passes.length && (
+              <p className="text-sm text-white/60">{t("Nog geen parkeerpassen beschikbaar.")}</p>
             )}
           </CardContent>
         </Card>

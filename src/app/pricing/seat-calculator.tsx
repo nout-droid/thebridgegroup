@@ -13,6 +13,7 @@ export function SeatCalculator({
   startLabel,
   perSeatLabel,
   totalLabel,
+  earlyAdopter,
 }: {
   tier: PricingTierKey;
   pricePerSeat: number;
@@ -23,6 +24,7 @@ export function SeatCalculator({
   startLabel: string;
   perSeatLabel: string;
   totalLabel: string;
+  earlyAdopter?: boolean;
 }) {
   const [seats, setSeats] = useState(defaultSeats);
 
@@ -34,15 +36,20 @@ export function SeatCalculator({
   };
 
   const total = seats * pricePerSeat;
+  const discountedTotal = earlyAdopter ? total / 2 : total;
+
+  const href = checkoutEnabled
+    ? `/api/stripe/checkout?tier=${tier}&seats=${seats}${earlyAdopter ? "&early_adopter=1" : ""}`
+    : "/signup";
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <label htmlFor={`seats-${tier}`} className="text-sm text-white/70">
+        <label htmlFor={`seats-${tier}${earlyAdopter ? "-ea" : ""}`} className="text-sm text-white/70">
           {perSeatLabel}
         </label>
         <input
-          id={`seats-${tier}`}
+          id={`seats-${tier}${earlyAdopter ? "-ea" : ""}`}
           type="number"
           min={minSeats}
           max={maxSeats ?? undefined}
@@ -52,11 +59,17 @@ export function SeatCalculator({
         />
       </div>
       <p className="text-sm text-white/60">
-        {totalLabel} <span className="font-semibold text-white">&euro; {total.toLocaleString("en-GB")}</span>{" "}
+        {totalLabel}{" "}
+        {earlyAdopter && (
+          <span className="text-white/40 line-through">&euro; {total.toLocaleString("en-GB")}</span>
+        )}{" "}
+        <span className="font-semibold text-white">
+          &euro; {discountedTotal.toLocaleString("en-GB")}
+        </span>{" "}
         / month
       </p>
       <a
-        href={checkoutEnabled ? `/api/stripe/checkout?tier=${tier}&seats=${seats}` : "/signup"}
+        href={href}
         className="block rounded-md bg-primary px-4 py-2.5 text-center text-sm font-semibold uppercase tracking-wide text-black hover:opacity-90"
       >
         {startLabel}

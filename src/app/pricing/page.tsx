@@ -21,7 +21,8 @@ import {
 import { Footer } from "@/components/footer";
 import { getStripeClient, isStripeConfigured } from "@/lib/stripe";
 import { TRIAL_PROJECT_LIMIT } from "@/lib/server/subscription";
-import { PRICING_TIERS } from "@/lib/pricing";
+import { PRICING_TIERS, EARLY_ADOPTER_MAX_SPOTS, EARLY_ADOPTER_DISCOUNT_PERCENT } from "@/lib/pricing";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { SeatCalculator } from "./seat-calculator";
 
 const SALES_EMAIL = "order@thebridgeavgroup.com";
@@ -118,10 +119,20 @@ const PILLARS = [
   },
 ];
 
+async function getEarlyAdopterSpotsLeft(): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("organizations")
+    .select("id", { count: "exact", head: true })
+    .eq("early_adopter", true);
+  return Math.max(0, EARLY_ADOPTER_MAX_SPOTS - (count ?? 0));
+}
+
 export default async function PricingPage() {
-  const [starterPrice, teamPrice] = await Promise.all([
+  const [starterPrice, teamPrice, earlyAdopterSpotsLeft] = await Promise.all([
     getLivePricePerSeat(PRICING_TIERS.starter.priceEnvVar),
     getLivePricePerSeat(PRICING_TIERS.team.priceEnvVar),
+    getEarlyAdopterSpotsLeft(),
   ]);
 
   const starter = { ...PRICING_TIERS.starter, pricePerSeat: starterPrice ?? PRICING_TIERS.starter.pricePerSeat! };
@@ -253,6 +264,35 @@ export default async function PricingPage() {
               Priced per user, so you only ever pay for your actual team size.
             </p>
           </div>
+
+          {earlyAdopterSpotsLeft > 0 && (
+            <div className="mb-6 flex flex-col items-center gap-4 rounded-xl border-2 border-primary bg-primary/10 p-8 sm:flex-row sm:justify-between">
+              <div>
+                <span className="mb-2 inline-block w-fit rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black">
+                  Limited — {earlyAdopterSpotsLeft} of {EARLY_ADOPTER_MAX_SPOTS} spots left
+                </span>
+                <h3 className="font-heading text-xl font-extrabold uppercase tracking-tight">Early Adopter</h3>
+                <p className="mt-1 max-w-md text-sm text-white/70">
+                  Be one of the first {EARLY_ADOPTER_MAX_SPOTS} beta testers and get {EARLY_ADOPTER_DISCOUNT_PERCENT}%
+                  off the Starter plan — for as long as you stay subscribed — in exchange for your honest feedback.
+                </p>
+              </div>
+              <div className="w-full max-w-xs shrink-0">
+                <SeatCalculator
+                  tier="starter"
+                  pricePerSeat={starter.pricePerSeat}
+                  minSeats={starter.minSeats}
+                  maxSeats={starter.maxSeats}
+                  defaultSeats={starter.defaultSeats}
+                  checkoutEnabled={isStripeConfigured}
+                  startLabel="Claim your spot"
+                  perSeatLabel="Number of users"
+                  totalLabel="Total:"
+                  earlyAdopter
+                />
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* Trial */}

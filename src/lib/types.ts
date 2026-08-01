@@ -132,6 +132,7 @@ export interface AttendeeHome {
     event_date: string | null;
   };
   agenda: AttendeeAgendaItem[];
+  parking_passes: SharedParkingPass[];
 }
 
 export interface Organization {
@@ -500,6 +501,21 @@ export interface GuestDocument {
   created_at: string;
 }
 
+// Projectbrede parkeerpas (PDF/afbeelding), zichtbaar voor crew/gasten/aanwezigen onafhankelijk
+// van elkaar (visible_to_*-vlaggen) — geen toewijzing per persoon. storage_path is een
+// bucket-relatief pad in de privé "portal-documents"-bucket, zelfde patroon als
+// ProjectDocument/GuestDocument hierboven.
+export interface ParkingPass {
+  id: string;
+  project_id: string;
+  title: string;
+  storage_path: string;
+  visible_to_crew: boolean;
+  visible_to_guests: boolean;
+  visible_to_attendees: boolean;
+  created_at: string;
+}
+
 export interface Stage {
   id: string;
   project_id: string;
@@ -813,12 +829,21 @@ export interface SharedSpeaker {
   notes_for_showcaller: string;
 }
 
+// Minimale weergave van een parkeerpas voor de portalen (crew/attendee via RPC, geen
+// storage_path — dat lekt niet mee naar anon, downloaden gaat via een token-geverifieerde
+// download-route die pas op dat moment tekent).
+export interface SharedParkingPass {
+  id: string;
+  title: string;
+}
+
 export interface SharedRundowns {
   project: { name: string; event_date: string | null };
   scopes: SharedRundownScope[];
   notes: CrewNote[];
   chat: RundownChatMessage[];
   speakers: SharedSpeaker[];
+  parking_passes: SharedParkingPass[];
 }
 
 export function computeClientPrice(category: Category, costPrice: number) {

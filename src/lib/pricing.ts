@@ -47,3 +47,14 @@ export function tierForSeatCount(seats: number): PricingTierKey {
   if (seats >= PRICING_TIERS.team.minSeats) return "team";
   return "starter";
 }
+
+// Early-adopter/beta-aanbod: 50% korting voor altijd, maximaal 5 plekken in totaal (over alle
+// tiers heen — organizations.early_adopter telt mee). Werkt via een Stripe-coupon met
+// duration "forever" (STRIPE_COUPON_ID_EARLY_ADOPTER), dus Stripe past de korting zelf bij
+// elke facturatie toe — wij hoeven 'm alleen éénmalig aan de checkout-sessie te koppelen. Het
+// maximum wordt aan twee kanten bewaakt: /pricing verbergt de aanbieding zodra vol, en de
+// checkout-route (src/app/api/stripe/checkout/route.ts) telt vlak vóór het aanmaken van de
+// sessie nog een keer, tegen een race tussen twee gelijktijdige claims.
+export const EARLY_ADOPTER_MAX_SPOTS = 5;
+export const EARLY_ADOPTER_DISCOUNT_PERCENT = 50;
+export const EARLY_ADOPTER_COUPON_ENV_VAR = "STRIPE_COUPON_ID_EARLY_ADOPTER";

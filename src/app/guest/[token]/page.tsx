@@ -51,14 +51,20 @@ export default async function GuestPage({
 
   if (!project) notFound();
 
-  // Beide hangen alleen af van `project` (hierboven al opgehaald) en niet van elkaar —
+  // Deze drie hangen alleen af van `project` (hierboven al opgehaald) en niet van elkaar —
   // parallel opvragen i.p.v. na elkaar.
-  const [orgName, { data: documents }] = await Promise.all([
+  const [orgName, { data: documents }, { data: parkingPasses }] = await Promise.all([
     getOrganizationName(project.user_id),
     admin
       .from("guest_documents")
       .select("*")
       .eq("project_id", project.id)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("parking_passes")
+      .select("id, title, storage_path")
+      .eq("project_id", project.id)
+      .eq("visible_to_guests", true)
       .order("created_at", { ascending: false }),
   ]);
 
@@ -72,6 +78,14 @@ export default async function GuestPage({
   const ownerDocuments = documentsWithUrls.filter((doc) => doc.uploaded_by !== "guest");
   const guestUploadedDocuments = documentsWithUrls.filter((doc) => doc.uploaded_by === "guest");
 
+  const parkingPassesWithUrls = await Promise.all(
+    (parkingPasses ?? []).map(async (pass) => ({
+      id: pass.id,
+      title: pass.title,
+      url: await getSignedPortalUrl(pass.storage_path),
+    }))
+  );
+
   return (
     <>
       <GuestView
@@ -79,6 +93,7 @@ export default async function GuestPage({
         eventDate={project.event_date}
         documents={ownerDocuments}
         uploadedDocuments={guestUploadedDocuments}
+        parkingPasses={parkingPassesWithUrls}
         organizationName={orgName}
         uploadAction={uploadGuestOwnDocument.bind(null, token)}
       />

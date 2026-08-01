@@ -23,6 +23,7 @@ const POLL_INTERVAL_MS = 8000;
 const TABS = [
   { key: "profile", label: "Mijn profiel" },
   { key: "agenda", label: "Agenda" },
+  { key: "parking", label: "Parking" },
   { key: "directory", label: "Netwerk" },
   { key: "saved", label: "Opgeslagen" },
 ] as const;
@@ -61,6 +62,9 @@ const STATIC_LABELS = [
   "Jouw QR-code",
   "Laat een andere aanwezige deze scannen om jullie profielen uit te wisselen.",
   "Exporteren (CSV)",
+  "Parking",
+  "Nog geen parkeerpassen beschikbaar.",
+  "Downloaden",
 ];
 
 type Toast = { text: string; kind: "success" | "error" } | null;
@@ -137,6 +141,7 @@ export function AttendeeView({
       home.agenda.forEach((item) => {
         texts.push(item.activity, item.stage_name ?? "");
       });
+      home.parking_passes.forEach((pass) => texts.push(pass.title));
     }
     (directory ?? []).forEach((p) => texts.push(p.name, p.company ?? "", p.title ?? "", p.bio ?? ""));
     (saved ?? []).forEach((p) => texts.push(p.name, p.company ?? "", p.title ?? "", p.bio ?? ""));
@@ -369,6 +374,30 @@ export function AttendeeView({
               <p className="text-sm text-muted-foreground">{t("Nog geen programma-onderdelen bekend.")}</p>
             ) : (
               <AgendaList items={home.agenda} t={t} />
+            )}
+          </div>
+        )}
+
+        {tab === "parking" && (
+          <div className="space-y-2">
+            {home.parking_passes.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("Nog geen parkeerpassen beschikbaar.")}</p>
+            ) : (
+              <ul className="space-y-2">
+                {home.parking_passes.map((pass) => (
+                  <li key={pass.id} className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
+                    <span className="font-medium">{t(pass.title)}</span>
+                    <a
+                      href={`/attendee/${token}/parking/${pass.id}/download`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary underline"
+                    >
+                      {t("Downloaden")}
+                    </a>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
         )}
