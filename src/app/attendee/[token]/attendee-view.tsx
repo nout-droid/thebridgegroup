@@ -58,6 +58,9 @@ const STATIC_LABELS = [
   "Verwijderen",
   "Je hebt nog niemand bewaard.",
   "Blader door het netwerk en bewaar mensen die je wilt onthouden.",
+  "Jouw QR-code",
+  "Laat een andere aanwezige deze scannen om jullie profielen uit te wisselen.",
+  "Exporteren (CSV)",
 ];
 
 type Toast = { text: string; kind: "success" | "error" } | null;
@@ -342,6 +345,21 @@ export function AttendeeView({
                 {isPending ? t("Bezig met opslaan…") : t("Opslaan")}
               </Button>
             </form>
+
+            {home.attendee.networking_opt_in && (
+              <div className="space-y-2 rounded-md border p-4 text-center">
+                <p className="text-sm font-medium">{t("Jouw QR-code")}</p>
+                {/* eslint-disable-next-line @next/next/no-img-element -- server-rendered PNG route, niet een statisch/optimaliseerbaar asset */}
+                <img
+                  src={`/attendee/${token}/qr`}
+                  alt={t("Jouw QR-code")}
+                  className="mx-auto h-40 w-40 rounded-md border bg-white p-2"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("Laat een andere aanwezige deze scannen om jullie profielen uit te wisselen.")}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
@@ -388,7 +406,7 @@ export function AttendeeView({
         )}
 
         {tab === "saved" && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {!saved || saved.length === 0 ? (
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">{t("Je hebt nog niemand bewaard.")}</p>
@@ -397,11 +415,20 @@ export function AttendeeView({
                 </p>
               </div>
             ) : (
-              <ul className="space-y-2">
-                {saved.map((p) => (
-                  <ProfileCard key={p.id} profile={p} saved onToggleSave={() => toggleSave(true, p.id)} t={t} />
-                ))}
-              </ul>
+              <>
+                <div className="flex justify-end">
+                  <a href={`/attendee/${token}/export`} download>
+                    <Button type="button" size="sm" variant="outline">
+                      {t("Exporteren (CSV)")}
+                    </Button>
+                  </a>
+                </div>
+                <ul className="space-y-2">
+                  {saved.map((p) => (
+                    <ProfileCard key={p.id} profile={p} saved onToggleSave={() => toggleSave(true, p.id)} t={t} />
+                  ))}
+                </ul>
+              </>
             )}
           </div>
         )}
