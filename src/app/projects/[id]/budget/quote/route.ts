@@ -5,6 +5,10 @@ import { buildInvoiceGroups } from "@/lib/server/invoice-data";
 import { getOrgBranding } from "@/lib/server/organization";
 import { getAppLang, type AppLang } from "@/lib/server/lang";
 
+// Zelfde opzet als .../budget/invoice/route.ts, maar dan het document dat je vóór goedkeuring
+// naar de klant stuurt: geen "Factuur" maar "Offerte", eigen nummering (quote_number/
+// quote_date i.p.v. invoice_number/invoice_date — een project kan dus later nog een apart
+// factuurnummer krijgen zonder het offertenummer te overschrijven).
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -21,7 +25,7 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, client_name, event_date, user_id, invoice_number, invoice_date")
+    .select("id, name, client_name, event_date, user_id, quote_number, quote_date")
     .eq("id", id)
     .maybeSingle();
 
@@ -29,25 +33,18 @@ export async function GET(
     return new NextResponse("Niet gevonden", { status: 404 });
   }
 
-  // ?lang=en|nl overschrijft de huidige taaltoggle — zo kan een NL-browsende producer toch
-  // een Engelse factuur naar een internationale klant sturen zonder de hele app om te zetten.
   const requestedLang = new URL(request.url).searchParams.get("lang");
   const lang: AppLang = requestedLang === "en" ? "en" : requestedLang === "nl" ? "nl" : await getAppLang();
 
-  // Eerste keer dat de factuur voor dit project wordt gedownload: genereer een
-  // factuurnummer + -datum en zet die vast, zodat elke volgende download (en de
-  // status-badge op de begrotingspagina) hetzelfde nummer toont. Niet strikt
-  // sequentieel/gapless — een korte projectcode volstaat voor een lichtgewicht
-  // facturatiesysteem als dit.
-  let invoiceNumber = project.invoice_number;
-  let invoiceDate = project.invoice_date;
-  if (!invoiceNumber) {
+  let quoteNumber = project.quote_number;
+  let quoteDate = project.quote_date;
+  if (!quoteNumber) {
     const year = new Date().getFullYear();
-    invoiceNumber = `INV-${year}-${project.id.slice(0, 8).toUpperCase()}`;
-    invoiceDate = new Date().toISOString().slice(0, 10);
+    quoteNumber = `OFF-${year}-${project.id.slice(0, 8).toUpperCase()}`;
+    quoteDate = new Date().toISOString().slice(0, 10);
     await supabase
       .from("projects")
-      .update({ invoice_number: invoiceNumber, invoice_date: invoiceDate })
+      .update({ quote_number: quoteNumber, quote_date: quoteDate })
       .eq("id", project.id);
   }
 
@@ -58,7 +55,7 @@ export async function GET(
 
   const pdfBuffer = await generateInvoicePdf(
     {
-      documentType: "factuur",
+      documentType: "offerte",
       lang,
       projectName: project.name,
       clientName: project.client_name || null,
@@ -66,8 +63,8 @@ export async function GET(
       generatedAt: new Date(),
       groups,
       totalClientPrice,
-      invoiceNumber,
-      invoiceDate: invoiceDate!,
+      invoiceNumber: quoteNumber,
+      invoiceDate: quoteDate!,
     },
     branding
   );
@@ -75,7 +72,7 @@ export async function GET(
   return new NextResponse(new Uint8Array(pdfBuffer), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${invoiceNumber}-${project.name.replace(/[^a-z0-9]+/gi, "-")}.pdf"`,
+      "Content-Disposition": `attachment; filename="${quoteNumber}-${project.name.replace(/[^a-z0-9]+/gi, "-")}.pdf"`,
     },
   });
 }

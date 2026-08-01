@@ -2,6 +2,8 @@ import "server-only";
 import path from "node:path";
 import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { OrgBranding } from "./server/organization";
+import type { AppLang } from "./server/lang";
+import { createTranslator } from "./server/translate";
 import { resolveLogoBuffer } from "./pdf-branding";
 
 export interface InvoicePdfLine {
@@ -15,7 +17,11 @@ export interface InvoicePdfGroup {
   lines: InvoicePdfLine[];
 }
 
+export type InvoiceDocumentType = "factuur" | "offerte";
+
 export interface InvoicePdfData {
+  documentType: InvoiceDocumentType;
+  lang: AppLang;
   projectName: string;
   clientName: string | null;
   eventDate: string | null;
@@ -144,18 +150,83 @@ function euro(value: number) {
   return `€ ${value.toFixed(2)}`;
 }
 
+// Vaste labels per taal (geen live DeepL-vertaling hier — dit document gaat vaak rechtstreeks
+// naar een externe klant en moet een stabiel, voorspelbaar resultaat geven, niet iets dat kan
+// wisselen tussen twee downloads). Dynamische inhoud (project-/podium-/categorienamen)
+// gebruikt wél de bestaande createTranslator-utility, voor consistentie met wat de klant al
+// in de app zelf ziet als die op EN staat.
+const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<string, string>>> = {
+  nl: {
+    factuur: {
+      eyebrow: "Factuur",
+      intro: "Deze factuur geeft een overzicht van de kosten voor dit event.",
+      number: "Factuurnummer",
+      date: "Factuurdatum",
+    },
+    offerte: {
+      eyebrow: "Offerte",
+      intro: "Deze offerte geeft een overzicht van de kosten voor dit event.",
+      number: "Offertenummer",
+      date: "Offertedatum",
+    },
+    shared: {
+      generatedOn: "gegenereerd op",
+      client: "Klant",
+      project: "Project",
+      eventDate: "Event datum",
+      projectWide: "Projectbreed",
+      total: "Totaal",
+      page: "Pagina",
+    },
+  },
+  en: {
+    factuur: {
+      eyebrow: "Invoice",
+      intro: "This invoice provides an overview of the costs for this event.",
+      number: "Invoice number",
+      date: "Invoice date",
+    },
+    offerte: {
+      eyebrow: "Quote",
+      intro: "This quote provides an overview of the costs for this event.",
+      number: "Quote number",
+      date: "Quote date",
+    },
+    shared: {
+      generatedOn: "generated on",
+      client: "Client",
+      project: "Project",
+      eventDate: "Event date",
+      projectWide: "Project-wide",
+      total: "Total",
+      page: "Page",
+    },
+  },
+};
+
 export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
   const logoBuffer = await resolveLogoBuffer(branding);
-  const generatedAt = data.generatedAt.toLocaleString("nl-NL");
+
+  const l = LABELS[data.lang][data.documentType];
+  const shared = LABELS[data.lang].shared;
+  const dateLocale = data.lang === "en" ? "en-GB" : "nl-NL";
+
+  const t = await createTranslator(data.lang, [
+    data.projectName,
+    shared.projectWide,
+    ...data.groups.flatMap((g) => [g.stageName ?? "", ...g.lines.map((line) => line.categoryName)]),
+  ]);
+
+  const generatedAt = data.generatedAt.toLocaleString(dateLocale);
   const eventDate = data.eventDate
-    ? new Date(data.eventDate).toLocaleDateString("nl-NL", {
+    ? new Date(data.eventDate).toLocaleDateString(dateLocale, {
         day: "numeric",
         month: "long",
         year: "numeric",
       })
     : "—";
-  const invoiceDateFormatted = new Date(`${data.invoiceDate}T00:00:00`).toLocaleDateString("nl-NL", {
+  const invoiceDateFormatted = new Date(`${data.invoiceDate}T00:00:00`).toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -176,40 +247,38 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <Text style={[styles.brand, brand.text]}>{branding.name}</Text>
           </View>
           <Text style={styles.headerMeta}>
-            {data.invoiceNumber} · gegenereerd op {generatedAt}
+            {data.invoiceNumber} · {shared.generatedOn} {generatedAt}
           </Text>
         </View>
 
         <View style={styles.titleBlock}>
           <Text style={styles.tagline}>We innovate your event</Text>
-          <Text style={styles.eyebrow}>Factuur</Text>
-          <Text style={styles.title}>{data.projectName}</Text>
-          <Text style={styles.subtitle}>
-            Deze factuur geeft een overzicht van de kosten voor dit event.
-          </Text>
+          <Text style={styles.eyebrow}>{l.eyebrow}</Text>
+          <Text style={styles.title}>{t(data.projectName)}</Text>
+          <Text style={styles.subtitle}>{l.intro}</Text>
         </View>
         <View style={[styles.accentLine, brand.line]} />
 
         <View style={styles.body}>
           <View style={styles.summary}>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Factuurnummer</Text>
+              <Text style={styles.summaryLabel}>{l.number}</Text>
               <Text style={styles.summaryValue}>{data.invoiceNumber}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Factuurdatum</Text>
+              <Text style={styles.summaryLabel}>{l.date}</Text>
               <Text style={styles.summaryValue}>{invoiceDateFormatted}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Klant</Text>
+              <Text style={styles.summaryLabel}>{shared.client}</Text>
               <Text style={styles.summaryValue}>{data.clientName || "—"}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Project</Text>
-              <Text style={styles.summaryValue}>{data.projectName}</Text>
+              <Text style={styles.summaryLabel}>{shared.project}</Text>
+              <Text style={styles.summaryValue}>{t(data.projectName)}</Text>
             </View>
             <View style={styles.summaryItem}>
-              <Text style={styles.summaryLabel}>Event datum</Text>
+              <Text style={styles.summaryLabel}>{shared.eventDate}</Text>
               <Text style={styles.summaryValue}>{eventDate}</Text>
             </View>
           </View>
@@ -218,14 +287,14 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <View key={index} style={styles.section}>
               <View style={styles.sectionHeader}>
                 <View style={[styles.sectionAccent, brand.line]} />
-                <Text style={styles.sectionTitle}>{group.stageName ?? "Projectbreed"}</Text>
+                <Text style={styles.sectionTitle}>{group.stageName ? t(group.stageName) : shared.projectWide}</Text>
               </View>
               {group.lines.length === 0 ? (
                 <Text style={styles.lineText}>—</Text>
               ) : (
                 group.lines.map((line, lineIndex) => (
                   <View key={lineIndex} style={styles.lineRow}>
-                    <Text style={styles.lineText}>{line.categoryName}</Text>
+                    <Text style={styles.lineText}>{t(line.categoryName)}</Text>
                     <Text style={styles.linePrice}>{euro(line.clientPrice)}</Text>
                   </View>
                 ))
@@ -234,16 +303,14 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
           ))}
 
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Totaal</Text>
+            <Text style={styles.totalLabel}>{shared.total}</Text>
             <Text style={styles.totalValue}>{euro(data.totalClientPrice)}</Text>
           </View>
         </View>
 
         <View style={styles.footer} fixed>
           <Text>{branding.name}</Text>
-          <Text
-            render={({ pageNumber, totalPages }) => `Pagina ${pageNumber} / ${totalPages}`}
-          />
+          <Text render={({ pageNumber, totalPages }) => `${shared.page} ${pageNumber} / ${totalPages}`} />
         </View>
       </Page>
     </Document>

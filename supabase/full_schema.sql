@@ -4487,6 +4487,12 @@ alter table public.projects add column if not exists invoice_status text not nul
   check (invoice_status in ('draft', 'sent', 'paid'));
 alter table public.projects add column if not exists invoice_date date;
 
+-- Offerte (outgoing quote naar de klant, vóór goedkeuring) — zelfde nummering/datum-patroon
+-- als de factuur hierboven, los bijgehouden zodat een project zowel een offertenummer als
+-- (later) een apart factuurnummer kan hebben.
+alter table public.projects add column if not exists quote_number text;
+alter table public.projects add column if not exists quote_date date;
+
 -- get_shared_rundowns uitgebreid met een top-level 'speakers'-sleutel, zodat de showcaller- en
 -- crew-portalen (die al pollen op deze ene RPC) ook de sprekerslijst + notities voor de
 -- showcaller binnenkrijgen zonder een aparte RPC-call. De rauwe storage_path lekt niet mee naar

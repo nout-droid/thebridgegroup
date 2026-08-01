@@ -26,6 +26,10 @@ const nextConfig: NextConfig = {
       "public/logo.png",
       "node_modules/@fontsource/poppins/files/*.woff",
     ],
+    "/projects/\\[id\\]/budget/quote": [
+      "public/logo.png",
+      "node_modules/@fontsource/poppins/files/*.woff",
+    ],
     "/projects/\\[id\\]/production-book": [
       "public/logo.png",
       "node_modules/@fontsource/poppins/files/*.woff",

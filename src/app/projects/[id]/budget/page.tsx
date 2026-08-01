@@ -44,6 +44,7 @@ import { setInvoiceStatus } from "../invoice-actions";
 import { computeRentalDays } from "@/lib/rental-days";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator, type Translator } from "@/lib/server/translate";
+import { PdfDownloadLink } from "@/components/pdf-download-link";
 
 // Het parsen van een offerte-PDF matcht elke regel tegen de catalogus (RPC-aanroepen) —
 // bij een offerte met honderden regels kan dat de standaard 10-15s functie-timeout
@@ -57,6 +58,9 @@ interface Totals {
 
 const BUDGET_PAGE_LABELS = [
   "Factuur downloaden (PDF)",
+  "Offerte downloaden (PDF)",
+  "Download in het Nederlands",
+  "Download in het Engels",
   "Factuurstatus",
   "Bijwerken",
   "Factuurnr.",
@@ -379,14 +383,18 @@ export default async function ProjectBudgetPage({
                   {t("Bijwerken")}
                 </Button>
               </form>
-              <a
+              <PdfDownloadLink
+                href={`/projects/${project.id}/budget/quote`}
+                label={t("Offerte downloaden (PDF)")}
+                nlTitle={t("Download in het Nederlands")}
+                enTitle={t("Download in het Engels")}
+              />
+              <PdfDownloadLink
                 href={`/projects/${project.id}/budget/invoice`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                {t("Factuur downloaden (PDF)")}
-              </a>
+                label={t("Factuur downloaden (PDF)")}
+                nlTitle={t("Download in het Nederlands")}
+                enTitle={t("Download in het Engels")}
+              />
             </div>
           </CardHeader>
           <CardContent>

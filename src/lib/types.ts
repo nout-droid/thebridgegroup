@@ -199,6 +199,8 @@ export interface Project {
   invoice_number: string | null;
   invoice_status: InvoiceStatus;
   invoice_date: string | null;
+  quote_number: string | null;
+  quote_date: string | null;
   attendee_app_enabled: boolean;
   created_at: string;
 }
