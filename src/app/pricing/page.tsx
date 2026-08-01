@@ -16,6 +16,7 @@ import {
   Palette,
   CalendarDays,
   ShieldCheck,
+  Building2,
 } from "lucide-react";
 import { Footer } from "@/components/footer";
 import { getStripeClient, isStripeConfigured } from "@/lib/stripe";
@@ -75,6 +76,7 @@ const PILLARS = [
       "Power: requests and load per area",
       "Crew & accreditation: planning, positions, access dates, QR-code badges with live check-in",
       "Artist & technical riders, plus a running list of open questions so nothing falls through the cracks",
+      "A reusable venue catalog — power, loading dock access, dimensions, rigging and Wi-Fi captured once and reused every time a venue gets rebooked",
     ],
   },
   {
@@ -234,6 +236,7 @@ export default async function PricingPage() {
             { icon: CalendarDays, label: "Conflict detection" },
             { icon: ShieldCheck, label: "Audit log" },
             { icon: Wrench, label: "Equipment reservations" },
+            { icon: Building2, label: "Venue catalog" },
           ].map(({ icon: Icon, label }) => (
             <div key={label} className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 px-3 py-3">
               <Icon className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.75} />
