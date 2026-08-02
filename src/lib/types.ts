@@ -640,6 +640,12 @@ export interface CrewMember {
   checked_in_at: string | null;
   checked_out_at: string | null;
   skills: string[];
+  day_rate: number;
+  overtime_rate: number;
+  overtime_hours: number;
+  home_address: string;
+  km_rate: number;
+  distance_km: number | null;
   supplier?: Supplier;
 }
 

@@ -33,7 +33,26 @@ export const CREW_CARD_LABELS = [
   "Crewlid toevoegen",
   "Skills (komma-gescheiden)",
   "Bv. FOH, monitoren, rigging",
+  "Dagtarief (€)",
+  "Overurentarief (€/uur)",
+  "Overuren",
+  "Woonadres",
+  "KM-tarief (€/km)",
+  "Reisafstand (enkele reis):",
+  "Vergoeding landt automatisch in de begroting onder \"Crew vergoeding\".",
 ];
+
+function euro(value: number) {
+  return `€ ${value.toFixed(2)}`;
+}
+
+function computeCrewCost(member: CrewMember): number {
+  const days = member.access_dates.length;
+  const dayCost = member.day_rate * days;
+  const overtimeCost = member.overtime_rate * member.overtime_hours;
+  const kmCost = member.km_rate * (member.distance_km ?? 0) * 2 * days;
+  return dayCost + overtimeCost + kmCost;
+}
 
 const identity: Translator = (text) => text;
 
@@ -191,6 +210,71 @@ export function CrewCard({
                 className="h-8 text-xs"
               />
             </div>
+            <div className="space-y-1">
+              <Label htmlFor={`day-rate-${member.id}`} className="text-xs">{t("Dagtarief (€)")}</Label>
+              <Input
+                id={`day-rate-${member.id}`}
+                name="day_rate"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={member.day_rate || undefined}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`ot-rate-${member.id}`} className="text-xs">{t("Overurentarief (€/uur)")}</Label>
+              <Input
+                id={`ot-rate-${member.id}`}
+                name="overtime_rate"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={member.overtime_rate || undefined}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`ot-hours-${member.id}`} className="text-xs">{t("Overuren")}</Label>
+              <Input
+                id={`ot-hours-${member.id}`}
+                name="overtime_hours"
+                type="number"
+                step="0.5"
+                min="0"
+                defaultValue={member.overtime_hours || undefined}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <Label htmlFor={`home-address-${member.id}`} className="text-xs">{t("Woonadres")}</Label>
+              <Input
+                id={`home-address-${member.id}`}
+                name="home_address"
+                defaultValue={member.home_address}
+                className="h-8 text-xs"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor={`km-rate-${member.id}`} className="text-xs">{t("KM-tarief (€/km)")}</Label>
+              <Input
+                id={`km-rate-${member.id}`}
+                name="km_rate"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={member.km_rate}
+                className="h-8 text-xs"
+              />
+            </div>
+            {(member.day_rate > 0 || member.overtime_rate > 0 || member.distance_km !== null) && (
+              <p className="text-xs text-muted-foreground sm:col-span-6">
+                {member.distance_km !== null && (
+                  <>{t("Reisafstand (enkele reis):")} {member.distance_km} km · </>
+                )}
+                {euro(computeCrewCost(member))}
+              </p>
+            )}
             <div className="flex items-end gap-2 sm:col-span-6">
               <Button type="submit" size="sm" className="h-8 text-xs">
                 {t("Opslaan")}
@@ -266,6 +350,29 @@ export function CrewCard({
             <Label htmlFor="new-skills" className="text-xs">{t("Skills (komma-gescheiden)")}</Label>
             <Input id="new-skills" name="skills" placeholder={t("Bv. FOH, monitoren, rigging")} className="h-8 text-xs" />
           </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-day-rate" className="text-xs">{t("Dagtarief (€)")}</Label>
+            <Input id="new-day-rate" name="day_rate" type="number" step="0.01" min="0" className="h-8 text-xs" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-ot-rate" className="text-xs">{t("Overurentarief (€/uur)")}</Label>
+            <Input id="new-ot-rate" name="overtime_rate" type="number" step="0.01" min="0" className="h-8 text-xs" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-ot-hours" className="text-xs">{t("Overuren")}</Label>
+            <Input id="new-ot-hours" name="overtime_hours" type="number" step="0.5" min="0" className="h-8 text-xs" />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label htmlFor="new-home-address" className="text-xs">{t("Woonadres")}</Label>
+            <Input id="new-home-address" name="home_address" className="h-8 text-xs" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="new-km-rate" className="text-xs">{t("KM-tarief (€/km)")}</Label>
+            <Input id="new-km-rate" name="km_rate" type="number" step="0.01" min="0" defaultValue={0.23} className="h-8 text-xs" />
+          </div>
+          <p className="text-xs text-muted-foreground sm:col-span-6">
+            {t('Vergoeding landt automatisch in de begroting onder "Crew vergoeding".')}
+          </p>
           <div className="sm:col-span-6">
             <Button type="submit" size="sm" className="h-8 text-xs">
               {t("Crewlid toevoegen")}
