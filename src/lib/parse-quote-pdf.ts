@@ -34,6 +34,13 @@ function parsePrice(raw: string): number {
   return Number.isFinite(value) ? value : 0;
 }
 
+// Sommige offertes (bv. Rent-All) hebben extra kolommen tussen omschrijving en bedrag,
+// zoals "Periode" en "Staffel" (bv. "... [2 pieces]     1   1,05   €  262,50 ..."). Die losse
+// getallen blijven anders aan de omschrijving plakken en breken de catalogus-matching.
+function stripTrailingColumnNumbers(text: string): string {
+  return text.replace(/(?:\s+\d+(?:[.,]\d+)?){1,2}$/, "").trim();
+}
+
 function parseLine(line: string): ParsedQuoteLine | null {
   const euroMatches = [...line.matchAll(EURO_AMOUNT_RE)];
 
@@ -42,6 +49,7 @@ function parseLine(line: string): ParsedQuoteLine | null {
     const last = euroMatches[euroMatches.length - 1];
 
     let description = line.slice(0, first.index).trim().replace(/[\s.:,-]+$/, "");
+    description = stripTrailingColumnNumbers(description);
     const qtyMatch = description.match(/^(\d+)\s+(.+)$/);
     if (qtyMatch) {
       description = `${qtyMatch[1]}x ${qtyMatch[2].trim()}`;
@@ -58,7 +66,7 @@ function parseLine(line: string): ParsedQuoteLine | null {
   const match = line.match(LINE_WITH_PRICE_RE);
   if (!match) return null;
 
-  const description = match[1].trim().replace(/[\s.:,-]+$/, "");
+  const description = stripTrailingColumnNumbers(match[1].trim().replace(/[\s.:,-]+$/, ""));
   if (!description || NOISE_RE.test(description)) return null;
 
   const price = parsePrice(match[2]);
