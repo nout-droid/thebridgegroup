@@ -7,6 +7,7 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +40,7 @@ import { RequestQuotesCard, type RequestQuotesCardLabels } from "../request-quot
 import { QUOTE_PDF_IMPORT_LABELS, REQUEST_QUOTES_CARD_LABELS } from "../translation-labels";
 import { ActualCostsSummaryCard, ACTUAL_COSTS_SUMMARY_LABELS } from "../actual-costs-summary-card";
 import { ProjectSubNav } from "../project-sub-nav";
-import { updateProjectBudget } from "../actions";
+import { updateProjectBudget, updateInvoiceDetails } from "../actions";
 import { setInvoiceStatus } from "../invoice-actions";
 import { computeRentalDays } from "@/lib/rental-days";
 import { getAppLang } from "@/lib/server/lang";
@@ -72,6 +73,11 @@ const BUDGET_PAGE_LABELS = [
   "Alle categorieën zijn bevestigd.",
   "van",
   "categorieën nog niet bevestigd:",
+  "Offerte & factuur gegevens",
+  "Klantreferentie (optioneel)",
+  "Bv. PO-2026-014",
+  "Offerte-opmerkingen (optioneel)",
+  "Vrije tekst die onderaan de offerte-PDF wordt getoond, bv. voorwaarden of een toelichting.",
   "Budget klant",
   "Nog geen klantbudget ingesteld.",
   "Budget klant (€)",
@@ -398,6 +404,44 @@ export default async function ProjectBudgetPage({
             </div>
           </CardHeader>
           <CardContent>
+            <details className="group mb-4 rounded-md border">
+              <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium">
+                {t("Offerte & factuur gegevens")}
+              </summary>
+              <form
+                action={updateInvoiceDetails.bind(null, project.id)}
+                className="grid grid-cols-1 gap-3 border-t p-3 sm:grid-cols-2"
+              >
+                <div className="space-y-1.5">
+                  <Label htmlFor="client_reference">{t("Klantreferentie (optioneel)")}</Label>
+                  <Input
+                    id="client_reference"
+                    name="client_reference"
+                    placeholder={t("Bv. PO-2026-014")}
+                    defaultValue={project.client_reference ?? ""}
+                  />
+                </div>
+                <div className="sm:row-span-2 sm:space-y-1.5">
+                  <Label htmlFor="quote_notes">{t("Offerte-opmerkingen (optioneel)")}</Label>
+                  <Textarea
+                    id="quote_notes"
+                    name="quote_notes"
+                    rows={3}
+                    className="mt-1.5 sm:mt-0"
+                    defaultValue={project.quote_notes ?? ""}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {t(
+                      "Vrije tekst die onderaan de offerte-PDF wordt getoond, bv. voorwaarden of een toelichting."
+                    )}
+                  </p>
+                </div>
+                <Button type="submit" size="sm" className="w-fit">
+                  {t("Opslaan")}
+                </Button>
+              </form>
+            </details>
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <p className="text-xs text-muted-foreground">{t("Totaal inkoop")}</p>

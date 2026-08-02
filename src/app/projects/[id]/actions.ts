@@ -244,6 +244,19 @@ export async function updateProjectBudget(projectId: string, formData: FormData)
   revalidatePath(`/projects/${projectId}/budget`);
 }
 
+export async function updateInvoiceDetails(projectId: string, formData: FormData) {
+  const clientReference = String(formData.get("client_reference") ?? "").trim() || null;
+  const quoteNotes = String(formData.get("quote_notes") ?? "").trim() || null;
+
+  const supabase = await createClient();
+  await supabase
+    .from("projects")
+    .update({ client_reference: clientReference, quote_notes: quoteNotes })
+    .eq("id", projectId);
+
+  revalidatePath(`/projects/${projectId}/budget`);
+}
+
 export async function updateEventCode(projectId: string, formData: FormData) {
   const eventCode = String(formData.get("event_code") ?? "").trim().toUpperCase();
   if (!eventCode) return;

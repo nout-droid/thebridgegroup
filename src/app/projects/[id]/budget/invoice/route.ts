@@ -21,7 +21,7 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, client_name, event_date, user_id, invoice_number, invoice_date")
+    .select("id, name, client_name, event_date, user_id, invoice_number, invoice_date, client_reference")
     .eq("id", id)
     .maybeSingle();
 
@@ -68,6 +68,9 @@ export async function GET(
       totalClientPrice,
       invoiceNumber,
       invoiceDate: invoiceDate!,
+      notes: null,
+      clientReference: project.client_reference || null,
+      iban: branding.iban,
     },
     branding
   );

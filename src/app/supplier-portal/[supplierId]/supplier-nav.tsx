@@ -33,11 +33,13 @@ export function Nav({
   return (
     <header className="bg-black text-sm font-semibold uppercase tracking-wide text-primary">
       <div className="flex items-center gap-2 px-6 py-3">
-        <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} />
-        The Bridge Group B.V.
-        <span className="ml-auto text-white/70 normal-case tracking-normal">{supplierName}</span>
+        <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} className="shrink-0" />
+        <span className="truncate">The Bridge Group B.V.</span>
+        <span className="ml-auto min-w-0 truncate text-white/70 normal-case tracking-normal">
+          {supplierName}
+        </span>
       </div>
-      <nav className="flex gap-1 border-t border-white/10 px-6 py-2 normal-case tracking-normal">
+      <nav className="flex gap-1 overflow-x-auto border-t border-white/10 px-6 py-2 normal-case tracking-normal">
         {TABS.map((tab) => (
           <Link
             key={tab.key}

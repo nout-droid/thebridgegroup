@@ -141,6 +141,7 @@ export interface Organization {
   name: string;
   logo_url: string | null;
   brand_color: string | null;
+  iban: string | null;
   plan: string;
   subscription_status: string;
   stripe_customer_id: string | null;
@@ -202,6 +203,8 @@ export interface Project {
   invoice_date: string | null;
   quote_number: string | null;
   quote_date: string | null;
+  quote_notes: string | null;
+  client_reference: string | null;
   attendee_app_enabled: boolean;
   created_at: string;
 }

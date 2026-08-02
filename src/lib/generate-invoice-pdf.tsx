@@ -30,6 +30,12 @@ export interface InvoicePdfData {
   totalClientPrice: number;
   invoiceNumber: string;
   invoiceDate: string;
+  // Vrije tekst — alleen gebruikt op de offerte (bv. voorwaarden/toelichting).
+  notes: string | null;
+  // Klantreferentie/PO-nummer — optioneel, op beide documenten indien ingevuld.
+  clientReference: string | null;
+  // IBAN — organisatie-breed, alleen getoond op de factuur (betaalinstructie).
+  iban: string | null;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -131,6 +137,16 @@ const styles = StyleSheet.create({
   },
   totalLabel: { fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5, color: "#000" },
   totalValue: { fontSize: 15, fontWeight: 700, color: "#000" },
+  notesBox: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#f8f8f8",
+    borderRadius: 3,
+  },
+  notesTitle: { fontSize: 9, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5, color: "#888", marginBottom: 4 },
+  notesText: { fontSize: 9, color: "#333", lineHeight: 1.5 },
+  paymentBox: { marginTop: 12 },
+  paymentText: { fontSize: 9, color: "#555", lineHeight: 1.5 },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -177,6 +193,10 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       projectWide: "Projectbreed",
       total: "Totaal",
       page: "Pagina",
+      reference: "Referentie",
+      notesTitle: "Opmerkingen",
+      paymentTitle: "Gelieve het bedrag over te maken naar IBAN",
+      paymentSuffix: "onder vermelding van het factuurnummer.",
     },
   },
   en: {
@@ -200,6 +220,10 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       projectWide: "Project-wide",
       total: "Total",
       page: "Page",
+      reference: "Reference",
+      notesTitle: "Notes",
+      paymentTitle: "Please transfer the amount to IBAN",
+      paymentSuffix: "quoting the invoice number.",
     },
   },
 };
@@ -281,6 +305,12 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
               <Text style={styles.summaryLabel}>{shared.eventDate}</Text>
               <Text style={styles.summaryValue}>{eventDate}</Text>
             </View>
+            {data.clientReference && (
+              <View style={styles.summaryItem}>
+                <Text style={styles.summaryLabel}>{shared.reference}</Text>
+                <Text style={styles.summaryValue}>{data.clientReference}</Text>
+              </View>
+            )}
           </View>
 
           {data.groups.map((group, index) => (
@@ -306,6 +336,21 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <Text style={styles.totalLabel}>{shared.total}</Text>
             <Text style={styles.totalValue}>{euro(data.totalClientPrice)}</Text>
           </View>
+
+          {data.documentType === "factuur" && data.iban && (
+            <View style={styles.paymentBox}>
+              <Text style={styles.paymentText}>
+                {shared.paymentTitle} {data.iban} {shared.paymentSuffix}
+              </Text>
+            </View>
+          )}
+
+          {data.documentType === "offerte" && data.notes && (
+            <View style={styles.notesBox}>
+              <Text style={styles.notesTitle}>{shared.notesTitle}</Text>
+              <Text style={styles.notesText}>{data.notes}</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.footer} fixed>

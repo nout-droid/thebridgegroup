@@ -27,6 +27,7 @@ import {
 import {
   updateOrganizationName,
   updateOrganizationBranding,
+  updateOrganizationIban,
   deleteOrganizationAccount,
 } from "./organization-actions";
 import { getAppLang } from "@/lib/server/lang";
@@ -70,6 +71,9 @@ const TEAM_PAGE_LABELS = [
   "Je eigen logo en accentkleur verschijnen in de navigatie, portalen en gedownloade PDF's.",
   "Logo",
   "Accentkleur",
+  "Bankgegevens",
+  "IBAN — verschijnt als betaalinstructie onderaan elke gedownloade factuur.",
+  "IBAN",
   "Logboek",
   "Wie deed wat, voor gevoelige acties zoals projectverwijdering en teamwijzigingen.",
   "Actie",
@@ -257,6 +261,29 @@ export default async function TeamPage({
                         type="color"
                         defaultValue={organization.brand_color ?? "#7CFC6E"}
                         className="h-9 w-16 p-1"
+                      />
+                    </div>
+                    <Button type="submit" size="sm">
+                      {t("Opslaan")}
+                    </Button>
+                  </form>
+                </div>
+              )}
+              {isOwner && (
+                <div className="space-y-3 border-t pt-4">
+                  <Label>{t("Bankgegevens")}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t("IBAN — verschijnt als betaalinstructie onderaan elke gedownloade factuur.")}
+                  </p>
+                  <form action={updateOrganizationIban} className="flex flex-wrap items-end gap-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="org-iban">{t("IBAN")}</Label>
+                      <Input
+                        id="org-iban"
+                        name="iban"
+                        defaultValue={organization.iban ?? ""}
+                        placeholder="NL00 BANK 0000 0000 00"
+                        className="w-64"
                       />
                     </div>
                     <Button type="submit" size="sm">

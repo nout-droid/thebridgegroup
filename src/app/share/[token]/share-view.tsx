@@ -1677,11 +1677,19 @@ export function ShareView({
   return (
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
-        <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt={data.project.organization_name || "The Bridge Group B.V."} width={28} height={21} />
-          {t(data.project.organization_name || "The Bridge Group B.V.")}
+        <div className="flex min-w-0 items-center gap-2 font-heading text-base font-extrabold tracking-tight">
+          <Image
+            src="/logo.png"
+            alt={data.project.organization_name || "The Bridge Group B.V."}
+            width={28}
+            height={21}
+            className="shrink-0"
+          />
+          <span className="truncate">{t(data.project.organization_name || "The Bridge Group B.V.")}</span>
         </div>
-        <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        <div className="shrink-0">
+          <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        </div>
       </header>
 
       {translationError && lang === "en" && (
@@ -1720,11 +1728,11 @@ export function ShareView({
           </div>
         )}
 
-        <div className="flex gap-1 border-b">
+        <div className="flex gap-1 overflow-x-auto border-b">
           <button
             type="button"
             onClick={() => setActiveTab("budget")}
-            className={`px-3 py-2 text-sm font-medium ${
+            className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
               activeTab === "budget"
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground"
@@ -1736,7 +1744,7 @@ export function ShareView({
             <button
               type="button"
               onClick={() => setActiveTab("rider")}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
                 activeTab === "rider"
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground"
@@ -1748,7 +1756,7 @@ export function ShareView({
           <button
             type="button"
             onClick={() => setActiveTab("checklist")}
-            className={`px-3 py-2 text-sm font-medium ${
+            className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
               activeTab === "checklist"
                 ? "border-b-2 border-primary text-foreground"
                 : "text-muted-foreground"
@@ -1760,7 +1768,7 @@ export function ShareView({
             <button
               type="button"
               onClick={() => setActiveTab("co2")}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
                 activeTab === "co2"
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground"
@@ -1773,7 +1781,7 @@ export function ShareView({
             <button
               type="button"
               onClick={() => setActiveTab("production")}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
                 activeTab === "production"
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground"
@@ -1786,7 +1794,7 @@ export function ShareView({
             <button
               type="button"
               onClick={() => setActiveTab("rundown")}
-              className={`px-3 py-2 text-sm font-medium ${
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
                 activeTab === "rundown"
                   ? "border-b-2 border-primary text-foreground"
                   : "text-muted-foreground"

@@ -21,6 +21,19 @@ export async function updateOrganizationName(formData: FormData) {
   revalidatePath("/team");
 }
 
+export async function updateOrganizationIban(formData: FormData) {
+  const iban = String(formData.get("iban") ?? "").trim();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase.from("organizations").update({ iban: iban || null }).eq("owner_user_id", user.id);
+  revalidatePath("/team");
+}
+
 const BRAND_LOGO_BUCKET = "org-logos";
 
 function logoExt(file: File): string {

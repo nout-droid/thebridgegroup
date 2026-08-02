@@ -8,12 +8,14 @@ export interface OrgBranding {
   name: string;
   logoUrl: string;
   brandColor: string;
+  iban: string | null;
 }
 
 export const DEFAULT_BRANDING: OrgBranding = {
   name: DEFAULT_ORGANIZATION_NAME,
   logoUrl: DEFAULT_LOGO_URL,
   brandColor: DEFAULT_BRAND_COLOR,
+  iban: null,
 };
 
 // Valt terug op de default zodra de organizations-tabel nog niet bestaat (migratie nog niet
@@ -37,7 +39,7 @@ export async function getOrgBranding(ownerUserId: string | null | undefined): Pr
   const admin = createAdminClient();
   const { data } = await admin
     .from("organizations")
-    .select("name, logo_url, brand_color")
+    .select("name, logo_url, brand_color, iban")
     .eq("owner_user_id", ownerUserId)
     .maybeSingle();
 
@@ -47,5 +49,6 @@ export async function getOrgBranding(ownerUserId: string | null | undefined): Pr
     name: data.name || DEFAULT_ORGANIZATION_NAME,
     logoUrl: data.logo_url || DEFAULT_LOGO_URL,
     brandColor: data.brand_color || DEFAULT_BRAND_COLOR,
+    iban: data.iban || null,
   };
 }

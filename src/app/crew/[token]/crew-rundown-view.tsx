@@ -246,13 +246,17 @@ export function CrewRundownView({
   );
 
   return (
-    <div className="min-h-screen bg-black text-white" style={{ zoom: FONT_SCALES[fontScale] }}>
+    <div className="min-h-screen bg-black text-white">
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
-        <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} />
-          {t(data.project.name)} &mdash; {t("Crew live")}
+        <div className="flex min-w-0 items-center gap-2 font-heading text-base font-extrabold tracking-tight">
+          <Image src="/logo.png" alt="The Bridge Group B.V." width={28} height={21} className="shrink-0" />
+          <span className="truncate">
+            {t(data.project.name)} &mdash; {t("Crew live")}
+          </span>
         </div>
-        <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        <div className="shrink-0">
+          <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        </div>
       </header>
 
       <div className="mx-auto w-full max-w-3xl space-y-6 px-6 py-8">
@@ -369,7 +373,7 @@ export function CrewRundownView({
               </div>
             </div>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-2" style={{ zoom: FONT_SCALES[fontScale] }}>
             {!rows.length && (
               <p className="text-sm text-white/60">{t("Nog geen cues voor deze rundown.")}</p>
             )}

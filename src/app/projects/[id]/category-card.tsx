@@ -116,6 +116,8 @@ export const CATEGORY_CARD_LABELS = [
   "Kosten toevoegen",
   "Opbouw vanaf",
   "Afbouw vanaf",
+  "Categorie-instellingen",
+  "Details",
 ];
 
 export function CategoryCard({
@@ -147,104 +149,114 @@ export function CategoryCard({
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between gap-2">
-        <CardTitle className="text-base">{t(category.name)}</CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="text-base">{t(category.name)}</CardTitle>
+          <Badge variant="outline">{t(CATEGORY_STATUS_LABELS[category.status])}</Badge>
+        </div>
         <form action={deleteCategory.bind(null, projectId, category.id)}>
           <Button type="submit" variant="ghost" size="sm">
             {t("Categorie verwijderen")}
           </Button>
         </form>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <form
-          action={updateCategory.bind(null, projectId, category.id)}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-4"
-        >
-          <div className="col-span-2 space-y-1.5 sm:col-span-1">
-            <Label htmlFor={`name-${category.id}`}>{t("Naam")}</Label>
-            <Input id={`name-${category.id}`} name="name" defaultValue={category.name} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`status-${category.id}`}>{t("Status")}</Label>
-            <Select
-              name="status"
-              defaultValue={category.status}
-              items={Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => ({
-                value,
-                label: t(label),
-              }))}
+      <CardContent className="space-y-4">
+        <details className="group rounded-md border">
+          <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium">
+            {t("Categorie-instellingen")}
+          </summary>
+          <div className="space-y-3 border-t p-3">
+            <form
+              action={updateCategory.bind(null, projectId, category.id)}
+              className="grid grid-cols-2 gap-3 sm:grid-cols-4"
             >
-              <SelectTrigger id={`status-${category.id}`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {t(label)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <div className="col-span-2 space-y-1.5 sm:col-span-1">
+                <Label htmlFor={`name-${category.id}`}>{t("Naam")}</Label>
+                <Input id={`name-${category.id}`} name="name" defaultValue={category.name} required />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`status-${category.id}`}>{t("Status")}</Label>
+                <Select
+                  name="status"
+                  defaultValue={category.status}
+                  items={Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => ({
+                    value,
+                    label: t(label),
+                  }))}
+                >
+                  <SelectTrigger id={`status-${category.id}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(CATEGORY_STATUS_LABELS).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {t(label)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`margin_type-${category.id}`}>{t("Marge type")}</Label>
+                <Select
+                  name="margin_type"
+                  defaultValue={category.margin_type}
+                  items={[
+                    { value: "percentage", label: t("Percentage") },
+                    { value: "fixed", label: t("Vast bedrag") },
+                  ]}
+                >
+                  <SelectTrigger id={`margin_type-${category.id}`}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="percentage">{t("Percentage")}</SelectItem>
+                    <SelectItem value="fixed">{t("Vast bedrag")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`margin_value-${category.id}`}>{t("Marge waarde")}</Label>
+                <Input
+                  id={`margin_value-${category.id}`}
+                  name="margin_value"
+                  type="number"
+                  step="0.01"
+                  defaultValue={category.margin_value}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`manual_cost-${category.id}`}>{t("Stelpost (indien geen offerte)")}</Label>
+                <Input
+                  id={`manual_cost-${category.id}`}
+                  name="manual_cost"
+                  type="number"
+                  step="0.01"
+                  placeholder={t("Handmatige inschatting")}
+                  defaultValue={category.manual_cost ?? ""}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor={`estimated_km-${category.id}`}>{t("Geschat aantal km (optioneel)")}</Label>
+                <Input
+                  id={`estimated_km-${category.id}`}
+                  name="estimated_km"
+                  type="number"
+                  step="1"
+                  placeholder={t("Voor CO2-indicatie")}
+                  defaultValue={category.estimated_km ?? ""}
+                />
+              </div>
+              <Button type="submit" size="sm" className="col-span-2 sm:col-span-4 sm:w-fit">
+                {t("Opslaan")}
+              </Button>
+            </form>
+            <p className="text-xs text-muted-foreground">
+              {t(
+                "Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een offerte kiest, wint die."
+              )}
+            </p>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`margin_type-${category.id}`}>{t("Marge type")}</Label>
-            <Select
-              name="margin_type"
-              defaultValue={category.margin_type}
-              items={[
-                { value: "percentage", label: t("Percentage") },
-                { value: "fixed", label: t("Vast bedrag") },
-              ]}
-            >
-              <SelectTrigger id={`margin_type-${category.id}`}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="percentage">{t("Percentage")}</SelectItem>
-                <SelectItem value="fixed">{t("Vast bedrag")}</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`margin_value-${category.id}`}>{t("Marge waarde")}</Label>
-            <Input
-              id={`margin_value-${category.id}`}
-              name="margin_value"
-              type="number"
-              step="0.01"
-              defaultValue={category.margin_value}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`manual_cost-${category.id}`}>{t("Stelpost (indien geen offerte)")}</Label>
-            <Input
-              id={`manual_cost-${category.id}`}
-              name="manual_cost"
-              type="number"
-              step="0.01"
-              placeholder={t("Handmatige inschatting")}
-              defaultValue={category.manual_cost ?? ""}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor={`estimated_km-${category.id}`}>{t("Geschat aantal km (optioneel)")}</Label>
-            <Input
-              id={`estimated_km-${category.id}`}
-              name="estimated_km"
-              type="number"
-              step="1"
-              placeholder={t("Voor CO2-indicatie")}
-              defaultValue={category.estimated_km ?? ""}
-            />
-          </div>
-          <Button type="submit" size="sm" className="col-span-2 sm:col-span-4 sm:w-fit">
-            {t("Opslaan")}
-          </Button>
-        </form>
-        <p className="text-xs text-muted-foreground">
-          {t(
-            "Een stelpost telt mee in de begroting zolang er geen gekozen offerte is — zodra je een offerte kiest, wint die."
-          )}
-        </p>
+        </details>
 
         {conflicts && conflicts.length > 0 && (
           <div className="space-y-1 rounded-md border border-yellow-500/50 bg-yellow-500/10 p-2.5 text-xs text-yellow-800">
@@ -303,49 +315,52 @@ export function CategoryCard({
                     </TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell colSpan={4} className="bg-muted/30 p-0">
-                      <QuoteLineItems
-                        projectId={projectId}
-                        quoteId={quote.id}
-                        lineItems={quote.line_items ?? []}
-                        t={t}
-                      />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell colSpan={4} className="bg-muted/10 px-4 py-2">
-                      <form
-                        action={updateQuoteSchedule.bind(null, projectId, quote.id)}
-                        className="flex flex-wrap items-end gap-2"
-                      >
-                        <div className="space-y-1">
-                          <Label htmlFor={`load-in-${quote.id}`} className="text-xs">
-                            {t("Opbouw vanaf")}
-                          </Label>
-                          <Input
-                            id={`load-in-${quote.id}`}
-                            name="load_in_time"
-                            type="time"
-                            defaultValue={quote.load_in_time ?? ""}
-                            className="h-8 w-28"
+                    <TableCell colSpan={4} className="p-0">
+                      <details className="group" open={quote.status === "gekozen"}>
+                        <summary className="cursor-pointer select-none px-4 py-1.5 text-xs text-muted-foreground hover:text-foreground">
+                          {t("Details")}
+                        </summary>
+                        <div className="space-y-3 bg-muted/20 pb-3">
+                          <QuoteLineItems
+                            projectId={projectId}
+                            quoteId={quote.id}
+                            lineItems={quote.line_items ?? []}
+                            t={t}
                           />
+                          <form
+                            action={updateQuoteSchedule.bind(null, projectId, quote.id)}
+                            className="flex flex-wrap items-end gap-2 border-t px-4 pt-3"
+                          >
+                            <div className="space-y-1">
+                              <Label htmlFor={`load-in-${quote.id}`} className="text-xs">
+                                {t("Opbouw vanaf")}
+                              </Label>
+                              <Input
+                                id={`load-in-${quote.id}`}
+                                name="load_in_time"
+                                type="time"
+                                defaultValue={quote.load_in_time ?? ""}
+                                className="h-8 w-28"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`load-out-${quote.id}`} className="text-xs">
+                                {t("Afbouw vanaf")}
+                              </Label>
+                              <Input
+                                id={`load-out-${quote.id}`}
+                                name="load_out_time"
+                                type="time"
+                                defaultValue={quote.load_out_time ?? ""}
+                                className="h-8 w-28"
+                              />
+                            </div>
+                            <Button type="submit" size="sm" variant="secondary" className="h-8">
+                              {t("Opslaan")}
+                            </Button>
+                          </form>
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor={`load-out-${quote.id}`} className="text-xs">
-                            {t("Afbouw vanaf")}
-                          </Label>
-                          <Input
-                            id={`load-out-${quote.id}`}
-                            name="load_out_time"
-                            type="time"
-                            defaultValue={quote.load_out_time ?? ""}
-                            className="h-8 w-28"
-                          />
-                        </div>
-                        <Button type="submit" size="sm" variant="secondary" className="h-8">
-                          {t("Opslaan")}
-                        </Button>
-                      </form>
+                      </details>
                     </TableCell>
                   </TableRow>
                 </Fragment>
@@ -431,16 +446,16 @@ export function CategoryCard({
           </p>
         )}
 
-        <div className="space-y-3 border-t pt-4">
-          <div>
-            <h4 className="text-sm font-semibold">{t("Werkelijke kosten")}</h4>
-            <p className="text-xs text-muted-foreground">
-              {t(
-                "Wat leveranciers daadwerkelijk factureren voor deze categorie, ter vergelijking met de begroting hierboven."
-              )}
-            </p>
-          </div>
-
+        <details className="group border-t pt-4" open={costRows.length > 0}>
+          <summary className="cursor-pointer select-none text-sm font-semibold">
+            {t("Werkelijke kosten")}
+          </summary>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {t(
+              "Wat leveranciers daadwerkelijk factureren voor deze categorie, ter vergelijking met de begroting hierboven."
+            )}
+          </p>
+          <div className="mt-3 space-y-3">
           {effectiveCost !== null && (
             <p className="text-sm">
               {t("Begroot")} <span className="font-medium">{euro(effectiveCost)}</span> ·{" "}
@@ -547,7 +562,8 @@ export function CategoryCard({
               {t("Kosten toevoegen")}
             </Button>
           </form>
-        </div>
+          </div>
+        </details>
       </CardContent>
     </Card>
   );

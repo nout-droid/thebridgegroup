@@ -81,11 +81,13 @@ export function GuestView({
   return (
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
-        <div className="flex items-center gap-2 font-heading text-base font-extrabold tracking-tight">
-          <Image src="/logo.png" alt={organizationName} width={28} height={21} />
-          {organizationName}
+        <div className="flex min-w-0 items-center gap-2 font-heading text-base font-extrabold tracking-tight">
+          <Image src="/logo.png" alt={organizationName} width={28} height={21} className="shrink-0" />
+          <span className="truncate">{organizationName}</span>
         </div>
-        <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        <div className="shrink-0">
+          <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
+        </div>
       </header>
       <div className="mx-auto w-full max-w-2xl space-y-6 px-6 py-8">
         <div>
