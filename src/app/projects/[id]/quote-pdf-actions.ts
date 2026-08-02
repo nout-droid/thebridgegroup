@@ -54,7 +54,7 @@ export async function parseQuotePdf(
   // seconden serieel en loopt vast op de timeout — daarom aliassen in één query ophalen en
   // de fuzzy-match RPC voor de rest parallel (met een limiet) i.p.v. na elkaar uitvoeren.
   const normalizedTexts = [...new Set(lines.map((line) => normalizeAliasText(line.raw_text)))];
-  const [{ data: aliasRows }, { data: categoryAliasRows }, { data: stages }] = await Promise.all([
+  const [{ data: aliasRows }, { data: categoryAliasRows }, { data: stages }, { data: projectCategories }] = await Promise.all([
     normalizedTexts.length
       ? supabase
           .from("article_aliases")
@@ -80,10 +80,38 @@ export async function parseQuotePdf(
       .select("id, name")
       .eq("project_id", projectId)
       .returns<{ id: string; name: string }[]>(),
+    supabase
+      .from("categories")
+      .select("name, stage_id")
+      .eq("project_id", projectId)
+      .returns<{ name: string; stage_id: string | null }[]>(),
   ]);
 
   const aliasByText = new Map((aliasRows ?? []).map((row) => [row.raw_text, row]));
   const categoryAliasByText = new Map((categoryAliasRows ?? []).map((row) => [row.raw_text, row.category]));
+
+  // Als een categorienaam in dit project altijd bij hetzelfde (niet-projectbrede) podium
+  // hoort — bv. "Sound" bestaat alleen onder "Zaal" — dan is dat podium een betrouwbare
+  // gok zodra de categorie zelf matcht, ook als de kop van de leverancier ("Sound") geen
+  // podiumnaam bevat. Komt de naam bij meerdere podia (of ook projectbreed) voor, dan is
+  // het ambigu en blijft het aan de gebruiker.
+  const stageIdByCategoryName = new Map<string, string | null>();
+  const ambiguousCategoryNames = new Set<string>();
+  for (const cat of projectCategories ?? []) {
+    const key = cat.name.trim().toLowerCase();
+    if (!stageIdByCategoryName.has(key)) {
+      stageIdByCategoryName.set(key, cat.stage_id);
+    } else if (stageIdByCategoryName.get(key) !== cat.stage_id) {
+      ambiguousCategoryNames.add(key);
+    }
+  }
+  const stageById = new Map((stages ?? []).map((s) => [s.id, s]));
+  function inferStageFromCategory(category: string): { id: string; name: string } | null {
+    const key = category.trim().toLowerCase();
+    if (!key || ambiguousCategoryNames.has(key)) return null;
+    const stageId = stageIdByCategoryName.get(key);
+    return stageId ? (stageById.get(stageId) ?? null) : null;
+  }
 
   const unmatchedLines = lines.filter((line) => !aliasByText.has(normalizeAliasText(line.raw_text)));
 
@@ -115,15 +143,17 @@ export async function parseQuotePdf(
     const matchedStage = line.heading ? (stageByHeading.get(line.heading) ?? null) : null;
 
     if (alias?.catalog_articles) {
+      const category = catalogCategoryLabel(alias.catalog_articles.category);
+      const stage = matchedStage ?? inferStageFromCategory(category);
       return {
         raw_text: line.raw_text,
         price: line.price,
         matched_article_id: alias.article_id,
         matched_label: alias.catalog_articles.name,
-        category: catalogCategoryLabel(alias.catalog_articles.category),
+        category,
         heading: line.heading,
-        stage_id: matchedStage?.id ?? null,
-        stage_name: matchedStage?.name ?? null,
+        stage_id: stage?.id ?? null,
+        stage_name: stage?.name ?? null,
       };
     }
 
@@ -131,16 +161,20 @@ export async function parseQuotePdf(
     // Eerder handmatig gekozen categorie voor exact deze omschrijving wint van een fuzzy
     // catalogus-gok — de gebruiker heeft dit al eens bevestigd.
     const learnedCategory = categoryAliasByText.get(normalized);
+    const category = learnedCategory ?? (best?.category ? catalogCategoryLabel(best.category) : "");
+    // Kop-gebaseerde match wint (direct signaal uit de PDF zelf); anders proberen we het
+    // podium af te leiden uit de categorie zoals die al in dit project is ingericht.
+    const stage = matchedStage ?? inferStageFromCategory(category);
 
     return {
       raw_text: line.raw_text,
       price: line.price,
       matched_article_id: best?.article_id ?? null,
       matched_label: best?.name ?? null,
-      category: learnedCategory ?? (best?.category ? catalogCategoryLabel(best.category) : ""),
+      category,
       heading: line.heading,
-      stage_id: matchedStage?.id ?? null,
-      stage_name: matchedStage?.name ?? null,
+      stage_id: stage?.id ?? null,
+      stage_name: stage?.name ?? null,
     };
   });
 }
