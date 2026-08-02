@@ -1,7 +1,7 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrganizationName } from "@/lib/server/organization";
-import { checkInCrewMember } from "./actions";
+import { checkInCrewMember, checkOutCrewMember } from "./actions";
 
 interface BadgeMemberRow {
   name: string;
@@ -12,6 +12,7 @@ interface BadgeMemberRow {
   project_id: string;
   access_dates: string[];
   checked_in_at: string | null;
+  checked_out_at: string | null;
   crew_position: { stage: { name: string } | null } | null;
 }
 
@@ -122,15 +123,35 @@ export default async function BadgeScanPage({
         </div>
 
         {accessGranted && (
-          <div className="border-t pt-3">
+          <div className="space-y-2 border-t pt-3">
             {member.checked_in_at ? (
-              <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
-                Ingecheckt om{" "}
-                {new Date(member.checked_in_at).toLocaleTimeString("nl-NL", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              <>
+                <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
+                  Ingecheckt om{" "}
+                  {new Date(member.checked_in_at).toLocaleTimeString("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+                {member.checked_out_at ? (
+                  <p className="rounded-md bg-muted p-3 text-center font-semibold text-muted-foreground">
+                    Uitgecheckt om{" "}
+                    {new Date(member.checked_out_at).toLocaleTimeString("nl-NL", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                ) : (
+                  <form action={checkOutCrewMember.bind(null, token)}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-md border border-primary py-3 text-center font-semibold text-primary"
+                    >
+                      Uitchecken
+                    </button>
+                  </form>
+                )}
+              </>
             ) : (
               <form action={checkInCrewMember.bind(null, token)}>
                 <button

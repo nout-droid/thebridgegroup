@@ -4,6 +4,7 @@ import { generateInvoicePdf } from "@/lib/generate-invoice-pdf";
 import { buildInvoiceGroups } from "@/lib/server/invoice-data";
 import { getOrgBranding } from "@/lib/server/organization";
 import { getAppLang, type AppLang } from "@/lib/server/lang";
+import { getOrigin } from "@/lib/server/origin";
 
 // Zelfde opzet als .../budget/invoice/route.ts, maar dan het document dat je vóór goedkeuring
 // naar de klant stuurt: geen "Factuur" maar "Offerte", eigen nummering (quote_number/
@@ -25,7 +26,7 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, client_name, event_date, user_id, quote_number, quote_date, quote_notes, client_reference")
+    .select("id, name, client_name, event_date, user_id, quote_number, quote_date, quote_notes, client_reference, share_token")
     .eq("id", id)
     .maybeSingle();
 
@@ -48,9 +49,10 @@ export async function GET(
       .eq("id", project.id);
   }
 
-  const [{ groups, totalClientPrice }, branding] = await Promise.all([
+  const [{ groups, totalClientPrice }, branding, origin] = await Promise.all([
     buildInvoiceGroups(supabase, id),
     getOrgBranding(project.user_id),
+    getOrigin(),
   ]);
 
   const pdfBuffer = await generateInvoicePdf(
@@ -68,6 +70,7 @@ export async function GET(
       notes: project.quote_notes || null,
       clientReference: project.client_reference || null,
       iban: branding.iban,
+      portalUrl: `${origin}/share/${project.share_token}`,
     },
     branding
   );

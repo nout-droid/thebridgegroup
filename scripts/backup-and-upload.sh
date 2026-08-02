@@ -38,6 +38,12 @@ fi
 # maar Drive staat duplicate filenames toe — voorkomt verwarring/dubbele backups).
 rclone dedupe --dedupe-mode largest gdrive: --quiet 2>/dev/null || true
 
+# Bewaar 2 weken aan backups op Drive; oudere worden opgeruimd (rclone's Drive-backend
+# verplaatst standaard naar de prullenbak, dus dit is niet direct onomkeerbaar).
+# Niet-fataal: als opruimen mislukt, mag dat de net gelukte backup niet blokkeren.
+rclone delete gdrive: --min-age 14d --include "backup-*.json" --quiet \
+  || echo "WAARSCHUWING: opruimen van oude backups op Drive is mislukt." >&2
+
 rm "$BACKUP_PATH"
 echo "Upload geverifieerd (md5 $LOCAL_MD5) en lokaal bestand verwijderd." >&2
 echo "$FILENAME"

@@ -141,6 +141,7 @@ const STATIC_LABELS = [
   "Live status via de badge-QR (crew) en gasten-badges — bijwerken door de pagina te verversen.",
   "Crew ingecheckt",
   "Gasten ingecheckt",
+  "uitgecheckt",
   "CO2 — dit project",
   "Vluchten (crew)",
   "Transport (km-stelposten)",
@@ -207,8 +208,10 @@ export default async function ProjectPage({
     { count: flightCount },
     { count: accreditedCrewCount },
     { count: checkedInCrewCount },
+    { count: checkedOutCrewCount },
     { count: totalGuestCount },
     { count: checkedInGuestCount },
+    { count: checkedOutGuestCount },
     { data: allPendingDocuments },
     { data: pendingProjectDocuments },
     { data: activity },
@@ -248,12 +251,23 @@ export default async function ProjectPage({
       .eq("project_id", id)
       .eq("accredited", true)
       .not("checked_in_at", "is", null),
+    supabase
+      .from("crew_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .eq("accredited", true)
+      .not("checked_out_at", "is", null),
     supabase.from("event_guests").select("id", { count: "exact", head: true }).eq("project_id", id),
     supabase
       .from("event_guests")
       .select("id", { count: "exact", head: true })
       .eq("project_id", id)
       .not("checked_in_at", "is", null),
+    supabase
+      .from("event_guests")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", id)
+      .not("checked_out_at", "is", null),
     supabase
       .from("quote_documents")
       .select(
@@ -885,11 +899,17 @@ export default async function ProjectPage({
                   <dd className="text-xl font-semibold">
                     {checkedInCrewCount ?? 0}/{accreditedCrewCount ?? 0}
                   </dd>
+                  <dd className="text-xs text-muted-foreground">
+                    {checkedOutCrewCount ?? 0} {t("uitgecheckt")}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-muted-foreground">{t("Gasten ingecheckt")}</dt>
                   <dd className="text-xl font-semibold">
                     {checkedInGuestCount ?? 0}/{totalGuestCount ?? 0}
+                  </dd>
+                  <dd className="text-xs text-muted-foreground">
+                    {checkedOutGuestCount ?? 0} {t("uitgecheckt")}
                   </dd>
                 </div>
               </dl>

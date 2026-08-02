@@ -1,5 +1,6 @@
 import "server-only";
 import path from "node:path";
+import QRCode from "qrcode";
 import { Document, Page, Text, View, Image, Font, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
 import type { OrgBranding } from "./server/organization";
 import type { AppLang } from "./server/lang";
@@ -36,6 +37,9 @@ export interface InvoicePdfData {
   clientReference: string | null;
   // IBAN — organisatie-breed, alleen getoond op de factuur (betaalinstructie).
   iban: string | null;
+  // Absolute URL naar de live klantportal van dit project — als aanwezig wordt er een
+  // QR-code getoond zodat de klant direct naar de actuele status kan scannen.
+  portalUrl: string | null;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -147,6 +151,9 @@ const styles = StyleSheet.create({
   notesText: { fontSize: 9, color: "#333", lineHeight: 1.5 },
   paymentBox: { marginTop: 12 },
   paymentText: { fontSize: 9, color: "#555", lineHeight: 1.5 },
+  qrBox: { flexDirection: "row", alignItems: "center", marginTop: 16, gap: 10 },
+  qrImage: { width: 46, height: 46 },
+  qrText: { fontSize: 8, color: "#888", maxWidth: 320, lineHeight: 1.4 },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -197,6 +204,7 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       notesTitle: "Opmerkingen",
       paymentTitle: "Gelieve het bedrag over te maken naar IBAN",
       paymentSuffix: "onder vermelding van het factuurnummer.",
+      portalText: "Scan voor de actuele status van dit event in de klantportal.",
     },
   },
   en: {
@@ -224,6 +232,7 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       notesTitle: "Notes",
       paymentTitle: "Please transfer the amount to IBAN",
       paymentSuffix: "quoting the invoice number.",
+      portalText: "Scan for the live status of this event in the client portal.",
     },
   },
 };
@@ -231,6 +240,7 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
 export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBranding): Promise<Buffer> {
   registerFonts();
   const logoBuffer = await resolveLogoBuffer(branding);
+  const qrBuffer = data.portalUrl ? await QRCode.toBuffer(data.portalUrl, { margin: 1, width: 200 }) : null;
 
   const l = LABELS[data.lang][data.documentType];
   const shared = LABELS[data.lang].shared;
@@ -349,6 +359,13 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <View style={styles.notesBox}>
               <Text style={styles.notesTitle}>{shared.notesTitle}</Text>
               <Text style={styles.notesText}>{data.notes}</Text>
+            </View>
+          )}
+
+          {qrBuffer && (
+            <View style={styles.qrBox}>
+              <Image src={qrBuffer} style={styles.qrImage} />
+              <Text style={styles.qrText}>{shared.portalText}</Text>
             </View>
           )}
         </View>

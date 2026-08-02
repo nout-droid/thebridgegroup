@@ -250,6 +250,25 @@ export default async function ProjectBudgetPage({
     categoriesByStage.set(category.stage_id, list);
   }
 
+  // Gemiddelde beoordeling per leverancier, om een waarschuwing te tonen bij het uitvragen
+  // van een leverancier met een structureel lage score — zelfde berekening als op /suppliers.
+  const supplierIds = (suppliers ?? []).map((s) => s.id);
+  const { data: supplierRatings } = supplierIds.length
+    ? await supabase.from("supplier_ratings").select("supplier_id, rating").in("supplier_id", supplierIds)
+    : { data: [] as { supplier_id: string; rating: number }[] };
+  const ratingsBySupplier = new Map<string, number[]>();
+  for (const r of supplierRatings ?? []) {
+    const list = ratingsBySupplier.get(r.supplier_id) ?? [];
+    list.push(r.rating);
+    ratingsBySupplier.set(r.supplier_id, list);
+  }
+  const suppliersWithRatings: Supplier[] = (suppliers ?? []).map((s) => {
+    const list = ratingsBySupplier.get(s.id);
+    return list?.length
+      ? { ...s, avg_rating: list.reduce((sum, n) => sum + n, 0) / list.length, rating_count: list.length }
+      : { ...s, avg_rating: null, rating_count: 0 };
+  });
+
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
     ? await supabase
@@ -342,6 +361,7 @@ export default async function ProjectBudgetPage({
     sendRequest: t("Aanvraag versturen"),
     unknownStage: t("Onbekend podium"),
     projectWide: t("Projectbreed"),
+    lowRating: t("Lage beoordeling"),
   };
 
   return (
@@ -574,7 +594,7 @@ export default async function ProjectBudgetPage({
           projectId={project.id}
           categories={categories ?? []}
           stages={stages ?? []}
-          suppliers={suppliers ?? []}
+          suppliers={suppliersWithRatings}
           labels={requestQuotesCardLabels}
           categoryLabels={Object.fromEntries((categories ?? []).map((c) => [c.id, t(c.name)]))}
           stageLabels={Object.fromEntries((stages ?? []).map((s) => [s.id, t(s.name)]))}
@@ -600,7 +620,7 @@ export default async function ProjectBudgetPage({
             title={stage.name}
             categories={categoriesByStage.get(stage.id) ?? []}
             quotesByCategory={quotesByCategory}
-            suppliers={suppliers ?? []}
+            suppliers={suppliersWithRatings}
             conflictsBySupplier={conflictsBySupplier}
             actualCostsByCategory={actualCostsByCategory}
             projectId={project.id}
@@ -613,7 +633,7 @@ export default async function ProjectBudgetPage({
           title="Overige kosten (projectbreed)"
           categories={projectWideCategories}
           quotesByCategory={quotesByCategory}
-          suppliers={suppliers ?? []}
+          suppliers={suppliersWithRatings}
           conflictsBySupplier={conflictsBySupplier}
           actualCostsByCategory={actualCostsByCategory}
           projectId={project.id}

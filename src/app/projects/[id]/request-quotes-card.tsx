@@ -21,6 +21,7 @@ export interface RequestQuotesCardLabels {
   sendRequest: string;
   unknownStage: string;
   projectWide: string;
+  lowRating: string;
 }
 
 export function RequestQuotesCard({
@@ -81,6 +82,11 @@ export function RequestQuotesCard({
               {suppliers.map((supplier) => (
                 <SelectItem key={supplier.id} value={supplier.id}>
                   {supplier.name}
+                  {supplier.avg_rating != null && supplier.avg_rating < 3 && (
+                    <span className="ml-1 text-amber-600">
+                      ⚠️ {labels.lowRating} ({supplier.avg_rating.toFixed(1)}/5)
+                    </span>
+                  )}
                 </SelectItem>
               ))}
             </SelectContent>

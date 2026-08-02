@@ -2,7 +2,7 @@ import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { GUEST_RSVP_STATUS_LABELS, GUEST_TYPE_LABELS, type GuestRsvpStatus, type GuestType } from "@/lib/types";
 import { getOrganizationName } from "@/lib/server/organization";
-import { checkInEventGuest } from "./actions";
+import { checkInEventGuest, checkOutEventGuest } from "./actions";
 
 interface GuestBadgeRow {
   name: string;
@@ -11,6 +11,7 @@ interface GuestBadgeRow {
   plus_ones: number;
   project_id: string;
   checked_in_at: string | null;
+  checked_out_at: string | null;
 }
 
 export default async function GuestBadgeScanPage({
@@ -28,7 +29,7 @@ export default async function GuestBadgeScanPage({
 
   const { data: guest } = await admin
     .from("event_guests")
-    .select("name, guest_type, rsvp_status, plus_ones, project_id, checked_in_at")
+    .select("name, guest_type, rsvp_status, plus_ones, project_id, checked_in_at, checked_out_at")
     .eq("badge_token", token)
     .maybeSingle<GuestBadgeRow>();
 
@@ -87,15 +88,35 @@ export default async function GuestBadgeScanPage({
         </div>
 
         {!declined && (
-          <div className="border-t pt-3">
+          <div className="space-y-2 border-t pt-3">
             {guest.checked_in_at ? (
-              <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
-                Ingecheckt om{" "}
-                {new Date(guest.checked_in_at).toLocaleTimeString("nl-NL", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              <>
+                <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
+                  Ingecheckt om{" "}
+                  {new Date(guest.checked_in_at).toLocaleTimeString("nl-NL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+                {guest.checked_out_at ? (
+                  <p className="rounded-md bg-muted p-3 text-center font-semibold text-muted-foreground">
+                    Uitgecheckt om{" "}
+                    {new Date(guest.checked_out_at).toLocaleTimeString("nl-NL", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                ) : (
+                  <form action={checkOutEventGuest.bind(null, token)}>
+                    <button
+                      type="submit"
+                      className="w-full rounded-md border border-primary py-3 text-center font-semibold text-primary"
+                    >
+                      Uitchecken
+                    </button>
+                  </form>
+                )}
+              </>
             ) : (
               <form action={checkInEventGuest.bind(null, token)}>
                 <button

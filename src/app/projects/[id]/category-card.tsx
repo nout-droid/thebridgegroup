@@ -87,6 +87,7 @@ export const CATEGORY_CARD_LABELS = [
   "CO2 (kg, optioneel)",
   "Bv. transport",
   "Offerte toevoegen",
+  "Lage beoordeling",
   "Klantprijs:",
   "inkoop",
   "+ marge",
@@ -383,6 +384,11 @@ export function CategoryCard({
                 {suppliers.map((supplier) => (
                   <SelectItem key={supplier.id} value={supplier.id}>
                     {supplier.name}
+                    {supplier.avg_rating != null && supplier.avg_rating < 3 && (
+                      <span className="ml-1 text-amber-600">
+                        ⚠️ {t("Lage beoordeling")} ({supplier.avg_rating.toFixed(1)}/5)
+                      </span>
+                    )}
                   </SelectItem>
                 ))}
               </SelectContent>

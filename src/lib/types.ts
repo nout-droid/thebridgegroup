@@ -65,6 +65,7 @@ export interface EventGuest {
   notes: string;
   badge_token: string;
   checked_in_at: string | null;
+  checked_out_at: string | null;
   sort_order: number;
   created_at: string;
 }
@@ -206,6 +207,7 @@ export interface Project {
   quote_notes: string | null;
   client_reference: string | null;
   attendee_app_enabled: boolean;
+  weather_alert_sent_at: string | null;
   created_at: string;
 }
 
@@ -232,6 +234,10 @@ export interface Supplier {
   portal_code: string | null;
   portal_password_hash: string | null;
   created_at: string;
+  // Alleen aanwezig waar expliciet berekend (zie budget/page.tsx) — niet iedere
+  // supplier-query heeft dit nodig, dus geen kolom maar een optioneel client-side veld.
+  avg_rating?: number | null;
+  rating_count?: number;
 }
 
 export interface Venue {
@@ -620,6 +626,8 @@ export interface CrewMember {
   flight_booking_number: string;
   flight_ticket_number: string;
   per_diem_rate: number;
+  checked_in_at: string | null;
+  checked_out_at: string | null;
   supplier?: Supplier;
 }
 

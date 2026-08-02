@@ -108,10 +108,11 @@ export async function duplicateProject(projectId: string) {
     redirect(`/projects?error=${encodeURIComponent(fetchError?.message ?? "Project niet gevonden.")}`);
   }
 
-  // Structuur (podia + categorieën/marges) wordt gedupliceerd — een nieuw startpunt voor een
-  // vergelijkbaar project. Offertes, crew, draaiboek, rider-inhoud en klant-/crew-toegang
-  // worden bewust NIET meegekopieerd (project-specifiek, en toegangswachtwoorden horen niet
-  // over te gaan naar een kopie).
+  // Structuur (podia + categorieën/marges + rider-inhoud) wordt gedupliceerd — een nieuw
+  // startpunt voor een vergelijkbaar (vaak terugkerend) event. Offertes, crew, draaiboek en
+  // klant-/crew-toegang worden bewust NIET meegekopieerd (project-specifiek, en
+  // toegangswachtwoorden horen niet over te gaan naar een kopie). Rider-inhoud (technische
+  // specs, teksten) is juist wél herbruikbaar voor eenzelfde terugkerend event.
   // Loopt via dezelfde security-definer RPC als createProject — zie
   // migrations_create_project_secure_rpc.sql.
   const { data: newId, error } = await supabase.rpc("create_project_secure", {
@@ -167,6 +168,65 @@ export async function duplicateProject(projectId: string) {
         margin_value: category.margin_value,
       }))
     );
+  }
+
+  const { data: originalRider } = await supabase
+    .from("riders")
+    .select("id")
+    .eq("project_id", projectId)
+    .maybeSingle();
+
+  if (originalRider) {
+    const { data: sections } = await supabase
+      .from("rider_sections")
+      .select("id, title, content, editable_by_client, sort_order, include_in_callsheet, stage_id")
+      .eq("rider_id", originalRider.id)
+      .order("sort_order", { ascending: true });
+
+    if (sections?.length) {
+      const { data: newRider } = await supabase
+        .from("riders")
+        .insert({ project_id: created!.id })
+        .select("id")
+        .single();
+
+      if (newRider) {
+        const sectionIdMap = new Map<string, string>();
+        for (const section of sections) {
+          const { data: newSection } = await supabase
+            .from("rider_sections")
+            .insert({
+              rider_id: newRider.id,
+              title: section.title,
+              content: section.content,
+              editable_by_client: section.editable_by_client,
+              sort_order: section.sort_order,
+              include_in_callsheet: section.include_in_callsheet,
+              stage_id: section.stage_id ? stageIdMap.get(section.stage_id) ?? null : null,
+            })
+            .select("id")
+            .single();
+          if (newSection) sectionIdMap.set(section.id, newSection.id);
+        }
+
+        const { data: items } = await supabase
+          .from("rider_section_items")
+          .select("section_id, description, sort_order")
+          .in("section_id", sections.map((s) => s.id));
+
+        if (items?.length) {
+          await supabase.from("rider_section_items").insert(
+            items
+              .filter((item) => sectionIdMap.has(item.section_id))
+              .map((item) => ({
+                section_id: sectionIdMap.get(item.section_id)!,
+                description: item.description,
+                sort_order: item.sort_order,
+              }))
+          );
+        }
+      }
+    }
   }
 
   revalidatePath("/projects");
