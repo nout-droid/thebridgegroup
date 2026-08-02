@@ -18,6 +18,7 @@ import { logAudit } from "@/lib/server/audit";
 import { computeRentalDays } from "@/lib/rental-days";
 import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { draftClientUpdateEmail } from "@/lib/server/ai-client-update";
+import { notifySupplierNewRequest } from "@/lib/server/notify-supplier";
 
 export async function createCategory(
   projectId: string,
@@ -137,6 +138,15 @@ export async function createQuote(projectId: string, categoryId: string, formDat
     co2_kg: co2Kg,
   });
 
+  const { data: category } = await supabase
+    .from("categories")
+    .select("name, project:projects(name)")
+    .eq("id", categoryId)
+    .maybeSingle<{ name: string; project: { name: string } | null }>();
+  if (category?.project) {
+    await notifySupplierNewRequest(supabase, supplierId, category.project.name, [category.name]);
+  }
+
   revalidatePath(`/projects/${projectId}`);
   revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
@@ -156,6 +166,14 @@ export async function requestQuotesForCategories(
     await findOrCreateQuote(supabase, categoryId, supplierId, "");
     const path = await categoryRevalidationPath(supabase, projectId, categoryId);
     revalidatePath(path);
+  }
+
+  const [{ data: project }, { data: categories }] = await Promise.all([
+    supabase.from("projects").select("name").eq("id", projectId).maybeSingle(),
+    supabase.from("categories").select("name").in("id", categoryIds),
+  ]);
+  if (project && categories?.length) {
+    await notifySupplierNewRequest(supabase, supplierId, project.name, categories.map((c) => c.name));
   }
 
   revalidatePath(`/projects/${projectId}`);
