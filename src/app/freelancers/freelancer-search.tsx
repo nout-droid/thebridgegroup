@@ -18,7 +18,7 @@ export function FreelancerSearch({
   labels,
 }: {
   rows: FreelancerRow[];
-  labels: { placeholder: string; role: string; project: string; empty: string };
+  labels: { placeholder: string; name: string; role: string; project: string; empty: string };
 }) {
   const [query, setQuery] = useState("");
 
@@ -44,7 +44,7 @@ export function FreelancerSearch({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-xs text-muted-foreground">
-              <th className="py-2 pr-3">Naam</th>
+              <th className="py-2 pr-3">{labels.name}</th>
               <th className="py-2 pr-3">{labels.role}</th>
               <th className="py-2 pr-3">Skills</th>
               <th className="py-2">{labels.project}</th>

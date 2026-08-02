@@ -10,6 +10,7 @@ const FREELANCERS_PAGE_LABELS = [
   "Freelancers",
   "Alle crew die ooit is toegevoegd, over al je projecten heen — doorzoekbaar op naam, functie of skill, zodat je snel iemand terugvindt die je eerder hebt ingezet.",
   "Zoek op naam, functie of skill…",
+  "Naam",
   "Functie",
   "Project",
   "Geen resultaten.",
@@ -29,6 +30,7 @@ export default async function FreelancersPage() {
     supabase
       .from("crew_members")
       .select("id, name, role, skills, project:projects(id, name)")
+      .neq("name", "")
       .order("name", { ascending: true })
       .returns<CrewRow[]>(),
     getAppLang(),
@@ -66,6 +68,7 @@ export default async function FreelancersPage() {
               rows={rows}
               labels={{
                 placeholder: t("Zoek op naam, functie of skill…"),
+                name: t("Naam"),
                 role: t("Functie"),
                 project: t("Project"),
                 empty: t("Geen resultaten."),
