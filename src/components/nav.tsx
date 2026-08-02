@@ -31,7 +31,9 @@ export async function Nav() {
     "Dashboard",
     "Projecten",
     "Kalender",
+    "Analytics",
     "Leveranciers",
+    "Freelancers",
     "Locaties",
     "Klanten",
     "Team",
@@ -60,8 +62,14 @@ export async function Nav() {
           <Link href="/calendar" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Kalender")}
           </Link>
+          <Link href="/analytics" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+            {t("Analytics")}
+          </Link>
           <Link href="/suppliers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Leveranciers")}
+          </Link>
+          <Link href="/freelancers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+            {t("Freelancers")}
           </Link>
           <Link href="/venues" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
             {t("Locaties")}

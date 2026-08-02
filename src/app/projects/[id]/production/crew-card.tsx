@@ -12,6 +12,7 @@ import type { Translator } from "@/lib/server/translate";
 export const CREW_CARD_LABELS = [
   "Crew & Accreditatie",
   "Alle badges downloaden",
+  "Uren",
   "Wie is er, van welke leverancier, en is de accreditatie geregeld.",
   "Positie:",
   "Uit artiestenrider",
@@ -30,6 +31,8 @@ export const CREW_CARD_LABELS = [
   "Verwijderen",
   "Badge",
   "Crewlid toevoegen",
+  "Skills (komma-gescheiden)",
+  "Bv. FOH, monitoren, rigging",
 ];
 
 const identity: Translator = (text) => text;
@@ -51,14 +54,22 @@ export function CrewCard({
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-base">{t("Crew & Accreditatie")}</CardTitle>
           {members.length > 0 && (
-            <a
-              href={`/projects/${projectId}/production/crew/badges`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary underline"
-            >
-              {t("Alle badges downloaden")}
-            </a>
+            <div className="flex items-center gap-3">
+              <a
+                href={`/projects/${projectId}/production/crew/hours`}
+                className="text-sm text-primary underline"
+              >
+                {t("Uren")}
+              </a>
+              <a
+                href={`/projects/${projectId}/production/crew/badges`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-primary underline"
+              >
+                {t("Alle badges downloaden")}
+              </a>
+            </div>
           )}
         </div>
         <p className="text-sm text-muted-foreground">
@@ -166,9 +177,19 @@ export function CrewCard({
                 {t("Vliegticket nodig")}
               </label>
             </div>
-            <div className="space-y-1 sm:col-span-6">
+            <div className="space-y-1 sm:col-span-3">
               <Label className="text-xs">{t("Toegangsdagen")}</Label>
               <AccessDatesInput defaultValues={member.access_dates} />
+            </div>
+            <div className="space-y-1 sm:col-span-3">
+              <Label htmlFor={`skills-${member.id}`} className="text-xs">{t("Skills (komma-gescheiden)")}</Label>
+              <Input
+                id={`skills-${member.id}`}
+                name="skills"
+                defaultValue={member.skills.join(", ")}
+                placeholder={t("Bv. FOH, monitoren, rigging")}
+                className="h-8 text-xs"
+              />
             </div>
             <div className="flex items-end gap-2 sm:col-span-6">
               <Button type="submit" size="sm" className="h-8 text-xs">
@@ -237,9 +258,13 @@ export function CrewCard({
               {t("Vliegticket nodig")}
             </label>
           </div>
-          <div className="space-y-1 sm:col-span-6">
+          <div className="space-y-1 sm:col-span-3">
             <Label className="text-xs">{t("Toegangsdagen")}</Label>
             <AccessDatesInput />
+          </div>
+          <div className="space-y-1 sm:col-span-3">
+            <Label htmlFor="new-skills" className="text-xs">{t("Skills (komma-gescheiden)")}</Label>
+            <Input id="new-skills" name="skills" placeholder={t("Bv. FOH, monitoren, rigging")} className="h-8 text-xs" />
           </div>
           <div className="sm:col-span-6">
             <Button type="submit" size="sm" className="h-8 text-xs">

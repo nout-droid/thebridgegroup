@@ -24,7 +24,7 @@ import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { computeRentalDays } from "@/lib/rental-days";
 import { computeCo2Total } from "@/lib/co2";
-import { setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
+import { generateClientUpdateDraft, setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
 import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
 import { updateClientRequestStatus } from "./client-requests-actions";
@@ -77,6 +77,10 @@ const STATIC_LABELS = [
   "Productieboek",
   "Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en catering in één PDF — voor de map on-site.",
   "Productieboek downloaden (PDF)",
+  "AI-conceptmail voor klant",
+  "Laat een conceptmail schrijven op basis van de recente activiteit op dit project — controleer en pas aan voor je 'm verstuurt.",
+  "Genereer concept",
+  "Gegenereerd op",
   "Recente activiteit",
   "Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.",
   "Gezien",
@@ -437,6 +441,35 @@ export default async function ProjectPage({
             >
               {t("Productieboek downloaden (PDF)")}
             </a>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("AI-conceptmail voor klant")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Laat een conceptmail schrijven op basis van de recente activiteit op dit project — controleer en pas aan voor je 'm verstuurt."
+              )}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <form action={generateClientUpdateDraft.bind(null, project.id)}>
+              <Button type="submit" size="sm" variant="outline">
+                {t("Genereer concept")}
+              </Button>
+            </form>
+            {project.ai_client_update_draft && (
+              <div className="space-y-1 rounded-md border bg-muted/30 p-3">
+                <p className="whitespace-pre-wrap text-sm">{project.ai_client_update_draft}</p>
+                {project.ai_client_update_generated_at && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("Gegenereerd op")}{" "}
+                    {new Date(project.ai_client_update_generated_at).toLocaleString("nl-NL")}
+                  </p>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 

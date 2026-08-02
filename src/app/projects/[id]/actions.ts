@@ -16,6 +16,8 @@ import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { logAudit } from "@/lib/server/audit";
 import { computeRentalDays } from "@/lib/rental-days";
+import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
+import { draftClientUpdateEmail } from "@/lib/server/ai-client-update";
 
 export async function createCategory(
   projectId: string,
@@ -669,4 +671,44 @@ export async function deleteQuoteLineItem(projectId: string, lineItemId: string)
   revalidatePath(`/projects/${projectId}`);
   revalidatePath(`/projects/${projectId}/budget`);
   revalidatePath(path);
+}
+
+// Concept-status-mail voor de klant, gegenereerd door Claude op basis van de recente
+// activiteit op dit project — puur een startpunt, de producent stuurt zelf (of bewerkt
+// eerst) de uiteindelijke mail. Zonder ANTHROPIC_API_KEY of zonder recente activiteit blijft
+// dit inert, zelfde patroon als de DeepL-vertaling/Resend-mails elders in de app.
+export async function generateClientUpdateDraft(projectId: string) {
+  const supabase = await createClient();
+
+  const { data: project } = await supabase.from("projects").select("name").eq("id", projectId).maybeSingle();
+  if (!project) return;
+
+  const { data: rows } = await supabase
+    .from("activity_log")
+    .select("actor_label, category, description")
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false })
+    .limit(15);
+
+  const entries = (rows ?? []).map((r) => ({
+    categoryLabel: ACTIVITY_CATEGORY_LABELS[r.category] ?? r.category,
+    actorLabel: r.actor_label,
+    description: r.description,
+  }));
+
+  const draft = await draftClientUpdateEmail(project.name, entries);
+  const fallback =
+    entries.length === 0
+      ? "Nog geen recente activiteit om een update over te schrijven."
+      : "AI-concept genereren is niet geconfigureerd (ANTHROPIC_API_KEY ontbreekt) of is mislukt — probeer het later opnieuw.";
+
+  await supabase
+    .from("projects")
+    .update({
+      ai_client_update_draft: draft ?? fallback,
+      ai_client_update_generated_at: new Date().toISOString(),
+    })
+    .eq("id", projectId);
+
+  revalidatePath(`/projects/${projectId}`);
 }

@@ -208,6 +208,8 @@ export interface Project {
   client_reference: string | null;
   attendee_app_enabled: boolean;
   weather_alert_sent_at: string | null;
+  ai_client_update_draft: string | null;
+  ai_client_update_generated_at: string | null;
   created_at: string;
 }
 
@@ -628,6 +630,7 @@ export interface CrewMember {
   per_diem_rate: number;
   checked_in_at: string | null;
   checked_out_at: string | null;
+  skills: string[];
   supplier?: Supplier;
 }
 

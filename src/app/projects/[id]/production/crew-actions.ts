@@ -20,6 +20,10 @@ export async function addCrewMember(projectId: string, formData: FormData) {
   const needsHotel = formData.get("needs_hotel") === "on";
   const needsFlight = formData.get("needs_flight") === "on";
   const accessDates = formData.getAll("access_dates").map(String);
+  const skills = String(formData.get("skills") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   const supabase = await createClient();
   const { count } = await supabase
@@ -39,6 +43,7 @@ export async function addCrewMember(projectId: string, formData: FormData) {
     needs_hotel: needsHotel,
     needs_flight: needsFlight,
     access_dates: accessDates,
+    skills,
     sort_order: count ?? 0,
   });
 
@@ -58,6 +63,10 @@ export async function updateCrewMember(projectId: string, memberId: string, form
   const needsHotel = formData.get("needs_hotel") === "on";
   const needsFlight = formData.get("needs_flight") === "on";
   const accessDates = formData.getAll("access_dates").map(String);
+  const skills = String(formData.get("skills") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   const supabase = await createClient();
   await supabase
@@ -73,6 +82,7 @@ export async function updateCrewMember(projectId: string, memberId: string, form
       needs_hotel: needsHotel,
       needs_flight: needsFlight,
       access_dates: accessDates,
+      skills,
     })
     .eq("id", memberId);
 
