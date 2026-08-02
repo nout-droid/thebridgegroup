@@ -26,7 +26,7 @@ export const ADD_MATERIAL_LIST_ITEM_LABELS = [
 
 export const QUOTE_PDF_IMPORT_LABELS = [
   "Offerte-PDF importeren",
-  "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt.",
+  "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt. Herkent de leverancier eigen kopregels per podium of discipline, dan worden regels daaronder automatisch aan het juiste podium gekoppeld.",
   "Leverancier",
   "Kies leverancier",
   "Bezig...",
@@ -36,13 +36,21 @@ export const QUOTE_PDF_IMPORT_LABELS = [
   "Omschrijving",
   "Bedrag",
   "Categorie",
+  "Podium",
+  "Projectbreed",
+  "Nog te categoriseren",
+  "geen kop herkend",
+  "+ Nieuwe categorie...",
+  "Terug naar lijst",
   "Herkend als:",
   "Verwijderen",
-  "Klaar om over te nemen",
-  "regels",
   "Overnemen als offerte",
   "Kies eerst een leverancier hierboven.",
   "Overnemen als offerte is mislukt. Probeer het opnieuw.",
+  "Standaard podium",
+  "Nog te verwerken:",
+  "regel(s), totaal",
+  "Bevestig alle categorieën",
 ];
 
 export const SCHEDULE_CARD_LABELS = [

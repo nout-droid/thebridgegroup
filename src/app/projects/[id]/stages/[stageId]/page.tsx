@@ -51,6 +51,8 @@ export default async function StagePage({
     { data: materialListItems },
     { data: rentalMultiplier },
     lang,
+    { data: allStages },
+    { data: allProjectCategories },
   ] = await Promise.all([
     supabase
       .from("categories")
@@ -69,6 +71,10 @@ export default async function StagePage({
       .returns<MaterialListItem[]>(),
     supabase.rpc("rental_multiplier", { p_days: computeRentalDays(project) }),
     getAppLang(),
+    // Voor de offerte-PDF-import: alle podia + categorienamen van het hele project, niet
+    // alleen dit podium — een leverancier-offerte kan meerdere podia in één upload bestrijken.
+    supabase.from("stages").select("id, name").eq("project_id", id).returns<{ id: string; name: string }[]>(),
+    supabase.from("categories").select("name").eq("project_id", id).returns<{ name: string }[]>(),
   ]);
 
   const categoryIds = (categories ?? []).map((c) => c.id);
@@ -99,6 +105,8 @@ export default async function StagePage({
     ...MATERIAL_LIST_LABELS,
     ...QUOTE_PDF_IMPORT_LABELS,
     ...(categories ?? []).map((c) => c.name),
+    ...(allStages ?? []).map((s) => s.name),
+    ...(allProjectCategories ?? []).map((c) => c.name),
   ]);
 
   const quotePdfImportLabels: QuotePdfImportLabels = {
@@ -119,13 +127,21 @@ export default async function StagePage({
     description2: t("Omschrijving"),
     amount: t("Bedrag"),
     category: t("Categorie"),
+    stage: t("Podium"),
+    projectWide: t("Projectbreed"),
+    uncategorized: t("Nog te categoriseren"),
+    noHeadingDetected: t("geen kop herkend"),
+    newCategory: t("+ Nieuwe categorie..."),
+    backToList: t("Terug naar lijst"),
     recognizedAs: t("Herkend als:"),
     remove: t("Verwijderen"),
-    readyToConfirm: t("Klaar om over te nemen"),
-    lines: t("regels"),
     confirmAsQuote: t("Overnemen als offerte"),
     chooseSupplierFirst: t("Kies eerst een leverancier hierboven."),
     confirmFailed: t("Overnemen als offerte is mislukt. Probeer het opnieuw."),
+    defaultStage: t("Standaard podium"),
+    pendingPrefix: t("Nog te verwerken:"),
+    pendingLinesSuffix: t("regel(s), totaal"),
+    confirmAllCategorized: t("Bevestig alle categorieën"),
   };
 
   return (
@@ -205,6 +221,8 @@ export default async function StagePage({
         <QuotePdfImport
           projectId={project.id}
           stageId={stage.id}
+          stages={(allStages ?? []).map((s) => ({ id: s.id, name: t(s.name) }))}
+          categoryNames={Array.from(new Set((allProjectCategories ?? []).map((c) => t(c.name)))).sort()}
           suppliers={suppliers ?? []}
           labels={quotePdfImportLabels}
         />

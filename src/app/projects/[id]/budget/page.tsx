@@ -342,13 +342,21 @@ export default async function ProjectBudgetPage({
     description2: t("Omschrijving"),
     amount: t("Bedrag"),
     category: t("Categorie"),
+    stage: t("Podium"),
+    projectWide: t("Projectbreed"),
+    uncategorized: t("Nog te categoriseren"),
+    noHeadingDetected: t("geen kop herkend"),
+    newCategory: t("+ Nieuwe categorie..."),
+    backToList: t("Terug naar lijst"),
     recognizedAs: t("Herkend als:"),
     remove: t("Verwijderen"),
-    readyToConfirm: t("Klaar om over te nemen"),
-    lines: t("regels"),
     confirmAsQuote: t("Overnemen als offerte"),
     chooseSupplierFirst: t("Kies eerst een leverancier hierboven."),
     confirmFailed: t("Overnemen als offerte is mislukt. Probeer het opnieuw."),
+    defaultStage: t("Standaard podium"),
+    pendingPrefix: t("Nog te verwerken:"),
+    pendingLinesSuffix: t("regel(s), totaal"),
+    confirmAllCategorized: t("Bevestig alle categorieën"),
   };
 
   const requestQuotesCardLabels: RequestQuotesCardLabels = {
@@ -603,6 +611,8 @@ export default async function ProjectBudgetPage({
         <QuotePdfImport
           projectId={project.id}
           stageId={null}
+          stages={(stages ?? []).map((s) => ({ id: s.id, name: t(s.name) }))}
+          categoryNames={Array.from(new Set((categories ?? []).map((c) => t(c.name)))).sort()}
           suppliers={suppliers ?? []}
           labels={quotePdfImportLabels}
         />

@@ -3,6 +3,12 @@ import { extractText, getDocumentProxy } from "unpdf";
 export interface ParsedQuoteLine {
   raw_text: string;
   price: number;
+  heading: string | null;
+}
+
+interface ParsedPriceLine {
+  raw_text: string;
+  price: number;
 }
 
 // Regel eindigt op een bedrag zonder €-teken, bv. "Transport 250.00 EUR" — fallback voor
@@ -41,7 +47,7 @@ function stripTrailingColumnNumbers(text: string): string {
   return text.replace(/(?:\s+\d+(?:[.,]\d+)?){1,2}$/, "").trim();
 }
 
-function parseLine(line: string): ParsedQuoteLine | null {
+function parseLine(line: string): ParsedPriceLine | null {
   const euroMatches = [...line.matchAll(EURO_AMOUNT_RE)];
 
   if (euroMatches.length > 0) {
@@ -96,6 +102,44 @@ function findRepeatedBoilerplateLines(pages: string[]): Set<string> {
   return repeated;
 }
 
+// Herkent een kop-regel (bv. "Sound", "Light", "Licht area 1") als: geen bedrag, en begint
+// niet met een aantal-prefix zoals sub-componenten dat wel doen (bv. "2 L-Acoustics - SYVA
+// Top"). Leveranciers groeperen zelf vaak per discipline of podium met zo'n kopregel — nuttig
+// als hint om regels aan een podium te koppelen, ook als de kop zelf geen exacte match oplevert.
+const HEADING_LEADING_QTY_RE = /^\d+\s+\S/;
+
+function isHeadingCandidate(line: string): boolean {
+  return line.length >= 2 && line.length <= 60 && !HEADING_LEADING_QTY_RE.test(line) && !NOISE_RE.test(line);
+}
+
+function normalizeDigits(line: string): string {
+  return line.replace(/\d+/g, "#");
+}
+
+// Paginakop/-voettekst met een wisselend paginanummer erin (bv. "Opdrachtgever : ...
+// pagina : 3 van 10") is op elke pagina net iets anders, dus findRepeatedBoilerplateLines
+// (exacte match) vangt 'm niet. Zonder deze check wordt zo'n regel gezien als een (foute)
+// kopregel en overschrijft die de echte sectiekop (bv. "Sound") voor alle volgende regels.
+function findRepeatedHeadingNoisePatterns(pages: string[]): Set<string> {
+  const counts = new Map<string, number>();
+  for (const page of pages) {
+    const seenOnThisPage = new Set<string>();
+    for (const rawLine of page.split("\n")) {
+      const line = rawLine.trim();
+      if (!line || !isHeadingCandidate(line) || parseLine(line)) continue;
+      const key = normalizeDigits(line);
+      if (seenOnThisPage.has(key)) continue;
+      seenOnThisPage.add(key);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+  }
+  const repeated = new Set<string>();
+  for (const [key, count] of counts) {
+    if (count >= 3) repeated.add(key);
+  }
+  return repeated;
+}
+
 export async function parseQuotePdfFile(file: File): Promise<ParsedQuoteLine[]> {
   const buffer = new Uint8Array(await file.arrayBuffer());
   const pdf = await getDocumentProxy(buffer);
@@ -105,15 +149,21 @@ export async function parseQuotePdfFile(file: File): Promise<ParsedQuoteLine[]> 
   const { text: pages } = await extractText(pdf, { mergePages: false });
 
   const boilerplate = findRepeatedBoilerplateLines(pages);
+  const headingNoise = findRepeatedHeadingNoisePatterns(pages);
   const fullText = pages.join("\n");
 
   const lines: ParsedQuoteLine[] = [];
+  let currentHeading: string | null = null;
   for (const rawLine of fullText.split("\n")) {
     const line = rawLine.trim();
     if (!line || line.length < 4 || boilerplate.has(line)) continue;
 
     const parsed = parseLine(line);
-    if (parsed) lines.push(parsed);
+    if (parsed) {
+      lines.push({ ...parsed, heading: currentHeading });
+    } else if (isHeadingCandidate(line) && !headingNoise.has(normalizeDigits(line))) {
+      currentHeading = line.replace(/:$/, "").trim();
+    }
   }
 
   return lines;
