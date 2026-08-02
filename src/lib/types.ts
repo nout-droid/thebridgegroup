@@ -242,6 +242,15 @@ export interface Supplier {
   rating_count?: number;
 }
 
+export interface VenueDocument {
+  id: string;
+  venue_id: string;
+  title: string;
+  storage_path: string;
+  original_filename: string;
+  created_at: string;
+}
+
 export interface Venue {
   id: string;
   user_id: string;

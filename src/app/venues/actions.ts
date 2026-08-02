@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getTeamOwnerId } from "@/lib/server/team";
+import { deletePortalDocument, uploadPortalDocument } from "@/lib/server/portal-storage";
 
 function optionalText(formData: FormData, key: string): string | null {
   const value = String(formData.get(key) ?? "").trim();
@@ -76,5 +77,44 @@ export async function updateVenue(venueId: string, formData: FormData) {
 export async function deleteVenue(venueId: string) {
   const supabase = await createClient();
   await supabase.from("venues").delete().eq("id", venueId);
+  revalidatePath("/venues");
+}
+
+export async function uploadVenueDocument(venueId: string, formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim();
+  const file = formData.get("file");
+  if (!title || !(file instanceof File) || file.size === 0) return;
+
+  const supabase = await createClient();
+  const path = `venues/${venueId}/${Date.now()}-${file.name}`;
+
+  const { error } = await uploadPortalDocument(path, file);
+  if (error) return;
+
+  await supabase.from("venue_documents").insert({
+    venue_id: venueId,
+    title,
+    storage_path: path,
+    original_filename: file.name,
+  });
+
+  revalidatePath("/venues");
+}
+
+export async function deleteVenueDocument(documentId: string) {
+  const supabase = await createClient();
+
+  const { data: document } = await supabase
+    .from("venue_documents")
+    .select("storage_path")
+    .eq("id", documentId)
+    .maybeSingle();
+
+  await supabase.from("venue_documents").delete().eq("id", documentId);
+
+  if (document?.storage_path) {
+    await deletePortalDocument(document.storage_path);
+  }
+
   revalidatePath("/venues");
 }

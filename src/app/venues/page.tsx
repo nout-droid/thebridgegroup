@@ -6,8 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { Venue } from "@/lib/types";
-import { createVenue, deleteVenue, updateVenue } from "./actions";
+import type { Venue, VenueDocument } from "@/lib/types";
+import { createVenue, deleteVenue, deleteVenueDocument, updateVenue, uploadVenueDocument } from "./actions";
+import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 
@@ -36,6 +37,13 @@ const VENUES_PAGE_LABELS = [
   "personen",
   "Opslaan",
   "Locatie verwijderen",
+  "Documenten & tekeningen",
+  "Titel",
+  "Bv. Plattegrond zaal",
+  "Bestand",
+  "Toevoegen",
+  "Nog geen documenten toegevoegd.",
+  "Verwijderen",
 ];
 
 export default async function VenuesPage() {
@@ -47,6 +55,26 @@ export default async function VenuesPage() {
     supabase.from("venues").select("*").order("name", { ascending: true }).returns<Venue[]>(),
     getAppLang(),
   ]);
+
+  const venueIds = (venues ?? []).map((v) => v.id);
+  const { data: documents } = venueIds.length
+    ? await supabase
+        .from("venue_documents")
+        .select("*")
+        .in("venue_id", venueIds)
+        .order("created_at", { ascending: false })
+        .returns<VenueDocument[]>()
+    : { data: [] as VenueDocument[] };
+
+  const documentsWithUrl = await Promise.all(
+    (documents ?? []).map(async (doc) => ({ ...doc, url: await getSignedPortalUrl(doc.storage_path) }))
+  );
+  const documentsByVenue = new Map<string, (VenueDocument & { url: string | null })[]>();
+  for (const doc of documentsWithUrl) {
+    const list = documentsByVenue.get(doc.venue_id) ?? [];
+    list.push(doc);
+    documentsByVenue.set(doc.venue_id, list);
+  }
 
   const t = await createTranslator(lang, VENUES_PAGE_LABELS);
 
@@ -286,6 +314,60 @@ export default async function VenuesPage() {
                         {t("Opslaan")}
                       </Button>
                     </form>
+
+                    <div className="space-y-3 border-t pt-3">
+                      <Label className="text-sm font-medium">{t("Documenten & tekeningen")}</Label>
+
+                      {!documentsByVenue.get(venue.id)?.length ? (
+                        <p className="text-sm text-muted-foreground">{t("Nog geen documenten toegevoegd.")}</p>
+                      ) : (
+                        <ul className="space-y-1.5">
+                          {documentsByVenue.get(venue.id)!.map((doc) => (
+                            <li key={doc.id} className="flex items-center justify-between gap-2 text-sm">
+                              {doc.url ? (
+                                <a
+                                  href={doc.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="truncate text-primary underline"
+                                >
+                                  {doc.title}
+                                </a>
+                              ) : (
+                                <span className="truncate">{doc.title}</span>
+                              )}
+                              <form action={deleteVenueDocument.bind(null, doc.id)}>
+                                <Button type="submit" size="sm" variant="ghost" className="h-7 text-xs text-destructive">
+                                  {t("Verwijderen")}
+                                </Button>
+                              </form>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+
+                      <form
+                        action={uploadVenueDocument.bind(null, venue.id)}
+                        className="flex flex-wrap items-end gap-2"
+                      >
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`doc-title-${venue.id}`} className="text-xs">{t("Titel")}</Label>
+                          <Input
+                            id={`doc-title-${venue.id}`}
+                            name="title"
+                            placeholder={t("Bv. Plattegrond zaal")}
+                            className="h-8 w-48 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <Label htmlFor={`doc-file-${venue.id}`} className="text-xs">{t("Bestand")}</Label>
+                          <Input id={`doc-file-${venue.id}`} name="file" type="file" className="h-8 text-xs" />
+                        </div>
+                        <Button type="submit" size="sm" className="h-8 text-xs">
+                          {t("Toevoegen")}
+                        </Button>
+                      </form>
+                    </div>
 
                     <form action={deleteVenue.bind(null, venue.id)}>
                       <Button type="submit" size="sm" variant="ghost" className="text-destructive">
