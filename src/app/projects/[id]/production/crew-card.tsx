@@ -7,6 +7,7 @@ import type { CrewMember, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { AccessDatesInput } from "@/components/access-dates-input";
 import { addCrewMember, deleteCrewMember, updateCrewMember } from "./crew-actions";
+import { FreelancerPicker, type FreelancerOption } from "./freelancer-picker";
 import type { Translator } from "@/lib/server/translate";
 
 export const CREW_CARD_LABELS = [
@@ -40,6 +41,8 @@ export const CREW_CARD_LABELS = [
   "KM-tarief (€/km)",
   "Reisafstand (enkele reis):",
   "Vergoeding landt automatisch in de begroting onder \"Crew vergoeding\".",
+  "Kies uit crewdatabase",
+  "Handmatig invoeren",
 ];
 
 function euro(value: number) {
@@ -60,13 +63,26 @@ export function CrewCard({
   projectId,
   members,
   suppliers,
+  freelancers,
   t = identity,
 }: {
   projectId: string;
   members: CrewMember[];
   suppliers: Supplier[];
+  freelancers: FreelancerOption[];
   t?: Translator;
 }) {
+  const pickerLabels = {
+    fromDatabase: t("Kies uit crewdatabase"),
+    manualEntry: t("Handmatig invoeren"),
+    name: t("Naam"),
+    role: t("Functie"),
+    homeAddress: t("Woonadres"),
+    dayRate: t("Dagtarief (€)"),
+    overtimeRate: t("Overurentarief (€/uur)"),
+    kmRate: t("KM-tarief (€/km)"),
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -112,16 +128,20 @@ export function CrewCard({
                 )}
               </div>
             )}
-            <div className="space-y-1">
-              <Label htmlFor={`name-${member.id}`} className="text-xs">{t("Naam")}</Label>
-              <Input
-                id={`name-${member.id}`}
-                name="name"
-                defaultValue={member.name}
-                className="h-8 text-xs"
-                required
-              />
-            </div>
+            <FreelancerPicker
+              freelancers={freelancers}
+              defaultFreelancerId={member.freelancer_id}
+              defaults={{
+                name: member.name,
+                role: member.role,
+                home_address: member.home_address,
+                day_rate: member.day_rate,
+                overtime_rate: member.overtime_rate,
+                km_rate: member.km_rate,
+              }}
+              idPrefix={`existing-${member.id}`}
+              labels={pickerLabels}
+            />
             <div className="space-y-1">
               <Label htmlFor={`supplier-${member.id}`} className="text-xs">{t("Leverancier")}</Label>
               <SupplierSelect
@@ -129,15 +149,6 @@ export function CrewCard({
                 defaultValue={member.supplier_id ?? undefined}
                 suppliers={suppliers}
                 placeholder={t("Kies leverancier")}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor={`role-${member.id}`} className="text-xs">{t("Functie")}</Label>
-              <Input
-                id={`role-${member.id}`}
-                name="role"
-                defaultValue={member.role}
-                className="h-8 text-xs"
               />
             </div>
             <div className="space-y-1">
@@ -211,30 +222,6 @@ export function CrewCard({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor={`day-rate-${member.id}`} className="text-xs">{t("Dagtarief (€)")}</Label>
-              <Input
-                id={`day-rate-${member.id}`}
-                name="day_rate"
-                type="number"
-                step="0.01"
-                min="0"
-                defaultValue={member.day_rate || undefined}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor={`ot-rate-${member.id}`} className="text-xs">{t("Overurentarief (€/uur)")}</Label>
-              <Input
-                id={`ot-rate-${member.id}`}
-                name="overtime_rate"
-                type="number"
-                step="0.01"
-                min="0"
-                defaultValue={member.overtime_rate || undefined}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
               <Label htmlFor={`ot-hours-${member.id}`} className="text-xs">{t("Overuren")}</Label>
               <Input
                 id={`ot-hours-${member.id}`}
@@ -243,27 +230,6 @@ export function CrewCard({
                 step="0.5"
                 min="0"
                 defaultValue={member.overtime_hours || undefined}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1 sm:col-span-2">
-              <Label htmlFor={`home-address-${member.id}`} className="text-xs">{t("Woonadres")}</Label>
-              <Input
-                id={`home-address-${member.id}`}
-                name="home_address"
-                defaultValue={member.home_address}
-                className="h-8 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor={`km-rate-${member.id}`} className="text-xs">{t("KM-tarief (€/km)")}</Label>
-              <Input
-                id={`km-rate-${member.id}`}
-                name="km_rate"
-                type="number"
-                step="0.01"
-                min="0"
-                defaultValue={member.km_rate}
                 className="h-8 text-xs"
               />
             </div>
@@ -304,17 +270,10 @@ export function CrewCard({
           action={addCrewMember.bind(null, projectId)}
           className="grid grid-cols-2 gap-2 border-t pt-4 sm:grid-cols-6"
         >
-          <div className="space-y-1">
-            <Label htmlFor="new-name" className="text-xs">{t("Naam")}</Label>
-            <Input id="new-name" name="name" className="h-8 text-xs" required />
-          </div>
+          <FreelancerPicker freelancers={freelancers} idPrefix="new" labels={pickerLabels} />
           <div className="space-y-1">
             <Label htmlFor="new-supplier" className="text-xs">{t("Leverancier")}</Label>
             <SupplierSelect id="new-supplier" suppliers={suppliers} placeholder={t("Kies leverancier")} />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-role" className="text-xs">{t("Functie")}</Label>
-            <Input id="new-role" name="role" className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-access" className="text-xs">{t("Toegangsniveau")}</Label>
@@ -351,24 +310,8 @@ export function CrewCard({
             <Input id="new-skills" name="skills" placeholder={t("Bv. FOH, monitoren, rigging")} className="h-8 text-xs" />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="new-day-rate" className="text-xs">{t("Dagtarief (€)")}</Label>
-            <Input id="new-day-rate" name="day_rate" type="number" step="0.01" min="0" className="h-8 text-xs" />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-ot-rate" className="text-xs">{t("Overurentarief (€/uur)")}</Label>
-            <Input id="new-ot-rate" name="overtime_rate" type="number" step="0.01" min="0" className="h-8 text-xs" />
-          </div>
-          <div className="space-y-1">
             <Label htmlFor="new-ot-hours" className="text-xs">{t("Overuren")}</Label>
             <Input id="new-ot-hours" name="overtime_hours" type="number" step="0.5" min="0" className="h-8 text-xs" />
-          </div>
-          <div className="space-y-1 sm:col-span-2">
-            <Label htmlFor="new-home-address" className="text-xs">{t("Woonadres")}</Label>
-            <Input id="new-home-address" name="home_address" className="h-8 text-xs" />
-          </div>
-          <div className="space-y-1">
-            <Label htmlFor="new-km-rate" className="text-xs">{t("KM-tarief (€/km)")}</Label>
-            <Input id="new-km-rate" name="km_rate" type="number" step="0.01" min="0" defaultValue={0.23} className="h-8 text-xs" />
           </div>
           <p className="text-xs text-muted-foreground sm:col-span-6">
             {t('Vergoeding landt automatisch in de begroting onder "Crew vergoeding".')}

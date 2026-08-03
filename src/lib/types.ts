@@ -173,6 +173,68 @@ export interface ClientAccountProject {
   share_token: string;
 }
 
+export type SalesLeadStage = "lead" | "contacted" | "proposal" | "quote_sent" | "won" | "lost";
+
+export interface SalesLead {
+  id: string;
+  user_id: string;
+  company_name: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string;
+  website: string;
+  source: string;
+  stage: SalesLeadStage;
+  estimated_value: number;
+  probability_percentage: number;
+  expected_close_date: string | null;
+  notes: string;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+  activities?: SalesLeadActivity[];
+}
+
+export type SalesLeadActivityType = "call" | "email" | "meeting" | "note";
+
+export interface SalesLeadActivity {
+  id: string;
+  lead_id: string;
+  activity_type: SalesLeadActivityType;
+  description: string;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface Freelancer {
+  id: string;
+  user_id: string;
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  home_address: string;
+  day_rate: number;
+  overtime_rate: number;
+  km_rate: number;
+  skills: string[];
+  notes: string;
+  created_at: string;
+  availability?: FreelancerAvailability[];
+}
+
+export type FreelancerAvailabilityStatus = "available" | "unavailable";
+
+export interface FreelancerAvailability {
+  id: string;
+  freelancer_id: string;
+  start_date: string;
+  end_date: string;
+  status: FreelancerAvailabilityStatus;
+  note: string;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;
@@ -646,6 +708,7 @@ export interface CrewMember {
   home_address: string;
   km_rate: number;
   distance_km: number | null;
+  freelancer_id: string | null;
   supplier?: Supplier;
 }
 

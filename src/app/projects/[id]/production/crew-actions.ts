@@ -2,59 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { findOrCreateCategory } from "@/lib/server/category-helpers";
 import { estimateOneWayDistanceKm } from "@/lib/server/distance";
-
-type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+import { getProjectVenueAddress } from "@/lib/server/project-venue";
+import { syncCrewRatesCategory } from "@/lib/server/crew-rates";
 
 function revalidate(projectId: string) {
   revalidatePath(`/projects/${projectId}/production`);
   revalidatePath(`/projects/${projectId}/budget`);
-}
-
-async function getProjectVenueAddress(
-  supabase: SupabaseServerClient,
-  projectId: string
-): Promise<string | null> {
-  const { data: project } = await supabase
-    .from("projects")
-    .select("venue_id")
-    .eq("id", projectId)
-    .maybeSingle();
-  if (!project?.venue_id) return null;
-
-  const { data: venue } = await supabase
-    .from("venues")
-    .select("address")
-    .eq("id", project.venue_id)
-    .maybeSingle();
-  return venue?.address ?? null;
-}
-
-// Vergoeding per crewlid = dagtarief x aantal toegangsdagen, plus overurentarief x
-// overuren, plus KM-vergoeding x reisafstand (retour) x aantal toegangsdagen. Som over
-// iedereen met een naam (geen lege accreditatie-placeholders) landt als stelpost op een
-// aparte "Crew vergoeding"-categorie — zelfde patroon als syncSejoursCategory voor
-// per_diem_rate in hotel-actions.ts.
-async function syncCrewRatesCategory(supabase: SupabaseServerClient, projectId: string) {
-  const { data: members } = await supabase
-    .from("crew_members")
-    .select("name, access_dates, day_rate, overtime_rate, overtime_hours, km_rate, distance_km")
-    .eq("project_id", projectId);
-
-  const total = (members ?? []).reduce((sum, member) => {
-    if (!member.name) return sum;
-    const days = (member.access_dates ?? []).length;
-    const dayCost = (member.day_rate ?? 0) * days;
-    const overtimeCost = (member.overtime_rate ?? 0) * (member.overtime_hours ?? 0);
-    const kmCost = (member.km_rate ?? 0) * (member.distance_km ?? 0) * 2 * days;
-    return sum + dayCost + overtimeCost + kmCost;
-  }, 0);
-
-  const categoryId = await findOrCreateCategory(supabase, projectId, null, "Crew vergoeding");
-  if (categoryId) {
-    await supabase.from("categories").update({ manual_cost: total }).eq("id", categoryId);
-  }
 }
 
 interface MemberFields {
@@ -74,6 +28,7 @@ interface MemberFields {
   overtime_hours: number;
   home_address: string;
   km_rate: number;
+  freelancer_id: string | null;
 }
 
 function parseMemberFields(formData: FormData): MemberFields {
@@ -97,6 +52,7 @@ function parseMemberFields(formData: FormData): MemberFields {
     overtime_hours: Math.max(0, Number(formData.get("overtime_hours") ?? 0)),
     home_address: String(formData.get("home_address") ?? "").trim(),
     km_rate: Math.max(0, Number(formData.get("km_rate") ?? 0)),
+    freelancer_id: String(formData.get("freelancer_id") ?? "") || null,
   };
 }
 
