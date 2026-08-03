@@ -86,6 +86,47 @@ export async function deleteScheduleItem(
   revalidate(projectId, stageId);
 }
 
+// De volgorde binnen een dag is de bron van waarheid voor het draaiboek (net als bij de
+// live rundown_items) — tijd is alleen informatief. Zo kan een producer een activiteit
+// altijd handmatig eerder zetten, ook als er nog geen tijd voor bekend is.
+export async function moveScheduleItem(
+  projectId: string,
+  stageId: string | null,
+  itemId: string,
+  direction: "up" | "down"
+) {
+  const supabase = await createClient();
+
+  const { data: item } = await supabase
+    .from("schedule_items")
+    .select("id, activity_date")
+    .eq("id", itemId)
+    .maybeSingle();
+  if (!item) return;
+
+  let query = supabase
+    .from("schedule_items")
+    .select("id, sort_order")
+    .eq("project_id", projectId)
+    .eq("activity_date", item.activity_date)
+    .order("sort_order", { ascending: true });
+  query = stageId ? query.eq("stage_id", stageId) : query.is("stage_id", null);
+  const { data: items } = await query;
+  if (!items) return;
+
+  const index = items.findIndex((i) => i.id === itemId);
+  const swapIndex = direction === "up" ? index - 1 : index + 1;
+  if (index < 0 || swapIndex < 0 || swapIndex >= items.length) return;
+
+  const current = items[index];
+  const swap = items[swapIndex];
+
+  await supabase.from("schedule_items").update({ sort_order: swap.sort_order }).eq("id", current.id);
+  await supabase.from("schedule_items").update({ sort_order: current.sort_order }).eq("id", swap.id);
+
+  revalidate(projectId, stageId);
+}
+
 export async function addScheduleItemSupplier(
   projectId: string,
   stageId: string | null,

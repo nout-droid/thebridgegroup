@@ -72,6 +72,8 @@ export const SCHEDULE_CARD_LABELS = [
   "Activiteit toevoegen",
   "Uitvoerders (leveranciers) voeg je toe nadat de activiteit is aangemaakt.",
   "Kies leverancier",
+  "Naar boven",
+  "Naar beneden",
 ];
 
 export const EQUIPMENT_CARD_LABELS = [

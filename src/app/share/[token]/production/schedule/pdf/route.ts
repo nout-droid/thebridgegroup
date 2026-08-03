@@ -24,11 +24,11 @@ export async function GET(
   const { data: items } = await admin
     .from("schedule_items")
     .select(
-      "activity_date, activity_time, activity, priority, notes, stage:stages(name), suppliers:schedule_item_suppliers(supplier:suppliers(name))"
+      "activity_date, activity_time, activity, priority, notes, sort_order, stage:stages(name), suppliers:schedule_item_suppliers(supplier:suppliers(name))"
     )
     .eq("project_id", project.id)
     .order("activity_date", { ascending: true })
-    .order("activity_time", { ascending: true });
+    .order("sort_order", { ascending: true });
 
   const entries = (items ?? []).map((item) => ({
     activity_date: item.activity_date,

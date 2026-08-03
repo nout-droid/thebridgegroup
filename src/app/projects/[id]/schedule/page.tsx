@@ -52,6 +52,8 @@ export default async function ProjectSchedulePage({
     addActivity: t("Activiteit toevoegen"),
     addPerformersHint: t("Uitvoerders (leveranciers) voeg je toe nadat de activiteit is aangemaakt."),
     chooseSupplier: t("Kies leverancier"),
+    moveUp: t("Naar boven"),
+    moveDown: t("Naar beneden"),
   };
 
   return (

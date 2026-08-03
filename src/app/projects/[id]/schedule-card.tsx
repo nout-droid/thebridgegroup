@@ -12,6 +12,7 @@ import {
   addScheduleItemSupplier,
   deleteScheduleItem,
   deleteScheduleItemSupplier,
+  moveScheduleItem,
   updateScheduleItem,
 } from "./schedule-actions";
 import { SupplierSelect } from "./supplier-select";
@@ -35,12 +36,16 @@ export interface ScheduleCardLabels {
   addActivity: string;
   addPerformersHint: string;
   chooseSupplier: string;
+  moveUp: string;
+  moveDown: string;
 }
 
+// Volgorde binnen een dag wordt volledig door sort_order bepaald (handmatig instelbaar via
+// de op/neer-knoppen) — tijd is puur informatief en telt niet mee in de sortering. Zo kan
+// een activiteit altijd eerder gezet worden, ook zonder de tijden aan te passen.
 function sortItems(items: ScheduleItem[]): ScheduleItem[] {
   return [...items].sort((a, b) => {
     if (a.activity_date !== b.activity_date) return a.activity_date < b.activity_date ? -1 : 1;
-    if (a.activity_time !== b.activity_time) return a.activity_time < b.activity_time ? -1 : 1;
     return a.sort_order - b.sort_order;
   });
 }
@@ -110,7 +115,7 @@ export function ScheduleCard({
           </div>
         )}
 
-        {dayItems.map((item) => {
+        {dayItems.map((item, index) => {
           const linkedSuppliers = item.suppliers ?? [];
           const linkedSupplierIds = new Set(linkedSuppliers.map((s) => s.supplier_id));
           const availableSuppliers = suppliers.filter((s) => !linkedSupplierIds.has(s.id));
@@ -121,6 +126,30 @@ export function ScheduleCard({
                 action={updateScheduleItem.bind(null, projectId, stageId, item.id)}
                 className="grid grid-cols-2 gap-2 sm:grid-cols-6"
               >
+                <div className="flex items-center gap-1 sm:col-span-6">
+                  <Button
+                    type="submit"
+                    formAction={moveScheduleItem.bind(null, projectId, stageId, item.id, "up")}
+                    size="sm"
+                    variant="outline"
+                    className="h-6 w-6 p-0 text-xs"
+                    disabled={index === 0}
+                    aria-label={labels.moveUp}
+                  >
+                    &uarr;
+                  </Button>
+                  <Button
+                    type="submit"
+                    formAction={moveScheduleItem.bind(null, projectId, stageId, item.id, "down")}
+                    size="sm"
+                    variant="outline"
+                    className="h-6 w-6 p-0 text-xs"
+                    disabled={index === dayItems.length - 1}
+                    aria-label={labels.moveDown}
+                  >
+                    &darr;
+                  </Button>
+                </div>
                 <div className="space-y-1">
                   <Label htmlFor={`date-${item.id}`} className="text-xs">{labels.date}</Label>
                   <Input
