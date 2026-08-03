@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { saveEvaluation } from "../evaluation-actions";
 import { rateSupplier } from "../supplier-rating-actions";
+import { rateCrewMember } from "../crew-rating-actions";
 import { ProjectSubNav } from "../project-sub-nav";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
@@ -30,6 +31,9 @@ const EVALUATION_PAGE_LABELS = [
   "Nog geen leveranciers aan dit project gekoppeld.",
   "Cijfer",
   "Notitie (optioneel)",
+  "Crewbeoordeling",
+  "Beoordeel de crew die op dit project heeft gewerkt, per functie — helpt bij toekomstige boekingskeuzes in de crew-database.",
+  "Nog geen crew met naam aan dit project gekoppeld.",
 ];
 
 export default async function ProjectEvaluationPage({
@@ -89,9 +93,33 @@ export default async function ProjectEvaluationPage({
     : { data: [] as { supplier_id: string; rating: number; note: string }[] };
   const ratingMap = new Map((ratings ?? []).map((r) => [r.supplier_id, r]));
 
+  // Crew met een naam (geen lege accreditatie-plaatshouders) — die beoordeel je per functie,
+  // net als leveranciers hierboven.
+  const { data: namedCrew } = await supabase
+    .from("crew_members")
+    .select("id, name, role")
+    .eq("project_id", id)
+    .neq("name", "")
+    .order("name", { ascending: true })
+    .returns<{ id: string; name: string; role: string }[]>();
+
+  const { data: crewRatings } = namedCrew?.length
+    ? await supabase
+        .from("crew_ratings")
+        .select("crew_member_id, rating, note")
+        .eq("project_id", id)
+        .in(
+          "crew_member_id",
+          namedCrew.map((c) => c.id)
+        )
+    : { data: [] as { crew_member_id: string; rating: number; note: string }[] };
+  const crewRatingMap = new Map((crewRatings ?? []).map((r) => [r.crew_member_id, r]));
+
   const t = await createTranslator(lang, [
     ...EVALUATION_PAGE_LABELS,
     ...involvedSuppliers.map((s) => s.name),
+    ...(namedCrew ?? []).map((c) => c.name),
+    ...(namedCrew ?? []).map((c) => c.role),
   ]);
 
   return (
@@ -151,6 +179,66 @@ export default async function ProjectEvaluationPage({
                   >
                     <div className="min-w-[160px] flex-1 space-y-1">
                       <p className="text-sm font-medium">{t(supplier.name)}</p>
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">{t("Cijfer")}</label>
+                      <Select name="rating" defaultValue={existing?.rating ? String(existing.rating) : "5"}>
+                        <SelectTrigger className="h-9 w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <SelectItem key={n} value={String(n)}>
+                              {n}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="min-w-[200px] flex-1 space-y-1">
+                      <label className="text-xs text-muted-foreground">{t("Notitie (optioneel)")}</label>
+                      <Input name="note" defaultValue={existing?.note ?? ""} className="h-9" />
+                    </div>
+                    <Button type="submit" size="sm" variant="secondary">
+                      {t("Opslaan")}
+                    </Button>
+                  </form>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Crewbeoordeling")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Beoordeel de crew die op dit project heeft gewerkt, per functie — helpt bij toekomstige boekingskeuzes in de crew-database."
+              )}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {!namedCrew?.length ? (
+              <p className="text-sm text-muted-foreground">
+                {t("Nog geen crew met naam aan dit project gekoppeld.")}
+              </p>
+            ) : (
+              namedCrew.map((member) => {
+                const existing = crewRatingMap.get(member.id);
+                return (
+                  <form
+                    key={member.id}
+                    action={rateCrewMember.bind(null, project.id, member.id)}
+                    className="flex flex-wrap items-end gap-3 rounded-md border p-3"
+                  >
+                    <div className="min-w-[160px] flex-1 space-y-1">
+                      <p className="text-sm font-medium">
+                        {t(member.name)}{" "}
+                        {member.role && (
+                          <span className="font-normal text-muted-foreground">({t(member.role)})</span>
+                        )}
+                      </p>
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs text-muted-foreground">{t("Cijfer")}</label>

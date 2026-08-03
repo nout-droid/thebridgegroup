@@ -59,6 +59,13 @@ const FREELANCERS_PAGE_LABELS = [
   "Zoek op naam, functie of skill…",
   "Project",
   "Geen resultaten.",
+  "Openstaande functies",
+  "Posities die wij zelf leveren maar nog niet (volledig) bij naam zijn ingevuld, over al je projecten heen — zo zie je in één overzicht waar nog crew nodig is.",
+  "Nergens openstaande functies.",
+  "nog in te vullen",
+  "van de",
+  "Naar planning",
+  "Algemeen",
 ];
 
 interface CrewRow {
@@ -67,6 +74,15 @@ interface CrewRow {
   role: string;
   skills: string[];
   project: { id: string; name: string } | { id: string; name: string }[] | null;
+}
+
+interface OpenPositionRow {
+  id: string;
+  project_id: string;
+  work_date: string;
+  role: string;
+  quantity: number;
+  stage: { name: string } | { name: string }[] | null;
 }
 
 function euro(value: number) {
@@ -123,10 +139,99 @@ export default async function FreelancersPage({
     availabilityByFreelancer.set(period.freelancer_id, list);
   }
 
+  // Openstaande functies over alle projecten heen: posities die wij zelf leveren
+  // (provided_by = "wij") waarvan nog niet alle plekken bij naam zijn ingevuld — zelfde
+  // "gevuld"-definitie als de Planning-tab per project (crew-planning-card.tsx): crew_members
+  // gekoppeld via crew_position_id met een niet-lege naam.
+  const projectIds = (projects ?? []).map((p) => p.id);
+  const { data: openPositionsRaw } = projectIds.length
+    ? await supabase
+        .from("crew_positions")
+        .select("id, project_id, work_date, role, quantity, stage:stages(name)")
+        .in("project_id", projectIds)
+        .eq("provided_by", "wij")
+        .order("work_date", { ascending: true })
+        .returns<OpenPositionRow[]>()
+    : { data: [] as OpenPositionRow[] };
+
+  const positionIds = (openPositionsRaw ?? []).map((p) => p.id);
+  const { data: linkedMembers } = positionIds.length
+    ? await supabase
+        .from("crew_members")
+        .select("crew_position_id, name")
+        .in("crew_position_id", positionIds)
+        .returns<{ crew_position_id: string; name: string }[]>()
+    : { data: [] as { crew_position_id: string; name: string }[] };
+
+  const filledByPosition = new Map<string, number>();
+  for (const m of linkedMembers ?? []) {
+    if (!m.name) continue;
+    filledByPosition.set(m.crew_position_id, (filledByPosition.get(m.crew_position_id) ?? 0) + 1);
+  }
+
+  const projectNameById = new Map((projects ?? []).map((p) => [p.id, p.name]));
+  const openPositions = (openPositionsRaw ?? [])
+    .map((p) => {
+      const filled = filledByPosition.get(p.id) ?? 0;
+      const stage = Array.isArray(p.stage) ? p.stage[0] : p.stage;
+      return {
+        id: p.id,
+        projectId: p.project_id,
+        projectName: projectNameById.get(p.project_id) ?? "",
+        workDate: p.work_date,
+        role: p.role,
+        stageName: stage?.name ?? null,
+        quantity: p.quantity,
+        filled,
+        open: p.quantity - filled,
+      };
+    })
+    .filter((p) => p.open > 0);
+
+  const openPositionsByProject = new Map<string, typeof openPositions>();
+  for (const p of openPositions) {
+    const list = openPositionsByProject.get(p.projectId) ?? [];
+    list.push(p);
+    openPositionsByProject.set(p.projectId, list);
+  }
+
+  // Gemiddelde beoordeling per functie, over alle projecten heen — ingevuld op de
+  // evaluatiepagina per project (zie src/app/projects/[id]/crew-rating-actions.ts). Per rol
+  // apart gehouden omdat iemand op het ene project als rigger en op het andere als chauffeur
+  // kan werken, met een ander beoordelingsniveau.
+  const { data: crewRatings } = freelancerIds.length
+    ? await supabase
+        .from("crew_ratings")
+        .select("freelancer_id, role, rating")
+        .in("freelancer_id", freelancerIds)
+        .returns<{ freelancer_id: string; role: string; rating: number }[]>()
+    : { data: [] as { freelancer_id: string; role: string; rating: number }[] };
+
+  const ratingsByFreelancer = new Map<string, Map<string, number[]>>();
+  for (const r of crewRatings ?? []) {
+    const byRole = ratingsByFreelancer.get(r.freelancer_id) ?? new Map<string, number[]>();
+    const list = byRole.get(r.role) ?? [];
+    list.push(r.rating);
+    byRole.set(r.role, list);
+    ratingsByFreelancer.set(r.freelancer_id, byRole);
+  }
+  const ratingSummaryByFreelancer = new Map<string, { role: string; avg: number; count: number }[]>();
+  for (const [freelancerId, byRole] of ratingsByFreelancer) {
+    const summary = [...byRole.entries()].map(([role, list]) => ({
+      role,
+      avg: list.reduce((sum, n) => sum + n, 0) / list.length,
+      count: list.length,
+    }));
+    ratingSummaryByFreelancer.set(freelancerId, summary);
+  }
+
   const t = await createTranslator(lang, [
     ...FREELANCERS_PAGE_LABELS,
     ...(freelancers ?? []).map((f) => f.name),
     ...(projects ?? []).map((p) => p.name),
+    ...[...ratingsByFreelancer.values()].flatMap((byRole) => [...byRole.keys()]),
+    ...openPositions.map((p) => p.role),
+    ...openPositions.flatMap((p) => (p.stageName ? [p.stageName] : [])),
   ]);
 
   const rows: FreelancerRow[] = (crew ?? []).map((c) => {
@@ -155,6 +260,55 @@ export default async function FreelancersPage({
         </p>
 
         {error && <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Openstaande functies")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Posities die wij zelf leveren maar nog niet (volledig) bij naam zijn ingevuld, over al je projecten heen — zo zie je in één overzicht waar nog crew nodig is."
+              )}
+            </p>
+          </CardHeader>
+          <CardContent>
+            {openPositions.length === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("Nergens openstaande functies.")}</p>
+            ) : (
+              <div className="space-y-4">
+                {[...openPositionsByProject.entries()].map(([projectId, positions]) => (
+                  <div key={projectId} className="space-y-1.5">
+                    <p className="text-sm font-semibold">{t(projectNameById.get(projectId) ?? "")}</p>
+                    <ul className="space-y-1">
+                      {positions.map((p) => (
+                        <li
+                          key={p.id}
+                          className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-1.5 text-sm"
+                        >
+                          <span>
+                            <span className="font-medium">{t(p.role) || t("Functie")}</span>
+                            {" — "}
+                            {p.workDate}
+                            <span className="text-muted-foreground"> · {p.stageName ? t(p.stageName) : t("Algemeen")}</span>
+                            <span className="text-muted-foreground">
+                              {" · "}
+                              {p.open} {t("nog in te vullen")} ({p.filled} {t("van de")} {p.quantity})
+                            </span>
+                          </span>
+                          <a
+                            href={`/projects/${p.projectId}/production/planning`}
+                            className="text-xs font-medium text-primary underline"
+                          >
+                            {t("Naar planning")}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
@@ -220,6 +374,7 @@ export default async function FreelancersPage({
           <div className="space-y-3">
             {freelancers.map((freelancer) => {
               const periods = availabilityByFreelancer.get(freelancer.id) ?? [];
+              const ratingSummary = ratingSummaryByFreelancer.get(freelancer.id) ?? [];
               return (
                 <details key={freelancer.id} className="rounded-md border p-3">
                   <summary className="flex cursor-pointer items-center justify-between gap-2">
@@ -229,6 +384,16 @@ export default async function FreelancersPage({
                     </span>
                     <Badge variant="secondary">{euro(freelancer.day_rate)}/dag</Badge>
                   </summary>
+
+                  {ratingSummary.length > 0 && (
+                    <p className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      {ratingSummary.map(({ role, avg, count }) => (
+                        <span key={role}>
+                          {t(role) || t("Functie")}: ★ {avg.toFixed(1)} ({count})
+                        </span>
+                      ))}
+                    </p>
+                  )}
 
                   <div className="mt-3 space-y-4 border-t pt-3">
                     <form action={updateFreelancer.bind(null, freelancer.id)} className="space-y-3">

@@ -734,6 +734,17 @@ export interface CrewPosition {
   stage?: Stage;
 }
 
+export interface CrewRating {
+  id: string;
+  project_id: string;
+  crew_member_id: string;
+  freelancer_id: string | null;
+  role: string;
+  rating: number;
+  note: string;
+  created_at: string;
+}
+
 export interface EquipmentReservation {
   id: string;
   project_id: string;
