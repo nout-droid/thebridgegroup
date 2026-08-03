@@ -16,6 +16,7 @@ import {
   createFreelancer,
   deleteAvailability,
   deleteFreelancer,
+  fillCrewPosition,
   updateFreelancer,
 } from "./actions";
 import { getAppLang } from "@/lib/server/lang";
@@ -66,6 +67,7 @@ const FREELANCERS_PAGE_LABELS = [
   "van de",
   "Naar planning",
   "Algemeen",
+  "Kies crewlid",
 ];
 
 interface CrewRow {
@@ -294,12 +296,39 @@ export default async function FreelancersPage({
                               {p.open} {t("nog in te vullen")} ({p.filled} {t("van de")} {p.quantity})
                             </span>
                           </span>
-                          <a
-                            href={`/projects/${p.projectId}/production/planning`}
-                            className="text-xs font-medium text-primary underline"
-                          >
-                            {t("Naar planning")}
-                          </a>
+                          <div className="flex items-center gap-2">
+                            {freelancers && freelancers.length > 0 && (
+                              <form
+                                action={fillCrewPosition.bind(null, p.id)}
+                                className="flex items-center gap-1.5"
+                              >
+                                <select
+                                  name="freelancer_id"
+                                  required
+                                  defaultValue=""
+                                  className="h-7 rounded-md border bg-background px-1.5 text-xs"
+                                >
+                                  <option value="" disabled>
+                                    {t("Kies crewlid")}
+                                  </option>
+                                  {freelancers.map((f) => (
+                                    <option key={f.id} value={f.id}>
+                                      {t(f.name)}
+                                    </option>
+                                  ))}
+                                </select>
+                                <Button type="submit" size="sm" className="h-7 text-xs">
+                                  {t("Toewijzen")}
+                                </Button>
+                              </form>
+                            )}
+                            <a
+                              href={`/projects/${p.projectId}/production/planning`}
+                              className="text-xs font-medium text-primary underline"
+                            >
+                              {t("Naar planning")}
+                            </a>
+                          </div>
                         </li>
                       ))}
                     </ul>

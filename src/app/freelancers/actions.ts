@@ -181,3 +181,106 @@ export async function assignFreelancerToProject(freelancerId: string, formData: 
   revalidatePath(`/projects/${projectId}/budget`);
   redirect(stageId ? `/projects/${projectId}/stages/${stageId}` : `/projects/${projectId}/production`);
 }
+
+// Vult een specifieke openstaande functie (crew_positions-rij) rechtstreeks in vanaf het
+// planners-dashboard (/freelancers) — de planner hoeft daarvoor niet meer naar het project
+// zelf te navigeren. Project, rol en datum liggen al vast op de positie; alleen de persoon
+// wordt hier gekozen. Zelfde dubbele-boeking-check als assignFreelancerToProject hierboven.
+export async function fillCrewPosition(positionId: string, formData: FormData) {
+  const freelancerId = String(formData.get("freelancer_id") ?? "");
+  if (!freelancerId) return;
+
+  const supabase = await createClient();
+
+  const { data: position } = await supabase
+    .from("crew_positions")
+    .select("id, project_id, work_date, role")
+    .eq("id", positionId)
+    .maybeSingle();
+  if (!position) return;
+
+  const { data: freelancer } = await supabase
+    .from("freelancers")
+    .select("*")
+    .eq("id", freelancerId)
+    .maybeSingle();
+  if (!freelancer) return;
+
+  const accessDates = [position.work_date];
+
+  const [{ data: unavailablePeriods }, { data: existingAssignments }] = await Promise.all([
+    supabase
+      .from("freelancer_availability")
+      .select("start_date, end_date")
+      .eq("freelancer_id", freelancerId)
+      .eq("status", "unavailable"),
+    supabase
+      .from("crew_members")
+      .select("access_dates, project:projects(name)")
+      .eq("freelancer_id", freelancerId)
+      .returns<{ access_dates: string[]; project: { name: string } | null }[]>(),
+  ]);
+
+  const blockedByAvailability = (unavailablePeriods ?? []).some((period) =>
+    accessDates.some((date) => date >= period.start_date && date <= period.end_date)
+  );
+  const conflictingProject = (existingAssignments ?? []).find((row) =>
+    (row.access_dates ?? []).some((date) => accessDates.includes(date))
+  );
+
+  if (blockedByAvailability || conflictingProject) {
+    const reason = blockedByAvailability
+      ? "Deze persoon staat als niet beschikbaar geregistreerd op deze datum."
+      : `Deze persoon is al ingepland op "${conflictingProject?.project?.name ?? "een ander project"}" op deze datum.`;
+    redirect(`/freelancers?error=${encodeURIComponent(reason)}`);
+  }
+
+  const venueAddress = await getProjectVenueAddress(supabase, position.project_id);
+  const distanceKm = venueAddress
+    ? await estimateOneWayDistanceKm(freelancer.home_address, venueAddress)
+    : null;
+
+  // Als er al een naamloze plaatshouder-rij voor deze positie bestaat (aangemaakt via de
+  // needs_accreditation-sync op het project zelf), vullen we die in i.p.v. een extra rij toe
+  // te voegen — zo blijft het aantal rijen gelijk aan de gevraagde quantity.
+  const { data: placeholder } = await supabase
+    .from("crew_members")
+    .select("id")
+    .eq("crew_position_id", positionId)
+    .eq("name", "")
+    .limit(1)
+    .maybeSingle();
+
+  const memberFields = {
+    project_id: position.project_id,
+    crew_position_id: positionId,
+    freelancer_id: freelancerId,
+    name: freelancer.name,
+    role: position.role || freelancer.role,
+    access_dates: accessDates,
+    day_rate: freelancer.day_rate,
+    overtime_rate: freelancer.overtime_rate,
+    km_rate: freelancer.km_rate,
+    home_address: freelancer.home_address,
+    distance_km: distanceKm,
+    skills: freelancer.skills,
+  };
+
+  if (placeholder) {
+    await supabase.from("crew_members").update(memberFields).eq("id", placeholder.id);
+  } else {
+    const { count } = await supabase
+      .from("crew_members")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", position.project_id);
+    await supabase.from("crew_members").insert({ ...memberFields, sort_order: count ?? 0 });
+  }
+
+  await syncCrewRatesCategory(supabase, position.project_id);
+
+  revalidatePath("/freelancers");
+  revalidatePath(`/projects/${position.project_id}/production`);
+  revalidatePath(`/projects/${position.project_id}/production/planning`);
+  revalidatePath(`/projects/${position.project_id}/budget`);
+  redirect("/freelancers");
+}
