@@ -59,6 +59,12 @@ export default async function ClientsPage({
   const ownerId = await getTeamOwnerId(supabase, user.id);
   const admin = createAdminClient();
 
+  // De projectenlijst gaat via de gewone (RLS-respecterende) client i.p.v. de service-role
+  // client: anders zag een teamlid met beperkte projecttoegang hier alsnog de namen van
+  // ALLE projecten van de eigenaar in de "Gekoppelde projecten"-checkboxes, ook projecten
+  // waar hij/zij geen toegang toe heeft. Deze pagina is niet naar rol gescreend, dus de
+  // databeperking moet hier vandaan komen.
+  //
   // Deze queries hebben alleen `ownerId` nodig (geen onderlinge afhankelijkheid) — in
   // één keer parallel opvragen i.p.v. na elkaar.
   const [{ data: accounts }, { data: projects }, lang] = await Promise.all([
@@ -68,7 +74,7 @@ export default async function ClientsPage({
       .eq("owner_user_id", ownerId)
       .order("created_at", { ascending: false })
       .returns<ClientAccount[]>(),
-    admin
+    supabase
       .from("projects")
       .select("id, name")
       .eq("user_id", ownerId)
