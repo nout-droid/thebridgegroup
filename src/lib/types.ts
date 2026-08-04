@@ -206,6 +206,35 @@ export interface SalesLeadActivity {
   created_at: string;
 }
 
+export type TenderStage = "geidentificeerd" | "go_no_go" | "ingediend" | "gewonnen" | "verloren";
+
+export interface Tender {
+  id: string;
+  user_id: string;
+  title: string;
+  client_name: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string;
+  stage: TenderStage;
+  estimated_value: number;
+  submission_deadline: string | null;
+  decision_date: string | null;
+  notes: string;
+  project_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TenderActivity {
+  id: string;
+  tender_id: string;
+  activity_type: SalesLeadActivityType;
+  description: string;
+  created_by: string | null;
+  created_at: string;
+}
+
 export interface Freelancer {
   id: string;
   user_id: string;
@@ -1204,6 +1233,7 @@ export const NAV_SECTION_OPTIONS: { value: string; label: string }[] = [
   { value: "calendar", label: "Kalender" },
   { value: "analytics", label: "Analytics" },
   { value: "crm", label: "Sales" },
+  { value: "tenders", label: "Tenders" },
   { value: "suppliers", label: "Leveranciers" },
   { value: "freelancers", label: "Freelancers" },
   { value: "equipment", label: "Materiaal" },

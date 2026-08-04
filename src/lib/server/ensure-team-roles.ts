@@ -7,6 +7,7 @@ const ALL_SECTIONS = [
   "calendar",
   "analytics",
   "crm",
+  "tenders",
   "suppliers",
   "freelancers",
   "equipment",
@@ -42,7 +43,7 @@ const DEFAULT_ROLES: Omit<TeamRoleDef, "id" | "owner_user_id" | "created_at">[] 
     all_projects: true,
     can_view_budget: true,
     can_edit: true,
-    nav_sections: ["projects", "calendar", "analytics", "crm", "clients"],
+    nav_sections: ["projects", "calendar", "analytics", "crm", "tenders", "clients"],
     sort_order: 2,
   },
   {
