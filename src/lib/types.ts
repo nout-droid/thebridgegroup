@@ -1140,6 +1140,7 @@ export interface TeamMember {
   owner_user_id: string;
   member_user_id: string;
   role: TeamRole;
+  role_id: string | null;
   invited_email: string;
   can_view_budget: boolean;
   created_at: string;
@@ -1156,3 +1157,30 @@ export const TEAM_ROLE_LABELS: Record<TeamRole, string> = {
   admin: "Beheerder",
   member: "Lid",
 };
+
+// Uitbreidbaar rechtenprofiel per organisatie — bepaalt of een teamlid alle projecten of
+// alleen toegewezen projecten ziet, wel/geen begroting, wel/geen bewerkrechten, en welke
+// navigatie-onderdelen zichtbaar zijn. Zie ensure-team-roles.ts voor de 5 standaardrollen.
+export interface TeamRoleDef {
+  id: string;
+  owner_user_id: string;
+  name: string;
+  all_projects: boolean;
+  can_view_budget: boolean;
+  can_edit: boolean;
+  nav_sections: string[];
+  sort_order: number;
+  created_at: string;
+}
+
+export const NAV_SECTION_OPTIONS: { value: string; label: string }[] = [
+  { value: "projects", label: "Projecten" },
+  { value: "calendar", label: "Kalender" },
+  { value: "analytics", label: "Analytics" },
+  { value: "crm", label: "Sales" },
+  { value: "suppliers", label: "Leveranciers" },
+  { value: "freelancers", label: "Freelancers" },
+  { value: "venues", label: "Locaties" },
+  { value: "clients", label: "Klanten" },
+  { value: "team", label: "Team" },
+];

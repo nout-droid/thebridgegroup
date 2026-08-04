@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
-import { getTeamOwnerId } from "@/lib/server/team";
+import { getTeamOwnerId, getViewerNavSections } from "@/lib/server/team";
 import { DEFAULT_BRANDING, getOrgBranding } from "@/lib/server/organization";
 
 export async function Nav() {
@@ -16,13 +16,17 @@ export async function Nav() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [flightResult, kmResult, quoteResult, lang, branding] = await Promise.all([
+  const [flightResult, kmResult, quoteResult, lang, branding, navSections] = await Promise.all([
     supabase.from("crew_members").select("id", { count: "exact", head: true }).eq("needs_flight", true),
     supabase.from("categories").select("estimated_km"),
     supabase.from("quotes").select("co2_kg"),
     getAppLang(),
     user ? getTeamOwnerId(supabase, user.id).then(getOrgBranding) : Promise.resolve(DEFAULT_BRANDING),
+    user ? getViewerNavSections(supabase, user.id) : Promise.resolve(null),
   ]);
+
+  // null = alles zien (eigenaar, of teamlid zonder toegewezen rol) — bestaand gedrag.
+  const hasSection = (key: string) => navSections === null || navSections.includes(key);
 
   const totalKm = (kmResult.data ?? []).reduce((sum, row) => sum + (row.estimated_km ?? 0), 0);
   const totalQuoteKg = (quoteResult.data ?? []).reduce((sum, row) => sum + (row.co2_kg ?? 0), 0);
@@ -48,18 +52,20 @@ export async function Nav() {
     </span>
   );
 
-  const mobileLinks: MobileNavLink[] = [
-    { href: "/dashboard", label: t("Dashboard") },
-    { href: "/projects", label: t("Projecten") },
-    { href: "/calendar", label: t("Kalender") },
-    { href: "/analytics", label: t("Analytics") },
-    { href: "/crm", label: t("Sales") },
-    { href: "/suppliers", label: t("Leveranciers") },
-    { href: "/freelancers", label: t("Freelancers") },
-    { href: "/venues", label: t("Locaties") },
-    { href: "/clients", label: t("Klanten") },
-    { href: "/team", label: t("Team") },
-  ];
+  const mobileLinks = (
+    [
+      { href: "/dashboard", label: t("Dashboard") },
+      hasSection("projects") && { href: "/projects", label: t("Projecten") },
+      hasSection("calendar") && { href: "/calendar", label: t("Kalender") },
+      hasSection("analytics") && { href: "/analytics", label: t("Analytics") },
+      hasSection("crm") && { href: "/crm", label: t("Sales") },
+      hasSection("suppliers") && { href: "/suppliers", label: t("Leveranciers") },
+      hasSection("freelancers") && { href: "/freelancers", label: t("Freelancers") },
+      hasSection("venues") && { href: "/venues", label: t("Locaties") },
+      hasSection("clients") && { href: "/clients", label: t("Klanten") },
+      hasSection("team") && { href: "/team", label: t("Team") },
+    ] as (MobileNavLink | false)[]
+  ).filter((link): link is MobileNavLink => Boolean(link));
 
   return (
     <header className="relative border-b border-black bg-black text-white">
@@ -78,33 +84,51 @@ export async function Nav() {
             <Link href="/dashboard" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
               {t("Dashboard")}
             </Link>
-            <Link href="/projects" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Projecten")}
-            </Link>
-            <Link href="/calendar" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Kalender")}
-            </Link>
-            <Link href="/analytics" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Analytics")}
-            </Link>
-            <Link href="/crm" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Sales")}
-            </Link>
-            <Link href="/suppliers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Leveranciers")}
-            </Link>
-            <Link href="/freelancers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Freelancers")}
-            </Link>
-            <Link href="/venues" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Locaties")}
-            </Link>
-            <Link href="/clients" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Klanten")}
-            </Link>
-            <Link href="/team" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
-              {t("Team")}
-            </Link>
+            {hasSection("projects") && (
+              <Link href="/projects" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Projecten")}
+              </Link>
+            )}
+            {hasSection("calendar") && (
+              <Link href="/calendar" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Kalender")}
+              </Link>
+            )}
+            {hasSection("analytics") && (
+              <Link href="/analytics" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Analytics")}
+              </Link>
+            )}
+            {hasSection("crm") && (
+              <Link href="/crm" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Sales")}
+              </Link>
+            )}
+            {hasSection("suppliers") && (
+              <Link href="/suppliers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Leveranciers")}
+              </Link>
+            )}
+            {hasSection("freelancers") && (
+              <Link href="/freelancers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Freelancers")}
+              </Link>
+            )}
+            {hasSection("venues") && (
+              <Link href="/venues" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Locaties")}
+              </Link>
+            )}
+            {hasSection("clients") && (
+              <Link href="/clients" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Klanten")}
+              </Link>
+            )}
+            {hasSection("team") && (
+              <Link href="/team" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Team")}
+              </Link>
+            )}
           </nav>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">

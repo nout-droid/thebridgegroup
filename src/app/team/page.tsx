@@ -15,14 +15,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { AuditLogEntry, Organization, TeamMember } from "@/lib/types";
-import { TEAM_ROLE_LABELS } from "@/lib/types";
+import type { AuditLogEntry, Organization, TeamMember, TeamRoleDef } from "@/lib/types";
+import { TEAM_ROLE_LABELS, NAV_SECTION_OPTIONS } from "@/lib/types";
 import { TeamRoleSelect } from "./role-select";
+import { ensureDefaultTeamRoles } from "@/lib/server/ensure-team-roles";
 import {
   inviteTeamMember,
   updateTeamMemberRole,
   updateTeamMemberAccess,
   removeTeamMember,
+  createTeamRole,
+  updateTeamRole,
+  deleteTeamRole,
 } from "./actions";
 import {
   updateOrganizationName,
@@ -80,7 +84,21 @@ const TEAM_PAGE_LABELS = [
   "Details",
   "Wanneer",
   "Nog geen acties gelogd.",
+  "Rollen & rechten",
+  "Uitbreidbare rechtenprofielen — Management, Technisch producent, Sales, Planner en Crew staan klaar als startpunt, en je kunt ze aanpassen of aanvullen. Een rol bepaalt of iemand alle projecten ziet of alleen toegewezen projecten, wel/geen begroting, wel/geen bewerkrechten, en welke onderdelen in de navigatie verschijnen.",
+  "Naam",
+  "Alle projecten zien (i.p.v. alleen toegewezen)",
+  "Mag Begroting zien",
+  "Mag bewerken (i.p.v. alleen bekijken)",
+  "Zichtbare onderdelen",
+  "Opslaan",
+  "Verwijderen",
+  "Nieuwe rol",
+  "Rol toevoegen",
+  "Rol (rechtenprofiel)",
+  "Geen rol (klassiek: alleen toegewezen projecten, admin-rol hierboven bepaalt teambeheer)",
   ...Object.values(TEAM_ROLE_LABELS),
+  ...NAV_SECTION_OPTIONS.map((o) => o.label),
 ];
 
 function relativeTime(iso: string) {
@@ -152,6 +170,11 @@ export default async function TeamPage({
   const viewerMembership = members?.find((m) => m.member_user_id === user.id);
   const isAdmin = isOwner || viewerMembership?.role === "admin";
   const ownerEmail = ownerAuthUser?.user?.email ?? "—";
+
+  // Alleen beheerders mogen rollen aanmaken (RLS-insert is admin-only), dus alleen voor hen
+  // de standaardrollen seeden — anders blijft de lijst leeg voor gewone leden (die hebben
+  // ook geen rollenbeheer-UI nodig).
+  const roles: TeamRoleDef[] = isAdmin ? await ensureDefaultTeamRoles(supabase, ownerId) : [];
 
   const memberIds = (members ?? []).map((m) => m.id);
   const { data: accessRows } = memberIds.length
@@ -341,6 +364,118 @@ export default async function TeamPage({
           </Card>
         )}
 
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("Rollen & rechten")}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {t(
+                  "Uitbreidbare rechtenprofielen — Management, Technisch producent, Sales, Planner en Crew staan klaar als startpunt, en je kunt ze aanpassen of aanvullen. Een rol bepaalt of iemand alle projecten ziet of alleen toegewezen projecten, wel/geen begroting, wel/geen bewerkrechten, en welke onderdelen in de navigatie verschijnen."
+                )}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {roles.map((role) => (
+                <details key={role.id} className="rounded-md border p-3">
+                  <summary className="cursor-pointer text-sm font-medium">{t(role.name)}</summary>
+                  <form
+                    action={updateTeamRole.bind(null, role.id)}
+                    className="mt-3 space-y-3 border-t pt-3"
+                  >
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t("Naam")}</Label>
+                      <Input name="name" defaultValue={role.name} className="h-8 max-w-xs text-xs" required />
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center gap-1.5 text-xs">
+                        <input type="checkbox" name="all_projects" defaultChecked={role.all_projects} className="h-4 w-4" />
+                        {t("Alle projecten zien (i.p.v. alleen toegewezen)")}
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs">
+                        <input type="checkbox" name="can_view_budget" defaultChecked={role.can_view_budget} className="h-4 w-4" />
+                        {t("Mag Begroting zien")}
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs">
+                        <input type="checkbox" name="can_edit" defaultChecked={role.can_edit} className="h-4 w-4" />
+                        {t("Mag bewerken (i.p.v. alleen bekijken)")}
+                      </label>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">{t("Zichtbare onderdelen")}</Label>
+                      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                        {NAV_SECTION_OPTIONS.map((option) => (
+                          <label key={option.value} className="flex items-center gap-1.5 text-xs">
+                            <input
+                              type="checkbox"
+                              name="nav_sections"
+                              value={option.value}
+                              defaultChecked={role.nav_sections.includes(option.value)}
+                              className="h-4 w-4"
+                            />
+                            {t(option.label)}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button type="submit" size="sm" className="h-7 text-xs">
+                        {t("Opslaan")}
+                      </Button>
+                      <Button
+                        type="submit"
+                        formAction={deleteTeamRole.bind(null, role.id)}
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs text-destructive"
+                      >
+                        {t("Verwijderen")}
+                      </Button>
+                    </div>
+                  </form>
+                </details>
+              ))}
+
+              <details className="rounded-md border p-3">
+                <summary className="cursor-pointer text-sm font-medium">{t("Nieuwe rol")}</summary>
+                <form action={createTeamRole} className="mt-3 space-y-3 border-t pt-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t("Naam")}</Label>
+                    <Input name="name" className="h-8 max-w-xs text-xs" required />
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input type="checkbox" name="all_projects" className="h-4 w-4" />
+                      {t("Alle projecten zien (i.p.v. alleen toegewezen)")}
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input type="checkbox" name="can_view_budget" defaultChecked className="h-4 w-4" />
+                      {t("Mag Begroting zien")}
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs">
+                      <input type="checkbox" name="can_edit" defaultChecked className="h-4 w-4" />
+                      {t("Mag bewerken (i.p.v. alleen bekijken)")}
+                    </label>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">{t("Zichtbare onderdelen")}</Label>
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
+                      {NAV_SECTION_OPTIONS.map((option) => (
+                        <label key={option.value} className="flex items-center gap-1.5 text-xs">
+                          <input type="checkbox" name="nav_sections" value={option.value} className="h-4 w-4" />
+                          {t(option.label)}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <Button type="submit" size="sm" className="h-7 text-xs">
+                    {t("Rol toevoegen")}
+                  </Button>
+                </form>
+              </details>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("Teamleden")}</CardTitle>
@@ -415,6 +550,25 @@ export default async function TeamPage({
                               action={updateTeamMemberAccess.bind(null, member.id)}
                               className="mt-2 space-y-2"
                             >
+                              {roles.length > 0 && (
+                                <div className="space-y-1">
+                                  <Label className="text-xs">{t("Rol (rechtenprofiel)")}</Label>
+                                  <select
+                                    name="role_id"
+                                    defaultValue={member.role_id ?? ""}
+                                    className="h-8 w-full max-w-xs rounded-md border bg-background px-2 text-xs"
+                                  >
+                                    <option value="">
+                                      {t("Geen rol (klassiek: alleen toegewezen projecten, admin-rol hierboven bepaalt teambeheer)")}
+                                    </option>
+                                    {roles.map((role) => (
+                                      <option key={role.id} value={role.id}>
+                                        {t(role.name)}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              )}
                               {!projects?.length ? (
                                 <p className="text-xs text-muted-foreground">
                                   {t("Nog geen projecten aangemaakt.")}

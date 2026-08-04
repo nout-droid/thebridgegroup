@@ -26,3 +26,30 @@ export async function checkCanViewBudget(supabase: SupabaseClient, projectId: st
   const { data } = await supabase.rpc("can_view_budget", { p_project_id: projectId });
   return Boolean(data);
 }
+
+/**
+ * Welke navigatie-onderdelen mag deze gebruiker zien? null = alles (eigenaar, of teamlid
+ * zonder toegewezen rol — bestaand gedrag vóór rollen, geen regressie). Anders de
+ * nav_sections van de aan het teamlid gekoppelde rol.
+ */
+export async function getViewerNavSections(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string[] | null> {
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("role_id, owner_user_id")
+    .eq("member_user_id", userId)
+    .maybeSingle();
+
+  if (!member || member.owner_user_id === userId) return null;
+  if (!member.role_id) return null;
+
+  const { data: role } = await supabase
+    .from("team_roles")
+    .select("nav_sections")
+    .eq("id", member.role_id)
+    .maybeSingle<{ nav_sections: string[] }>();
+
+  return role?.nav_sections ?? null;
+}

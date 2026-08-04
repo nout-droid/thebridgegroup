@@ -118,6 +118,7 @@ export async function updateTeamMemberRole(teamMemberId: string, formData: FormD
 
 export async function updateTeamMemberAccess(teamMemberId: string, formData: FormData) {
   const canViewBudget = formData.get("can_view_budget") === "on";
+  const roleId = String(formData.get("role_id") ?? "") || null;
   const projectIds = formData.getAll("project_id").map(String);
 
   const supabase = await createClient();
@@ -131,7 +132,10 @@ export async function updateTeamMemberAccess(teamMemberId: string, formData: For
     .eq("id", teamMemberId)
     .maybeSingle();
 
-  await supabase.from("team_members").update({ can_view_budget: canViewBudget }).eq("id", teamMemberId);
+  await supabase
+    .from("team_members")
+    .update({ can_view_budget: canViewBudget, role_id: roleId })
+    .eq("id", teamMemberId);
 
   await supabase.from("team_member_project_access").delete().eq("team_member_id", teamMemberId);
   if (projectIds.length) {
@@ -179,5 +183,50 @@ export async function removeTeamMember(teamMemberId: string) {
     });
   }
 
+  revalidatePath("/team");
+}
+
+function parseRoleFields(formData: FormData) {
+  return {
+    name: String(formData.get("name") ?? "").trim(),
+    all_projects: formData.get("all_projects") === "on",
+    can_view_budget: formData.get("can_view_budget") === "on",
+    can_edit: formData.get("can_edit") === "on",
+    nav_sections: formData.getAll("nav_sections").map(String),
+  };
+}
+
+export async function createTeamRole(formData: FormData) {
+  const fields = parseRoleFields(formData);
+  if (!fields.name) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const ownerId = await getTeamOwnerId(supabase, user.id);
+
+  const { count } = await supabase
+    .from("team_roles")
+    .select("id", { count: "exact", head: true })
+    .eq("owner_user_id", ownerId);
+
+  await supabase.from("team_roles").insert({ owner_user_id: ownerId, ...fields, sort_order: count ?? 0 });
+  revalidatePath("/team");
+}
+
+export async function updateTeamRole(roleId: string, formData: FormData) {
+  const fields = parseRoleFields(formData);
+  if (!fields.name) return;
+
+  const supabase = await createClient();
+  await supabase.from("team_roles").update(fields).eq("id", roleId);
+  revalidatePath("/team");
+}
+
+export async function deleteTeamRole(roleId: string) {
+  const supabase = await createClient();
+  await supabase.from("team_roles").delete().eq("id", roleId);
   revalidatePath("/team");
 }
