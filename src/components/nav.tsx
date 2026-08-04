@@ -40,6 +40,7 @@ export async function Nav() {
     "Sales",
     "Leveranciers",
     "Freelancers",
+    "Materiaal",
     "Locaties",
     "Klanten",
     "Team",
@@ -61,6 +62,7 @@ export async function Nav() {
       hasSection("crm") && { href: "/crm", label: t("Sales") },
       hasSection("suppliers") && { href: "/suppliers", label: t("Leveranciers") },
       hasSection("freelancers") && { href: "/freelancers", label: t("Freelancers") },
+      hasSection("equipment") && { href: "/equipment", label: t("Materiaal") },
       hasSection("venues") && { href: "/venues", label: t("Locaties") },
       hasSection("clients") && { href: "/clients", label: t("Klanten") },
       hasSection("team") && { href: "/team", label: t("Team") },
@@ -112,6 +114,11 @@ export async function Nav() {
             {hasSection("freelancers") && (
               <Link href="/freelancers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Freelancers")}
+              </Link>
+            )}
+            {hasSection("equipment") && (
+              <Link href="/equipment" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+                {t("Materiaal")}
               </Link>
             )}
             {hasSection("venues") && (

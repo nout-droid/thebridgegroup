@@ -9,6 +9,7 @@ const ALL_SECTIONS = [
   "crm",
   "suppliers",
   "freelancers",
+  "equipment",
   "venues",
   "clients",
   "team",
@@ -33,7 +34,7 @@ const DEFAULT_ROLES: Omit<TeamRoleDef, "id" | "owner_user_id" | "created_at">[] 
     all_projects: false,
     can_view_budget: true,
     can_edit: true,
-    nav_sections: ["projects", "calendar", "suppliers", "freelancers", "venues"],
+    nav_sections: ["projects", "calendar", "suppliers", "freelancers", "equipment", "venues"],
     sort_order: 1,
   },
   {
@@ -49,7 +50,7 @@ const DEFAULT_ROLES: Omit<TeamRoleDef, "id" | "owner_user_id" | "created_at">[] 
     all_projects: false,
     can_view_budget: false,
     can_edit: true,
-    nav_sections: ["freelancers", "calendar"],
+    nav_sections: ["freelancers", "equipment", "calendar"],
     sort_order: 3,
   },
   {

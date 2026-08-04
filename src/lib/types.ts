@@ -235,6 +235,32 @@ export interface FreelancerAvailability {
   created_at: string;
 }
 
+// Eigen materiaal (dat wij zelf meenemen) — losstaand van de leveranciers-catalogus, die
+// gaat over GEHUURDE spullen. Zie supabase/migrations_equipment_inventory.sql.
+export interface EquipmentItem {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  asset_number: string;
+  quantity_owned: number;
+  internal_day_rate: number;
+  replacement_value: number;
+  notes: string;
+  created_at: string;
+}
+
+export interface EquipmentBooking {
+  id: string;
+  equipment_item_id: string;
+  project_id: string;
+  stage_id: string | null;
+  quantity: number;
+  access_dates: string[];
+  notes: string;
+  created_at: string;
+}
+
 export interface Project {
   id: string;
   user_id: string;
@@ -1180,6 +1206,7 @@ export const NAV_SECTION_OPTIONS: { value: string; label: string }[] = [
   { value: "crm", label: "Sales" },
   { value: "suppliers", label: "Leveranciers" },
   { value: "freelancers", label: "Freelancers" },
+  { value: "equipment", label: "Materiaal" },
   { value: "venues", label: "Locaties" },
   { value: "clients", label: "Klanten" },
   { value: "team", label: "Team" },
