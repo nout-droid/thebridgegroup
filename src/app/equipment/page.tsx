@@ -46,6 +46,8 @@ const EQUIPMENT_PAGE_LABELS = [
   "Pakbon",
   "van de",
   "in bezit",
+  "staffel",
+  "De dagprijs is het basistarief voor de eerste periode (1-4 dagen); langere boekingen schalen automatisch op via dezelfde huurperiode-staffel als de externe verhuurcatalogus.",
 ];
 
 interface BookingRow extends EquipmentBooking {
@@ -100,6 +102,20 @@ export default async function EquipmentPage({
     bookingsByItem.set(booking.equipment_item_id, list);
   }
 
+  // Materiaal wordt via dezelfde huurperiode-staffel geprijsd als de externe catalogus
+  // (rental_multiplier) — de dagprijs is het basistarief, langere boekingen schalen op.
+  const uniqueDayCounts = Array.from(
+    new Set((bookings ?? []).map((b) => (b.access_dates ?? []).length).filter((d) => d > 0))
+  );
+  const multiplierByDays = new Map<number, number>();
+  await Promise.all(
+    uniqueDayCounts.map(async (days) => {
+      const { data: multiplier } = await supabase.rpc("rental_multiplier", { p_days: days });
+      multiplierByDays.set(days, multiplier ?? 1);
+    })
+  );
+  const itemById = new Map((items ?? []).map((i) => [i.id, i]));
+
   const t = await createTranslator(lang, [
     ...EQUIPMENT_PAGE_LABELS,
     ...(items ?? []).map((i) => i.name),
@@ -147,6 +163,11 @@ export default async function EquipmentPage({
                 <div className="space-y-1.5">
                   <Label htmlFor="new-rate">{t("Interne dagprijs (€)")}</Label>
                   <Input id="new-rate" name="internal_day_rate" type="number" step="0.01" min="0" />
+                  <p className="text-[10px] text-muted-foreground">
+                    {t(
+                      "De dagprijs is het basistarief voor de eerste periode (1-4 dagen); langere boekingen schalen automatisch op via dezelfde huurperiode-staffel als de externe verhuurcatalogus."
+                    )}
+                  </p>
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="new-value">{t("Vervangingswaarde (€)")}</Label>
@@ -263,6 +284,10 @@ export default async function EquipmentPage({
                         <ul className="space-y-1">
                           {itemBookings.map((booking) => {
                             const project = Array.isArray(booking.project) ? booking.project[0] : booking.project;
+                            const days = (booking.access_dates ?? []).length;
+                            const multiplier = multiplierByDays.get(days) ?? 1;
+                            const dayRate = itemById.get(booking.equipment_item_id)?.internal_day_rate ?? 0;
+                            const cost = dayRate * booking.quantity * multiplier;
                             return (
                               <li
                                 key={booking.id}
@@ -271,8 +296,8 @@ export default async function EquipmentPage({
                                 <span>
                                   <span className="font-medium">{project ? t(project.name) : "—"}</span>
                                   {" · "}
-                                  {booking.quantity}x · {(booking.access_dates ?? []).length}{" "}
-                                  {t("Toegangsdagen").toLowerCase()}
+                                  {booking.quantity}x · {days} {t("Toegangsdagen").toLowerCase()} · ×
+                                  {multiplier.toFixed(2)} {t("staffel")} · {euro(cost)}
                                 </span>
                                 <span className="flex items-center gap-2">
                                   {project && (
