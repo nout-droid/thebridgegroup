@@ -1,6 +1,26 @@
 import type { NextConfig } from "next";
 
+// Standaard hardening-headers, van toepassing op elke response. Content-Security-Policy is
+// hier bewust nog niet toegevoegd: deze app laadt org-geüploade logo's van onbekende domeinen,
+// gaat naar Stripe Checkout, en praat met Supabase Storage/DeepL/Resend — een CSP moet eerst in
+// report-only getest worden tegen die hele lijst voordat hij live mag, anders breekt hij ergens
+// stilletjes iets. De headers hieronder hebben dat risico niet.
+const securityHeaders = [
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: securityHeaders,
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "5mb",
