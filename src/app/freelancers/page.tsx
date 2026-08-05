@@ -124,19 +124,50 @@ export default async function FreelancersPage({
       .select("id, name, role, skills, project:projects(id, name)")
       .neq("name", "")
       .order("name", { ascending: true })
+      .limit(500)
       .returns<CrewRow[]>(),
     getAppLang(),
   ]);
 
   const freelancerIds = (freelancers ?? []).map((f) => f.id);
-  const { data: availability } = freelancerIds.length
-    ? await supabase
-        .from("freelancer_availability")
-        .select("*")
-        .in("freelancer_id", freelancerIds)
-        .order("start_date", { ascending: true })
-        .returns<FreelancerAvailability[]>()
-    : { data: [] as FreelancerAvailability[] };
+  const projectIds = (projects ?? []).map((p) => p.id);
+
+  // Deze drie hangen alleen af van freelancerIds/projectIds hierboven, niet van elkaar —
+  // dus parallel opvragen i.p.v. na elkaar.
+  const [{ data: availability }, { data: openPositionsRaw }, { data: crewRatings }] = await Promise.all([
+    freelancerIds.length
+      ? supabase
+          .from("freelancer_availability")
+          .select("*")
+          .in("freelancer_id", freelancerIds)
+          .order("start_date", { ascending: true })
+          .returns<FreelancerAvailability[]>()
+      : Promise.resolve({ data: [] as FreelancerAvailability[] }),
+    // Openstaande functies over alle projecten heen: posities die wij zelf leveren
+    // (provided_by = "wij") waarvan nog niet alle plekken bij naam zijn ingevuld — zelfde
+    // "gevuld"-definitie als de Planning-tab per project (crew-planning-card.tsx): crew_members
+    // gekoppeld via crew_position_id met een niet-lege naam.
+    projectIds.length
+      ? supabase
+          .from("crew_positions")
+          .select("id, project_id, work_date, role, quantity, stage:stages(name)")
+          .in("project_id", projectIds)
+          .eq("provided_by", "wij")
+          .order("work_date", { ascending: true })
+          .returns<OpenPositionRow[]>()
+      : Promise.resolve({ data: [] as OpenPositionRow[] }),
+    // Gemiddelde beoordeling per functie, over alle projecten heen — ingevuld op de
+    // evaluatiepagina per project (zie src/app/projects/[id]/crew-rating-actions.ts). Per rol
+    // apart gehouden omdat iemand op het ene project als rigger en op het andere als chauffeur
+    // kan werken, met een ander beoordelingsniveau.
+    freelancerIds.length
+      ? supabase
+          .from("crew_ratings")
+          .select("freelancer_id, role, rating")
+          .in("freelancer_id", freelancerIds)
+          .returns<{ freelancer_id: string; role: string; rating: number }[]>()
+      : Promise.resolve({ data: [] as { freelancer_id: string; role: string; rating: number }[] }),
+  ]);
 
   const availabilityByFreelancer = new Map<string, FreelancerAvailability[]>();
   for (const period of availability ?? []) {
@@ -144,21 +175,6 @@ export default async function FreelancersPage({
     list.push(period);
     availabilityByFreelancer.set(period.freelancer_id, list);
   }
-
-  // Openstaande functies over alle projecten heen: posities die wij zelf leveren
-  // (provided_by = "wij") waarvan nog niet alle plekken bij naam zijn ingevuld — zelfde
-  // "gevuld"-definitie als de Planning-tab per project (crew-planning-card.tsx): crew_members
-  // gekoppeld via crew_position_id met een niet-lege naam.
-  const projectIds = (projects ?? []).map((p) => p.id);
-  const { data: openPositionsRaw } = projectIds.length
-    ? await supabase
-        .from("crew_positions")
-        .select("id, project_id, work_date, role, quantity, stage:stages(name)")
-        .in("project_id", projectIds)
-        .eq("provided_by", "wij")
-        .order("work_date", { ascending: true })
-        .returns<OpenPositionRow[]>()
-    : { data: [] as OpenPositionRow[] };
 
   const positionIds = (openPositionsRaw ?? []).map((p) => p.id);
   const { data: linkedMembers } = positionIds.length
@@ -200,18 +216,6 @@ export default async function FreelancersPage({
     list.push(p);
     openPositionsByProject.set(p.projectId, list);
   }
-
-  // Gemiddelde beoordeling per functie, over alle projecten heen — ingevuld op de
-  // evaluatiepagina per project (zie src/app/projects/[id]/crew-rating-actions.ts). Per rol
-  // apart gehouden omdat iemand op het ene project als rigger en op het andere als chauffeur
-  // kan werken, met een ander beoordelingsniveau.
-  const { data: crewRatings } = freelancerIds.length
-    ? await supabase
-        .from("crew_ratings")
-        .select("freelancer_id, role, rating")
-        .in("freelancer_id", freelancerIds)
-        .returns<{ freelancer_id: string; role: string; rating: number }[]>()
-    : { data: [] as { freelancer_id: string; role: string; rating: number }[] };
 
   const ratingsByFreelancer = new Map<string, Map<string, number[]>>();
   for (const r of crewRatings ?? []) {

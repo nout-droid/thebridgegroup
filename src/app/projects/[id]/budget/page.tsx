@@ -252,10 +252,23 @@ export default async function ProjectBudgetPage({
 
   // Gemiddelde beoordeling per leverancier, om een waarschuwing te tonen bij het uitvragen
   // van een leverancier met een structureel lage score — zelfde berekening als op /suppliers.
+  // Deze twee hangen alleen af van de eerste Promise.all hierboven, niet van elkaar — parallel
+  // opvragen i.p.v. na elkaar.
   const supplierIds = (suppliers ?? []).map((s) => s.id);
-  const { data: supplierRatings } = supplierIds.length
-    ? await supabase.from("supplier_ratings").select("supplier_id, rating").in("supplier_id", supplierIds)
-    : { data: [] as { supplier_id: string; rating: number }[] };
+  const categoryIds = (categories ?? []).map((c) => c.id);
+  const [{ data: supplierRatings }, { data: quotes }] = await Promise.all([
+    supplierIds.length
+      ? supabase.from("supplier_ratings").select("supplier_id, rating").in("supplier_id", supplierIds)
+      : Promise.resolve({ data: [] as { supplier_id: string; rating: number }[] }),
+    categoryIds.length
+      ? supabase
+          .from("quotes")
+          .select("*, supplier:suppliers(*), line_items:quote_line_items(*)")
+          .in("category_id", categoryIds)
+          .order("created_at", { ascending: true })
+          .returns<Quote[]>()
+      : Promise.resolve({ data: [] as Quote[] }),
+  ]);
   const ratingsBySupplier = new Map<string, number[]>();
   for (const r of supplierRatings ?? []) {
     const list = ratingsBySupplier.get(r.supplier_id) ?? [];
@@ -268,16 +281,6 @@ export default async function ProjectBudgetPage({
       ? { ...s, avg_rating: list.reduce((sum, n) => sum + n, 0) / list.length, rating_count: list.length }
       : { ...s, avg_rating: null, rating_count: 0 };
   });
-
-  const categoryIds = (categories ?? []).map((c) => c.id);
-  const { data: quotes } = categoryIds.length
-    ? await supabase
-        .from("quotes")
-        .select("*, supplier:suppliers(*), line_items:quote_line_items(*)")
-        .in("category_id", categoryIds)
-        .order("created_at", { ascending: true })
-        .returns<Quote[]>()
-    : { data: [] as Quote[] };
 
   const quotesByCategory = new Map<string, Quote[]>();
   for (const quote of quotes ?? []) {

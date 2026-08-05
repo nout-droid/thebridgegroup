@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
-import { getTeamOwnerId, getViewerNavSections } from "@/lib/server/team";
+import { getViewerTeamInfo } from "@/lib/server/team";
 import { DEFAULT_BRANDING, getOrgBranding } from "@/lib/server/organization";
 
 export async function Nav() {
@@ -19,15 +19,17 @@ export async function Nav() {
   // co2_totals() doet de som in Postgres i.p.v. alle crew/categorie/offerte-rijen van de hele
   // organisatie naar de client te sturen om ze hier in JS op te tellen — dit draait op vrijwel
   // elke ingelogde pagina, dus dat verschil telt op.
-  const [co2Result, lang, branding, navSections] = await Promise.all([
+  const [co2Result, lang, teamInfo] = await Promise.all([
     supabase
       .rpc("co2_totals")
       .returns<{ flight_count: number; total_km: number; total_co2_kg: number }[]>()
       .maybeSingle(),
     getAppLang(),
-    user ? getTeamOwnerId(supabase, user.id).then(getOrgBranding) : Promise.resolve(DEFAULT_BRANDING),
-    user ? getViewerNavSections(supabase, user.id) : Promise.resolve(null),
+    user ? getViewerTeamInfo(supabase, user.id) : Promise.resolve(null),
   ]);
+
+  const branding = teamInfo ? await getOrgBranding(teamInfo.ownerId) : DEFAULT_BRANDING;
+  const navSections = teamInfo?.navSections ?? null;
 
   // null = alles zien (eigenaar, of teamlid zonder toegewezen rol) — bestaand gedrag.
   const hasSection = (key: string) => navSections === null || navSections.includes(key);

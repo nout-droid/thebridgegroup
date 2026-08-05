@@ -53,3 +53,32 @@ export async function getViewerNavSections(
 
   return role?.nav_sections ?? null;
 }
+
+/**
+ * Combineert getTeamOwnerId + getViewerNavSections in één team_members-select i.p.v. twee
+ * losse queries op dezelfde rij — gebruikt in nav.tsx, dat op vrijwel elke ingelogde pagina
+ * draait, dus dat verschil telt op (zie ook co2_totals() voor dezelfde reden).
+ */
+export async function getViewerTeamInfo(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<{ ownerId: string; navSections: string[] | null }> {
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("role_id, owner_user_id")
+    .eq("member_user_id", userId)
+    .maybeSingle();
+
+  if (!member) return { ownerId: userId, navSections: null };
+  if (member.owner_user_id === userId || !member.role_id) {
+    return { ownerId: member.owner_user_id, navSections: null };
+  }
+
+  const { data: role } = await supabase
+    .from("team_roles")
+    .select("nav_sections")
+    .eq("id", member.role_id)
+    .maybeSingle<{ nav_sections: string[] }>();
+
+  return { ownerId: member.owner_user_id, navSections: role?.nav_sections ?? null };
+}

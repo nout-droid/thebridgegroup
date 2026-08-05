@@ -284,11 +284,12 @@ export default async function ProjectPage({
     supabase
       .from("quote_documents")
       .select(
-        "id, original_filename, created_at, quote:quotes(id, supplier:suppliers(name), category:categories(name, project_id))"
+        "id, original_filename, created_at, quote:quotes!inner(id, supplier:suppliers(name), category:categories!inner(name, project_id))"
       )
       .eq("uploaded_by", "supplier")
       .is("confirmed_at", null)
       .not("quote_id", "is", null)
+      .eq("quote.category.project_id", id)
       .returns<PendingDocumentRow[]>(),
     supabase
       .from("quote_documents")
@@ -373,9 +374,7 @@ export default async function ProjectPage({
   const shareUrl = `${protocol}://${host}/share/${project.share_token}`;
   const portalUrl = `${protocol}://${host}/portal`;
 
-  const pendingDocuments = (allPendingDocuments ?? []).filter(
-    (d) => d.quote?.category?.project_id === id
-  );
+  const pendingDocuments = allPendingDocuments ?? [];
   const t = await createTranslator(lang, [
     ...STATIC_LABELS,
     ...(stages ?? []).map((s) => s.name),
