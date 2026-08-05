@@ -16,10 +16,14 @@ export async function Nav() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const [flightResult, kmResult, quoteResult, lang, branding, navSections] = await Promise.all([
-    supabase.from("crew_members").select("id", { count: "exact", head: true }).eq("needs_flight", true),
-    supabase.from("categories").select("estimated_km"),
-    supabase.from("quotes").select("co2_kg"),
+  // co2_totals() doet de som in Postgres i.p.v. alle crew/categorie/offerte-rijen van de hele
+  // organisatie naar de client te sturen om ze hier in JS op te tellen — dit draait op vrijwel
+  // elke ingelogde pagina, dus dat verschil telt op.
+  const [co2Result, lang, branding, navSections] = await Promise.all([
+    supabase
+      .rpc("co2_totals")
+      .returns<{ flight_count: number; total_km: number; total_co2_kg: number }[]>()
+      .maybeSingle(),
     getAppLang(),
     user ? getTeamOwnerId(supabase, user.id).then(getOrgBranding) : Promise.resolve(DEFAULT_BRANDING),
     user ? getViewerNavSections(supabase, user.id) : Promise.resolve(null),
@@ -28,9 +32,11 @@ export async function Nav() {
   // null = alles zien (eigenaar, of teamlid zonder toegewezen rol) — bestaand gedrag.
   const hasSection = (key: string) => navSections === null || navSections.includes(key);
 
-  const totalKm = (kmResult.data ?? []).reduce((sum, row) => sum + (row.estimated_km ?? 0), 0);
-  const totalQuoteKg = (quoteResult.data ?? []).reduce((sum, row) => sum + (row.co2_kg ?? 0), 0);
-  const co2 = computeCo2Total(flightResult.count ?? 0, totalKm, totalQuoteKg);
+  const co2 = computeCo2Total(
+    co2Result.data?.flight_count ?? 0,
+    co2Result.data?.total_km ?? 0,
+    co2Result.data?.total_co2_kg ?? 0
+  );
 
   const t = await createTranslator(lang, [
     "Dashboard",
