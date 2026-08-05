@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -101,7 +102,7 @@ export default async function FreelancersPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
 

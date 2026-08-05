@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getTeamOwnerId } from "@/lib/server/team";
@@ -122,7 +123,7 @@ export default async function TeamPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
   const isOwner = ownerId === user.id;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -166,7 +167,7 @@ export default async function DashboardPage() {
     getAppLang(),
   ]);
 
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const allProjects = projects ?? [];
   const todayStr = new Date().toISOString().slice(0, 10);

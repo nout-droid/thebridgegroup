@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
@@ -76,7 +77,7 @@ export default async function TendersPage() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
 
