@@ -13,7 +13,7 @@ export function MobileNavToggle({ links }: { links: MobileNavLink[] }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="2xl:hidden">
+    <div className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
