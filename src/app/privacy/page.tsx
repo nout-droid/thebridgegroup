@@ -13,10 +13,6 @@ export default function PrivacyPage() {
         <h1 className="font-heading text-3xl font-extrabold uppercase tracking-tight">
           Privacyverklaring
         </h1>
-        <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-          Dit is een conceptversie op basis van een standaard SaaS-sjabloon. Laat deze tekst
-          controleren door een jurist voordat je 'm als definitief beschouwt.
-        </p>
         <p className="text-sm text-muted-foreground">Laatst bijgewerkt: {new Date().toLocaleDateString("nl-NL")}</p>
 
         <section className="space-y-2">
