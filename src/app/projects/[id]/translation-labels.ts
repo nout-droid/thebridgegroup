@@ -197,6 +197,19 @@ export const CREW_PLANNING_CARD_LABELS = [
   "Nieuwe positie toevoegen",
   "Kies podium",
   "Kies leverancier",
+  "Gekoppelde mensen",
+  "Kies uit crewdatabase",
+  "Handmatig invoeren",
+  "Naam",
+  "Woonadres",
+  "Dagtarief (€)",
+  "Overurentarief (€/uur)",
+  "KM-tarief (€/km)",
+  "Verkoopprijs dag (€)",
+  "Verkoopprijs overuren (€/uur)",
+  "Verkoopprijs km (€/km)",
+  "Opslaan",
+  "Ontkoppelen",
 ];
 
 export const REQUEST_QUOTES_CARD_LABELS = [

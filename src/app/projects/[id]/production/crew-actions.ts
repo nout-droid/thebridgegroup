@@ -2,8 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import { estimateOneWayDistanceKm } from "@/lib/server/distance";
-import { getProjectVenueAddress } from "@/lib/server/project-venue";
 import { syncCrewRatesCategory } from "@/lib/server/crew-rates";
 
 function revalidate(projectId: string) {
@@ -11,6 +9,10 @@ function revalidate(projectId: string) {
   revalidatePath(`/projects/${projectId}/budget`);
 }
 
+// Puur accreditatie-velden — geen tarieven/woonadres/km hier. Wie iemand is en wat die kost
+// wordt in Planning geregeld (crew-planning-actions.ts::linkPersonToPosition, dat de
+// dag/overuren/km-tarieven + verkoopprijs overneemt van de crewdatabase). Dit formulier zou
+// anders bij elke opslag de daar gezette tarieven stilzwijgend op 0 zetten.
 interface MemberFields {
   name: string;
   supplier_id: string | null;
@@ -23,12 +25,6 @@ interface MemberFields {
   needs_flight: boolean;
   access_dates: string[];
   skills: string[];
-  day_rate: number;
-  overtime_rate: number;
-  overtime_hours: number;
-  home_address: string;
-  km_rate: number;
-  freelancer_id: string | null;
 }
 
 function parseMemberFields(formData: FormData): MemberFields {
@@ -47,12 +43,6 @@ function parseMemberFields(formData: FormData): MemberFields {
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean),
-    day_rate: Math.max(0, Number(formData.get("day_rate") ?? 0)),
-    overtime_rate: Math.max(0, Number(formData.get("overtime_rate") ?? 0)),
-    overtime_hours: Math.max(0, Number(formData.get("overtime_hours") ?? 0)),
-    home_address: String(formData.get("home_address") ?? "").trim(),
-    km_rate: Math.max(0, Number(formData.get("km_rate") ?? 0)),
-    freelancer_id: String(formData.get("freelancer_id") ?? "") || null,
   };
 }
 
@@ -61,11 +51,6 @@ export async function addCrewMember(projectId: string, formData: FormData) {
   if (!fields.name) return;
 
   const supabase = await createClient();
-  const venueAddress = await getProjectVenueAddress(supabase, projectId);
-  const distanceKm = venueAddress
-    ? await estimateOneWayDistanceKm(fields.home_address, venueAddress)
-    : null;
-
   const { count } = await supabase
     .from("crew_members")
     .select("id", { count: "exact", head: true })
@@ -74,7 +59,6 @@ export async function addCrewMember(projectId: string, formData: FormData) {
   await supabase.from("crew_members").insert({
     project_id: projectId,
     ...fields,
-    distance_km: distanceKm,
     sort_order: count ?? 0,
   });
 
@@ -87,15 +71,7 @@ export async function updateCrewMember(projectId: string, memberId: string, form
   if (!fields.name) return;
 
   const supabase = await createClient();
-  const venueAddress = await getProjectVenueAddress(supabase, projectId);
-  const distanceKm = venueAddress
-    ? await estimateOneWayDistanceKm(fields.home_address, venueAddress)
-    : null;
-
-  await supabase
-    .from("crew_members")
-    .update({ ...fields, distance_km: distanceKm })
-    .eq("id", memberId);
+  await supabase.from("crew_members").update(fields).eq("id", memberId);
 
   await syncCrewRatesCategory(supabase, projectId);
   revalidate(projectId);

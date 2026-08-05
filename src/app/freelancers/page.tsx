@@ -35,6 +35,9 @@ const FREELANCERS_PAGE_LABELS = [
   "Dagtarief (€)",
   "Overurentarief (€/uur)",
   "KM-tarief (€/km)",
+  "Verkoopprijs dag (€)",
+  "Verkoopprijs overuren (€/uur)",
+  "Verkoopprijs km (€/km)",
   "Skills (komma-gescheiden)",
   "Bv. FOH, monitoren, rigging",
   "Notities",
@@ -379,6 +382,18 @@ export default async function FreelancersPage({
                   <Label htmlFor="new-km-rate">{t("KM-tarief (€/km)")}</Label>
                   <Input id="new-km-rate" name="km_rate" type="number" step="0.01" min="0" defaultValue={0.23} />
                 </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-sell-day-rate">{t("Verkoopprijs dag (€)")}</Label>
+                  <Input id="new-sell-day-rate" name="sell_day_rate" type="number" step="0.01" min="0" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-sell-ot-rate">{t("Verkoopprijs overuren (€/uur)")}</Label>
+                  <Input id="new-sell-ot-rate" name="sell_overtime_rate" type="number" step="0.01" min="0" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-sell-km-rate">{t("Verkoopprijs km (€/km)")}</Label>
+                  <Input id="new-sell-km-rate" name="sell_km_rate" type="number" step="0.01" min="0" />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="new-skills">{t("Skills (komma-gescheiden)")}</Label>
@@ -478,6 +493,42 @@ export default async function FreelancersPage({
                             step="0.01"
                             min="0"
                             defaultValue={freelancer.km_rate}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">{t("Verkoopprijs dag (€)")}</Label>
+                          <Input
+                            name="sell_day_rate"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={String(freelancer.day_rate)}
+                            defaultValue={freelancer.sell_day_rate ?? undefined}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">{t("Verkoopprijs overuren (€/uur)")}</Label>
+                          <Input
+                            name="sell_overtime_rate"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={String(freelancer.overtime_rate)}
+                            defaultValue={freelancer.sell_overtime_rate ?? undefined}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">{t("Verkoopprijs km (€/km)")}</Label>
+                          <Input
+                            name="sell_km_rate"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={String(freelancer.km_rate)}
+                            defaultValue={freelancer.sell_km_rate ?? undefined}
                             className="h-8 text-xs"
                           />
                         </div>

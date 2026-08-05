@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
+import { getTeamOwnerId } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { CrewMember, CrewPosition, Stage, Supplier } from "@/lib/types";
 import { ProjectSubNav } from "../../project-sub-nav";
 import { ProductionSubNav } from "../production-sub-nav";
 import { CrewPlanningCard, type CrewPlanningCardLabels } from "../crew-planning-card";
+import type { FreelancerOption } from "../freelancer-picker";
 import { CREW_PLANNING_CARD_LABELS } from "../../translation-labels";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
@@ -17,10 +19,14 @@ export default async function ProductionPlanningPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const ownerId = user ? await getTeamOwnerId(supabase, user.id) : null;
 
-  // Deze queries hebben alleen `id` nodig — dus in één keer parallel opvragen i.p.v. na
-  // elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
-  const [project, { data: positions }, { data: suppliers }, { data: stages }, { data: linkedMembers }, lang] =
+  // Deze queries hebben alleen `id` (of ownerId) nodig — dus in één keer parallel opvragen
+  // i.p.v. na elkaar, anders wacht elke pageload op losse round-trips naar Supabase.
+  const [project, { data: positions }, { data: suppliers }, { data: stages }, { data: linkedMembers }, { data: freelancers }, lang] =
     await Promise.all([
       getProjectOrNotFound(supabase, id),
       supabase
@@ -42,6 +48,16 @@ export default async function ProductionPlanningPage({
         .eq("project_id", id)
         .not("crew_position_id", "is", null)
         .returns<CrewMember[]>(),
+      ownerId
+        ? supabase
+            .from("freelancers")
+            .select(
+              "id, name, role, home_address, day_rate, overtime_rate, km_rate, sell_day_rate, sell_overtime_rate, sell_km_rate"
+            )
+            .eq("user_id", ownerId)
+            .order("name", { ascending: true })
+            .returns<FreelancerOption[]>()
+        : Promise.resolve({ data: [] as FreelancerOption[] }),
       getAppLang(),
     ]);
 
@@ -82,6 +98,19 @@ export default async function ProductionPlanningPage({
     addNewPosition: t("Nieuwe positie toevoegen"),
     chooseStage: t("Kies podium"),
     chooseSupplier: t("Kies leverancier"),
+    linkedPeople: t("Gekoppelde mensen"),
+    fromDatabase: t("Kies uit crewdatabase"),
+    manualEntry: t("Handmatig invoeren"),
+    name: t("Naam"),
+    homeAddress: t("Woonadres"),
+    dayRate: t("Dagtarief (€)"),
+    overtimeRate: t("Overurentarief (€/uur)"),
+    kmRate: t("KM-tarief (€/km)"),
+    sellDayRate: t("Verkoopprijs dag (€)"),
+    sellOvertimeRate: t("Verkoopprijs overuren (€/uur)"),
+    sellKmRate: t("Verkoopprijs km (€/km)"),
+    savePerson: t("Opslaan"),
+    unlink: t("Ontkoppelen"),
   };
 
   return (
@@ -96,6 +125,7 @@ export default async function ProductionPlanningPage({
           suppliers={suppliers ?? []}
           stages={stages ?? []}
           linkedMembers={linkedMembers ?? []}
+          freelancers={freelancers ?? []}
           labels={labels}
         />
       </main>

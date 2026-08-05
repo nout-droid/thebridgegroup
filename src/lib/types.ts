@@ -246,6 +246,9 @@ export interface Freelancer {
   day_rate: number;
   overtime_rate: number;
   km_rate: number;
+  sell_day_rate: number | null;
+  sell_overtime_rate: number | null;
+  sell_km_rate: number | null;
   skills: string[];
   notes: string;
   created_at: string;
@@ -784,6 +787,9 @@ export interface CrewMember {
   overtime_hours: number;
   home_address: string;
   km_rate: number;
+  sell_day_rate: number | null;
+  sell_overtime_rate: number | null;
+  sell_km_rate: number | null;
   distance_km: number | null;
   freelancer_id: string | null;
   supplier?: Supplier;

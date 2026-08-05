@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import type { CrewMember, CrewPosition, Stage, Supplier } from "@/lib/types";
 import { SupplierSelect } from "../supplier-select";
 import { StageSelect } from "../stage-select";
-import { addCrewPosition, deleteCrewPosition, updateCrewPosition } from "./crew-planning-actions";
+import { addCrewPosition, deleteCrewPosition, savePositionMember, unlinkCrewPosition, updateCrewPosition } from "./crew-planning-actions";
+import { FreelancerPicker, type FreelancerOption } from "./freelancer-picker";
 
 export interface CrewPlanningCardLabels {
   title: string;
@@ -44,6 +45,86 @@ export interface CrewPlanningCardLabels {
   addNewPosition: string;
   chooseStage: string;
   chooseSupplier: string;
+  linkedPeople: string;
+  fromDatabase: string;
+  manualEntry: string;
+  name: string;
+  homeAddress: string;
+  dayRate: string;
+  overtimeRate: string;
+  kmRate: string;
+  sellDayRate: string;
+  sellOvertimeRate: string;
+  sellKmRate: string;
+  savePerson: string;
+  unlink: string;
+}
+
+function PositionMemberForm({
+  projectId,
+  member,
+  freelancers,
+  labels,
+}: {
+  projectId: string;
+  member: CrewMember;
+  freelancers: FreelancerOption[];
+  labels: CrewPlanningCardLabels;
+}) {
+  const pickerLabels = {
+    fromDatabase: labels.fromDatabase,
+    manualEntry: labels.manualEntry,
+    name: labels.name,
+    role: labels.role,
+    homeAddress: labels.homeAddress,
+    dayRate: labels.dayRate,
+    overtimeRate: labels.overtimeRate,
+    kmRate: labels.kmRate,
+    sellDayRate: labels.sellDayRate,
+    sellOvertimeRate: labels.sellOvertimeRate,
+    sellKmRate: labels.sellKmRate,
+  };
+
+  return (
+    <form
+      action={savePositionMember.bind(null, projectId, member.id)}
+      className="grid grid-cols-2 gap-2 rounded-md border border-dashed p-2.5 sm:grid-cols-5"
+    >
+      <FreelancerPicker
+        freelancers={freelancers}
+        defaultFreelancerId={member.freelancer_id}
+        defaults={{
+          name: member.name,
+          role: member.role,
+          home_address: member.home_address,
+          day_rate: member.day_rate,
+          overtime_rate: member.overtime_rate,
+          km_rate: member.km_rate,
+          sell_day_rate: member.sell_day_rate,
+          sell_overtime_rate: member.sell_overtime_rate,
+          sell_km_rate: member.sell_km_rate,
+        }}
+        idPrefix={`member-${member.id}`}
+        labels={pickerLabels}
+      />
+      <div className="flex items-end gap-2 sm:col-span-5">
+        <Button type="submit" size="sm" className="h-8 text-xs">
+          {labels.savePerson}
+        </Button>
+        {member.name && (
+          <Button
+            type="submit"
+            formAction={unlinkCrewPosition.bind(null, projectId, member.id)}
+            size="sm"
+            variant="ghost"
+            className="h-8 text-xs"
+          >
+            {labels.unlink}
+          </Button>
+        )}
+      </div>
+    </form>
+  );
 }
 
 function PositionForm({
@@ -202,6 +283,7 @@ export function CrewPlanningCard({
   suppliers,
   stages,
   linkedMembers,
+  freelancers,
   labels,
 }: {
   projectId: string;
@@ -209,6 +291,7 @@ export function CrewPlanningCard({
   suppliers: Supplier[];
   stages: Stage[];
   linkedMembers: CrewMember[];
+  freelancers: FreelancerOption[];
   labels: CrewPlanningCardLabels;
 }) {
   const stageGroups = [
@@ -313,16 +396,36 @@ export function CrewPlanningCard({
                         </p>
                       )}
                     </div>
-                    {dayPositions.map((position) => (
-                      <PositionForm
-                        key={position.id}
-                        projectId={projectId}
-                        position={position}
-                        suppliers={suppliers}
-                        stages={stages}
-                        labels={labels}
-                      />
-                    ))}
+                    {dayPositions.map((position) => {
+                      const positionMembers = linkedMembers.filter(
+                        (m) => m.crew_position_id === position.id
+                      );
+                      return (
+                        <div key={position.id} className="space-y-1.5">
+                          <PositionForm
+                            projectId={projectId}
+                            position={position}
+                            suppliers={suppliers}
+                            stages={stages}
+                            labels={labels}
+                          />
+                          {positionMembers.length > 0 && (
+                            <div className="space-y-1.5 pl-3">
+                              <p className="text-xs font-medium text-muted-foreground">{labels.linkedPeople}</p>
+                              {positionMembers.map((member) => (
+                                <PositionMemberForm
+                                  key={member.id}
+                                  projectId={projectId}
+                                  member={member}
+                                  freelancers={freelancers}
+                                  labels={labels}
+                                />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })}

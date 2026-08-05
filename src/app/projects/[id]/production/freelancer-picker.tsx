@@ -12,6 +12,9 @@ export interface FreelancerOption {
   day_rate: number;
   overtime_rate: number;
   km_rate: number;
+  sell_day_rate: number | null;
+  sell_overtime_rate: number | null;
+  sell_km_rate: number | null;
 }
 
 export interface FreelancerPickerLabels {
@@ -23,6 +26,9 @@ export interface FreelancerPickerLabels {
   dayRate: string;
   overtimeRate: string;
   kmRate: string;
+  sellDayRate: string;
+  sellOvertimeRate: string;
+  sellKmRate: string;
 }
 
 // Los kiezen uit de centrale crew-database (i.p.v. steeds opnieuw naam/tarieven/adres
@@ -46,6 +52,9 @@ export function FreelancerPicker({
     day_rate?: number;
     overtime_rate?: number;
     km_rate?: number;
+    sell_day_rate?: number | null;
+    sell_overtime_rate?: number | null;
+    sell_km_rate?: number | null;
   };
   idPrefix: string;
   labels: FreelancerPickerLabels;
@@ -58,6 +67,9 @@ export function FreelancerPicker({
     day_rate: defaults?.day_rate ?? 0,
     overtime_rate: defaults?.overtime_rate ?? 0,
     km_rate: defaults?.km_rate ?? 0.23,
+    sell_day_rate: defaults?.sell_day_rate ?? null,
+    sell_overtime_rate: defaults?.sell_overtime_rate ?? null,
+    sell_km_rate: defaults?.sell_km_rate ?? null,
   });
 
   function handleSelect(id: string) {
@@ -72,6 +84,9 @@ export function FreelancerPicker({
       day_rate: freelancer.day_rate,
       overtime_rate: freelancer.overtime_rate,
       km_rate: freelancer.km_rate,
+      sell_day_rate: freelancer.sell_day_rate,
+      sell_overtime_rate: freelancer.sell_overtime_rate,
+      sell_km_rate: freelancer.sell_km_rate,
     });
   }
 
@@ -178,6 +193,69 @@ export function FreelancerPicker({
           min="0"
           value={fields.km_rate}
           onChange={(e) => setFields((prev) => ({ ...prev, km_rate: Number(e.target.value) }))}
+          className="h-8 text-xs"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-sell-day-rate`} className="text-xs">
+          {labels.sellDayRate}
+        </Label>
+        <Input
+          id={`${idPrefix}-sell-day-rate`}
+          name="sell_day_rate"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder={fields.day_rate ? String(fields.day_rate) : undefined}
+          value={fields.sell_day_rate ?? ""}
+          onChange={(e) =>
+            setFields((prev) => ({
+              ...prev,
+              sell_day_rate: e.target.value === "" ? null : Number(e.target.value),
+            }))
+          }
+          className="h-8 text-xs"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-sell-ot-rate`} className="text-xs">
+          {labels.sellOvertimeRate}
+        </Label>
+        <Input
+          id={`${idPrefix}-sell-ot-rate`}
+          name="sell_overtime_rate"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder={fields.overtime_rate ? String(fields.overtime_rate) : undefined}
+          value={fields.sell_overtime_rate ?? ""}
+          onChange={(e) =>
+            setFields((prev) => ({
+              ...prev,
+              sell_overtime_rate: e.target.value === "" ? null : Number(e.target.value),
+            }))
+          }
+          className="h-8 text-xs"
+        />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor={`${idPrefix}-sell-km-rate`} className="text-xs">
+          {labels.sellKmRate}
+        </Label>
+        <Input
+          id={`${idPrefix}-sell-km-rate`}
+          name="sell_km_rate"
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder={fields.km_rate ? String(fields.km_rate) : undefined}
+          value={fields.sell_km_rate ?? ""}
+          onChange={(e) =>
+            setFields((prev) => ({
+              ...prev,
+              sell_km_rate: e.target.value === "" ? null : Number(e.target.value),
+            }))
+          }
           className="h-8 text-xs"
         />
       </div>
