@@ -116,9 +116,41 @@ export async function updateTeamMemberRole(teamMemberId: string, formData: FormD
   revalidatePath("/team");
 }
 
+// Los van updateTeamMemberAccess: die schrijft ook can_view_budget en project-toegang, en zou
+// (als hij hier hergebruikt werd via een eigen formulier zonder die velden) bestaande
+// projecttoegang stilzwijgend wissen. Het rechtenprofiel moet je direct in de Rol-kolom kunnen
+// wijzigen zonder dat risico.
+export async function updateTeamMemberRoleId(teamMemberId: string, formData: FormData) {
+  const roleId = String(formData.get("role_id") ?? "") || null;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: member } = await supabase
+    .from("team_members")
+    .select("owner_user_id, invited_email")
+    .eq("id", teamMemberId)
+    .maybeSingle();
+
+  await supabase.from("team_members").update({ role_id: roleId }).eq("id", teamMemberId);
+
+  if (user && member?.owner_user_id) {
+    const admin = createAdminClient();
+    await logAudit(admin, {
+      ownerId: member.owner_user_id,
+      actorLabel: user.email ?? "Onbekend",
+      action: "Rechtenprofiel gewijzigd",
+      details: member.invited_email ?? "",
+    });
+  }
+
+  revalidatePath("/team");
+}
+
 export async function updateTeamMemberAccess(teamMemberId: string, formData: FormData) {
   const canViewBudget = formData.get("can_view_budget") === "on";
-  const roleId = String(formData.get("role_id") ?? "") || null;
   const projectIds = formData.getAll("project_id").map(String);
 
   const supabase = await createClient();
@@ -134,7 +166,7 @@ export async function updateTeamMemberAccess(teamMemberId: string, formData: For
 
   await supabase
     .from("team_members")
-    .update({ can_view_budget: canViewBudget, role_id: roleId })
+    .update({ can_view_budget: canViewBudget })
     .eq("id", teamMemberId);
 
   await supabase.from("team_member_project_access").delete().eq("team_member_id", teamMemberId);

@@ -23,6 +23,7 @@ import { ensureDefaultTeamRoles } from "@/lib/server/ensure-team-roles";
 import {
   inviteTeamMember,
   updateTeamMemberRole,
+  updateTeamMemberRoleId,
   updateTeamMemberAccess,
   removeTeamMember,
   createTeamRole,
@@ -98,6 +99,7 @@ const TEAM_PAGE_LABELS = [
   "Rol toevoegen",
   "Rol (rechtenprofiel)",
   "Geen rol (klassiek: alleen toegewezen projecten, admin-rol hierboven bepaalt teambeheer)",
+  "Geen rechtenprofiel",
   ...Object.values(TEAM_ROLE_LABELS),
   ...NAV_SECTION_OPTIONS.map((o) => o.label),
 ];
@@ -503,20 +505,45 @@ export default async function TeamPage({
                     <TableCell className="font-medium">{member.invited_email}</TableCell>
                     <TableCell>
                       {isAdmin ? (
-                        <form
-                          action={updateTeamMemberRole.bind(null, member.id)}
-                          className="flex items-center gap-1"
-                        >
-                          <TeamRoleSelect
-                            key={member.role}
-                            id={`role-${member.id}`}
-                            defaultValue={member.role}
-                            t={t}
-                          />
-                          <Button type="submit" size="sm" variant="ghost">
-                            {t("Opslaan")}
-                          </Button>
-                        </form>
+                        <div className="space-y-1.5">
+                          <form
+                            action={updateTeamMemberRole.bind(null, member.id)}
+                            className="flex items-center gap-1"
+                          >
+                            <TeamRoleSelect
+                              key={member.role}
+                              id={`role-${member.id}`}
+                              defaultValue={member.role}
+                              t={t}
+                            />
+                            <Button type="submit" size="sm" variant="ghost">
+                              {t("Opslaan")}
+                            </Button>
+                          </form>
+                          {roles.length > 0 && (
+                            <form
+                              action={updateTeamMemberRoleId.bind(null, member.id)}
+                              className="flex items-center gap-1"
+                            >
+                              <select
+                                key={member.role_id ?? ""}
+                                name="role_id"
+                                defaultValue={member.role_id ?? ""}
+                                className="h-8 max-w-[11rem] rounded-md border bg-background px-2 text-xs"
+                              >
+                                <option value="">{t("Geen rechtenprofiel")}</option>
+                                {roles.map((role) => (
+                                  <option key={role.id} value={role.id}>
+                                    {t(role.name)}
+                                  </option>
+                                ))}
+                              </select>
+                              <Button type="submit" size="sm" variant="ghost">
+                                {t("Opslaan")}
+                              </Button>
+                            </form>
+                          )}
+                        </div>
                       ) : (
                         <span className="text-sm text-muted-foreground">
                           {t(TEAM_ROLE_LABELS[member.role])}
@@ -551,25 +578,6 @@ export default async function TeamPage({
                               action={updateTeamMemberAccess.bind(null, member.id)}
                               className="mt-2 space-y-2"
                             >
-                              {roles.length > 0 && (
-                                <div className="space-y-1">
-                                  <Label className="text-xs">{t("Rol (rechtenprofiel)")}</Label>
-                                  <select
-                                    name="role_id"
-                                    defaultValue={member.role_id ?? ""}
-                                    className="h-8 w-full max-w-xs rounded-md border bg-background px-2 text-xs"
-                                  >
-                                    <option value="">
-                                      {t("Geen rol (klassiek: alleen toegewezen projecten, admin-rol hierboven bepaalt teambeheer)")}
-                                    </option>
-                                    {roles.map((role) => (
-                                      <option key={role.id} value={role.id}>
-                                        {t(role.name)}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              )}
                               {!projects?.length ? (
                                 <p className="text-xs text-muted-foreground">
                                   {t("Nog geen projecten aangemaakt.")}
