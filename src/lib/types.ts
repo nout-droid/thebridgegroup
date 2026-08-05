@@ -1241,3 +1241,21 @@ export const NAV_SECTION_OPTIONS: { value: string; label: string }[] = [
   { value: "clients", label: "Klanten" },
   { value: "team", label: "Team" },
 ];
+
+export interface TodoTemplateItem {
+  id: string;
+  owner_user_id: string;
+  title: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface ProjectTodo {
+  id: string;
+  project_id: string;
+  title: string;
+  done: boolean;
+  done_at: string | null;
+  sort_order: number;
+  created_at: string;
+}

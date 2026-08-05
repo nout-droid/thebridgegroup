@@ -38,6 +38,8 @@ import {
   type SupplierProjectDocumentReviewLabels,
 } from "./supplier-project-document-review";
 import { ProjectSubNav } from "./project-sub-nav";
+import { ensureProjectTodos } from "@/lib/server/ensure-project-todos";
+import { TodoCard } from "./todo-card";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 import {
@@ -81,6 +83,13 @@ const STATIC_LABELS = [
   "Laat een conceptmail schrijven op basis van de recente activiteit op dit project — controleer en pas aan voor je 'm verstuurt.",
   "Genereer concept",
   "Gegenereerd op",
+  "Takenlijst",
+  "Nieuwe taak...",
+  "Toevoegen",
+  "Nog geen taken.",
+  "Voltooid",
+  "Verwijderen",
+  "Opslaan als standaardsjabloon",
   "Recente activiteit",
   "Wijzigingen die een klant of leverancier zelf heeft doorgevoerd.",
   "Gezien",
@@ -321,6 +330,8 @@ export default async function ProjectPage({
     }))
   );
 
+  const todos = await ensureProjectTodos(supabase, project.id, project.user_id);
+
   const categoryIds = (categories ?? []).map((c) => c.id);
   const { data: quotes } = categoryIds.length
     ? await supabase
@@ -375,6 +386,7 @@ export default async function ProjectPage({
       report.division,
       report.reported_by,
     ]),
+    ...todos.map((todo) => todo.title),
     project.budget_approval_comment ?? "",
     project.status,
     ...SUPPLIER_DOCUMENT_REVIEW_LABELS,
@@ -472,6 +484,20 @@ export default async function ProjectPage({
             )}
           </CardContent>
         </Card>
+
+        <TodoCard
+          projectId={project.id}
+          todos={todos}
+          labels={{
+            title: t("Takenlijst"),
+            addPlaceholder: t("Nieuwe taak..."),
+            add: t("Toevoegen"),
+            empty: t("Nog geen taken."),
+            completed: t("Voltooid"),
+            delete: t("Verwijderen"),
+            saveAsDefault: t("Opslaan als standaardsjabloon"),
+          }}
+        />
 
         {activity && activity.length > 0 && (
           <Card>
