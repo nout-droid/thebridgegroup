@@ -290,6 +290,14 @@ export interface EquipmentBooking {
   created_at: string;
 }
 
+export interface EquipmentRentalMultiplier {
+  id: string;
+  owner_user_id: string;
+  min_days: number;
+  label: string;
+  multiplier: number;
+}
+
 export interface Project {
   id: string;
   user_id: string;

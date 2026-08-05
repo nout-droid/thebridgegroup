@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -10,12 +11,16 @@ import { AccessDatesInput } from "@/components/access-dates-input";
 import { getTeamOwnerId } from "@/lib/server/team";
 import type { EquipmentBooking, EquipmentItem } from "@/lib/types";
 import {
+  addEquipmentMultiplierTier,
   bookEquipmentItem,
   createEquipmentItem,
   deleteEquipmentBooking,
   deleteEquipmentItem,
+  deleteEquipmentMultiplierTier,
   updateEquipmentItem,
+  updateEquipmentMultiplierTier,
 } from "./actions";
+import { computeEquipmentMultiplier, ensureEquipmentRentalMultipliers } from "@/lib/server/ensure-equipment-multipliers";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 
@@ -47,7 +52,13 @@ const EQUIPMENT_PAGE_LABELS = [
   "van de",
   "in bezit",
   "staffel",
-  "De dagprijs is het basistarief voor de eerste periode (1-4 dagen); langere boekingen schalen automatisch op via dezelfde huurperiode-staffel als de externe verhuurcatalogus.",
+  "De dagprijs is het basistarief voor de eerste periode; langere boekingen schalen automatisch op via je eigen huurperiode-staffel hieronder.",
+  "Huurperiode-staffel",
+  "Je eigen staffel voor materiaal — los van de externe verhuurcatalogus. Vanaf hoeveel dagen geldt welke vermenigvuldiging op de dagprijs.",
+  "Vanaf (dagen)",
+  "Label",
+  "Vermenigvuldiging",
+  "Tier toevoegen",
 ];
 
 interface BookingRow extends EquipmentBooking {
@@ -68,7 +79,7 @@ export default async function EquipmentPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return null;
+  if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
 
@@ -102,24 +113,17 @@ export default async function EquipmentPage({
     bookingsByItem.set(booking.equipment_item_id, list);
   }
 
-  // Materiaal wordt via dezelfde huurperiode-staffel geprijsd als de externe catalogus
-  // (rental_multiplier) — de dagprijs is het basistarief, langere boekingen schalen op.
-  const uniqueDayCounts = Array.from(
-    new Set((bookings ?? []).map((b) => (b.access_dates ?? []).length).filter((d) => d > 0))
-  );
-  const multiplierByDays = new Map<number, number>();
-  await Promise.all(
-    uniqueDayCounts.map(async (days) => {
-      const { data: multiplier } = await supabase.rpc("rental_multiplier", { p_days: days });
-      multiplierByDays.set(days, multiplier ?? 1);
-    })
-  );
+  // Materiaal wordt geprijsd via een eigen, per organisatie bewerkbare huurperiode-staffel
+  // (los van de externe verhuurcatalogus) — de dagprijs is het basistarief, langere
+  // boekingen schalen op.
+  const tiers = await ensureEquipmentRentalMultipliers(supabase, ownerId);
   const itemById = new Map((items ?? []).map((i) => [i.id, i]));
 
   const t = await createTranslator(lang, [
     ...EQUIPMENT_PAGE_LABELS,
     ...(items ?? []).map((i) => i.name),
     ...(projects ?? []).map((p) => p.name),
+    ...tiers.map((tier) => tier.label),
   ]);
 
   return (
@@ -165,7 +169,7 @@ export default async function EquipmentPage({
                   <Input id="new-rate" name="internal_day_rate" type="number" step="0.01" min="0" />
                   <p className="text-[10px] text-muted-foreground">
                     {t(
-                      "De dagprijs is het basistarief voor de eerste periode (1-4 dagen); langere boekingen schalen automatisch op via dezelfde huurperiode-staffel als de externe verhuurcatalogus."
+                      "De dagprijs is het basistarief voor de eerste periode; langere boekingen schalen automatisch op via je eigen huurperiode-staffel hieronder."
                     )}
                   </p>
                 </div>
@@ -285,7 +289,7 @@ export default async function EquipmentPage({
                           {itemBookings.map((booking) => {
                             const project = Array.isArray(booking.project) ? booking.project[0] : booking.project;
                             const days = (booking.access_dates ?? []).length;
-                            const multiplier = multiplierByDays.get(days) ?? 1;
+                            const multiplier = computeEquipmentMultiplier(tiers, days);
                             const dayRate = itemById.get(booking.equipment_item_id)?.internal_day_rate ?? 0;
                             const cost = dayRate * booking.quantity * multiplier;
                             return (
@@ -372,6 +376,79 @@ export default async function EquipmentPage({
             })}
           </div>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Huurperiode-staffel")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Je eigen staffel voor materiaal — los van de externe verhuurcatalogus. Vanaf hoeveel dagen geldt welke vermenigvuldiging op de dagprijs."
+              )}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <ul className="space-y-1.5">
+              {tiers.map((tier) => (
+                <li key={tier.id} className="flex items-center gap-2">
+                  <form
+                    action={updateEquipmentMultiplierTier.bind(null, tier.id)}
+                    className="flex flex-1 flex-wrap items-center gap-1.5"
+                  >
+                    <Input
+                      name="min_days"
+                      type="number"
+                      min="1"
+                      defaultValue={tier.min_days}
+                      className="h-8 w-24 text-xs"
+                      required
+                    />
+                    <Input
+                      name="label"
+                      defaultValue={tier.label}
+                      className="h-8 w-32 text-xs"
+                      required
+                    />
+                    <Input
+                      name="multiplier"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      defaultValue={tier.multiplier}
+                      className="h-8 w-24 text-xs"
+                      required
+                    />
+                    <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
+                      {t("Opslaan")}
+                    </Button>
+                  </form>
+                  <form action={deleteEquipmentMultiplierTier.bind(null, tier.id)}>
+                    <Button type="submit" size="sm" variant="ghost" className="h-8 text-xs text-destructive">
+                      {t("Verwijderen")}
+                    </Button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+
+            <form action={addEquipmentMultiplierTier} className="flex flex-wrap items-end gap-1.5 border-t pt-3">
+              <div className="space-y-1">
+                <Label className="text-[10px]">{t("Vanaf (dagen)")}</Label>
+                <Input name="min_days" type="number" min="1" className="h-8 w-24 text-xs" required />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">{t("Label")}</Label>
+                <Input name="label" className="h-8 w-32 text-xs" required />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px]">{t("Vermenigvuldiging")}</Label>
+                <Input name="multiplier" type="number" step="0.01" min="0" defaultValue={1} className="h-8 w-24 text-xs" required />
+              </div>
+              <Button type="submit" size="sm" className="h-8 text-xs">
+                {t("Tier toevoegen")}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </main>
       <Footer />
     </div>

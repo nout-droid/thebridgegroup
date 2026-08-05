@@ -2,39 +2,37 @@ import "server-only";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { findOrCreateCategory } from "@/lib/server/category-helpers";
+import { computeEquipmentMultiplier, ensureEquipmentRentalMultipliers } from "@/lib/server/ensure-equipment-multipliers";
 
 // Kosten van eigen materiaal = interne dagprijs x aantal x huurperiode-staffel, opgeteld over
 // alle boekingen op dit project — landt als stelpost op een projectbrede "Materiaal (eigen)"
-// categorie. Materiaal wordt normaliter niet per losse dag geprijsd maar via dezelfde
-// staffel (rental_period_multipliers/rental_multiplier) als de externe verhuur-catalogus:
-// de dagprijs is het basistarief voor de eerste periode (1-4 dagen), langere boekingen
-// schalen op via de staffel i.p.v. lineair per dag te vermenigvuldigen.
+// categorie. Materiaal wordt niet lineair per dag geprijsd maar via een eigen, per organisatie
+// bewerkbare staffel (equipment_rental_period_multipliers, los van de externe verhuurcatalogus):
+// de dagprijs is het basistarief voor de eerste periode, langere boekingen schalen op.
 export async function syncEquipmentCostCategory(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: SupabaseClient<any>,
   projectId: string
 ) {
+  const { data: project } = await supabase
+    .from("projects")
+    .select("user_id")
+    .eq("id", projectId)
+    .maybeSingle();
+  if (!project) return;
+
   const { data: bookings } = await supabase
     .from("equipment_bookings")
     .select("quantity, access_dates, equipment_item:equipment_items(internal_day_rate)")
     .eq("project_id", projectId);
 
-  const uniqueDayCounts = Array.from(
-    new Set((bookings ?? []).map((booking: any) => (booking.access_dates ?? []).length).filter((d: number) => d > 0))
-  );
-  const multiplierByDays = new Map<number, number>();
-  await Promise.all(
-    uniqueDayCounts.map(async (days) => {
-      const { data: multiplier } = await supabase.rpc("rental_multiplier", { p_days: days });
-      multiplierByDays.set(days, multiplier ?? 1);
-    })
-  );
+  const tiers = await ensureEquipmentRentalMultipliers(supabase, project.user_id);
 
   const total = (bookings ?? []).reduce((sum: number, booking: any) => {
     const item = Array.isArray(booking.equipment_item) ? booking.equipment_item[0] : booking.equipment_item;
     const dayRate = item?.internal_day_rate ?? 0;
     const days = (booking.access_dates ?? []).length;
-    const multiplier = multiplierByDays.get(days) ?? 1;
+    const multiplier = computeEquipmentMultiplier(tiers, days);
     return sum + dayRate * (booking.quantity ?? 0) * multiplier;
   }, 0);
 

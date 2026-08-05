@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { syncEquipmentCostCategory } from "@/lib/server/equipment-cost";
+import { ensureEquipmentRentalMultipliers } from "@/lib/server/ensure-equipment-multipliers";
 
 interface EquipmentItemFields {
   name: string;
@@ -132,5 +133,54 @@ export async function deleteEquipmentBooking(bookingId: string) {
     revalidatePath(`/projects/${booking.project_id}/budget`);
   }
 
+  revalidatePath("/equipment");
+}
+
+// Eigen, per-organisatie huurperiode-staffel voor materiaal — los van de externe
+// verhuurcatalogus. Wijzigingen gelden voor nieuwe/opnieuw gesynchroniseerde boekingen; al
+// gesynchroniseerde categoriekosten van bestaande boekingen worden niet met terugwerkende
+// kracht herberekend (zelfde, al bestaande beperking als bij de externe staffel).
+export async function addEquipmentMultiplierTier(formData: FormData) {
+  const minDays = Math.max(1, Number(formData.get("min_days") ?? 0));
+  const label = String(formData.get("label") ?? "").trim();
+  const multiplier = Math.max(0, Number(formData.get("multiplier") ?? 1));
+  if (!minDays || !label) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const ownerId = await getTeamOwnerId(supabase, user.id);
+  await ensureEquipmentRentalMultipliers(supabase, ownerId);
+  await supabase
+    .from("equipment_rental_period_multipliers")
+    .upsert(
+      { owner_user_id: ownerId, min_days: minDays, label, multiplier },
+      { onConflict: "owner_user_id,min_days" }
+    );
+
+  revalidatePath("/equipment");
+}
+
+export async function updateEquipmentMultiplierTier(tierId: string, formData: FormData) {
+  const minDays = Math.max(1, Number(formData.get("min_days") ?? 0));
+  const label = String(formData.get("label") ?? "").trim();
+  const multiplier = Math.max(0, Number(formData.get("multiplier") ?? 1));
+  if (!minDays || !label) return;
+
+  const supabase = await createClient();
+  await supabase
+    .from("equipment_rental_period_multipliers")
+    .update({ min_days: minDays, label, multiplier })
+    .eq("id", tierId);
+
+  revalidatePath("/equipment");
+}
+
+export async function deleteEquipmentMultiplierTier(tierId: string) {
+  const supabase = await createClient();
+  await supabase.from("equipment_rental_period_multipliers").delete().eq("id", tierId);
   revalidatePath("/equipment");
 }
