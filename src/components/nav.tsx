@@ -84,62 +84,62 @@ export async function Nav() {
             <img src={branding.logoUrl} alt={branding.name} width={28} height={21} className="shrink-0 object-contain" />
             <span className="truncate">{branding.name} &mdash; Productie</span>
           </Link>
-          <nav className="hidden items-center gap-5 text-sm uppercase tracking-wide 2xl:flex">
-            <Link href="/dashboard" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+          <nav className="hidden min-w-0 items-center gap-5 overflow-x-auto text-sm uppercase tracking-wide 2xl:flex">
+            <Link href="/dashboard" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
               {t("Dashboard")}
             </Link>
             {hasSection("projects") && (
-              <Link href="/projects" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/projects" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Projecten")}
               </Link>
             )}
             {hasSection("calendar") && (
-              <Link href="/calendar" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/calendar" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Kalender")}
               </Link>
             )}
             {hasSection("analytics") && (
-              <Link href="/analytics" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/analytics" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Analytics")}
               </Link>
             )}
             {hasSection("crm") && (
-              <Link href="/crm" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/crm" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Sales")}
               </Link>
             )}
             {hasSection("tenders") && (
-              <Link href="/tenders" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/tenders" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Tenders")}
               </Link>
             )}
             {hasSection("suppliers") && (
-              <Link href="/suppliers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/suppliers" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Leveranciers")}
               </Link>
             )}
             {hasSection("freelancers") && (
-              <Link href="/freelancers" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/freelancers" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Freelancers")}
               </Link>
             )}
             {hasSection("equipment") && (
-              <Link href="/equipment" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/equipment" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Materiaal")}
               </Link>
             )}
             {hasSection("venues") && (
-              <Link href="/venues" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/venues" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Locaties")}
               </Link>
             )}
             {hasSection("clients") && (
-              <Link href="/clients" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/clients" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Klanten")}
               </Link>
             )}
             {hasSection("team") && (
-              <Link href="/team" className="whitespace-nowrap text-white/70 transition-colors hover:text-white">
+              <Link href="/team" className="shrink-0 whitespace-nowrap text-white/70 transition-colors hover:text-white">
                 {t("Team")}
               </Link>
             )}
