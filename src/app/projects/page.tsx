@@ -36,7 +36,12 @@ export default async function ProjectsPage({
     { data: projects },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase.from("projects").select("*").order("created_at", { ascending: false }).returns<Project[]>(),
+    supabase
+      .from("projects")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(300)
+      .returns<Project[]>(),
   ]);
 
   const access = user ? await getOrgAccess(await getTeamOwnerId(supabase, user.id)) : null;

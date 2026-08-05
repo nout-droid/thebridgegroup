@@ -89,6 +89,7 @@ export default async function EquipmentPage({
       .select("*")
       .eq("user_id", ownerId)
       .order("name", { ascending: true })
+      .limit(500)
       .returns<EquipmentItem[]>(),
     supabase.from("projects").select("id, name").eq("user_id", ownerId).order("name", { ascending: true }).returns<
       { id: string; name: string }[]

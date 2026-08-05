@@ -35,7 +35,7 @@ export default async function ProductionPlanningPage({
         .eq("project_id", id)
         .order("sort_order", { ascending: true })
         .returns<CrewPosition[]>(),
-      supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+      supabase.from("suppliers").select("*").order("name", { ascending: true }).limit(500).returns<Supplier[]>(),
       supabase
         .from("stages")
         .select("*")

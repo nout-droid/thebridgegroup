@@ -52,17 +52,20 @@ export default async function ProjectEvaluationPage({
     getAppLang(),
   ]);
 
-  const { data: evaluation } = evaluationId
-    ? await supabase
-        .from("project_evaluations")
-        .select("content, updated_at")
-        .eq("id", evaluationId)
-        .maybeSingle<{ content: string; updated_at: string }>()
-    : { data: null };
-
-  // Leveranciers die daadwerkelijk aan dit project gekoppeld zijn — via hun offertes op de
-  // categorieën van dit project. Geen aparte project-suppliers-tabel, dus dedupen in JS.
-  const { data: categories } = await supabase.from("categories").select("id").eq("project_id", id);
+  // evaluation (heeft alleen evaluationId nodig) en categories (heeft alleen id nodig) hangen
+  // niet van elkaar af — parallel opvragen i.p.v. na elkaar.
+  const [{ data: evaluation }, { data: categories }] = await Promise.all([
+    evaluationId
+      ? supabase
+          .from("project_evaluations")
+          .select("content, updated_at")
+          .eq("id", evaluationId)
+          .maybeSingle<{ content: string; updated_at: string }>()
+      : Promise.resolve({ data: null }),
+    // Leveranciers die daadwerkelijk aan dit project gekoppeld zijn — via hun offertes op de
+    // categorieën van dit project. Geen aparte project-suppliers-tabel, dus dedupen in JS.
+    supabase.from("categories").select("id").eq("project_id", id),
+  ]);
   const categoryIds = (categories ?? []).map((c) => c.id);
 
   const { data: quotesForSuppliers } = categoryIds.length

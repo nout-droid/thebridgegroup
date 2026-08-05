@@ -40,7 +40,7 @@ export default async function ProductionHotelPage({
         .eq("needs_flight", true)
         .order("sort_order", { ascending: true })
         .returns<CrewMember[]>(),
-      supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+      supabase.from("suppliers").select("*").order("name", { ascending: true }).limit(500).returns<Supplier[]>(),
       supabase
         .from("categories")
         .select("*")

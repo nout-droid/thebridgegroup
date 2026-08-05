@@ -52,7 +52,7 @@ export default async function VenuesPage() {
   // headers()-achtige onafhankelijke gegevens: de locaties-query en de taalvoorkeur hebben
   // geen onderlinge afhankelijkheid — parallel opvragen i.p.v. na elkaar.
   const [{ data: venues }, lang] = await Promise.all([
-    supabase.from("venues").select("*").order("name", { ascending: true }).returns<Venue[]>(),
+    supabase.from("venues").select("*").order("name", { ascending: true }).limit(500).returns<Venue[]>(),
     getAppLang(),
   ]);
 

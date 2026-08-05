@@ -48,21 +48,47 @@ function euro(value: number) {
 export default async function AnalyticsPage() {
   const supabase = await createClient();
 
-  const [{ data: projects }, { data: categories }, { data: quotes }, { data: actualCosts }, lang] =
-    await Promise.all([
-      supabase
-        .from("projects")
-        .select("id, name, client_name, event_date")
-        .order("event_date", { ascending: false })
-        .returns<Pick<Project, "id" | "name" | "client_name" | "event_date">[]>(),
-      supabase
-        .from("categories")
-        .select("id, project_id, name, margin_type, margin_value, manual_cost")
-        .returns<CategoryRow[]>(),
-      supabase.from("quotes").select("category_id, cost_price, status").returns<QuoteRow[]>(),
-      supabase.from("actual_costs").select("project_id, category_id, amount").returns<ActualCostRow[]>(),
-      getAppLang(),
-    ]);
+  // projects/lang hebben geen onderlinge afhankelijkheid — parallel opvragen. De rest van deze
+  // pagina rolt gegevens op over ALLE projecten van de eigenaar (dat is het hele punt van deze
+  // pagina), dus een simpele .limit() zou stilletjes verkeerde totalen geven; in plaats daarvan
+  // scopen we categories/quotes/actual_costs expliciet op de net opgehaalde project-/category-ID's
+  // i.p.v. puur op RLS te vertrouwen om de volledige tabel te scannen.
+  const [{ data: projects }, lang] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("id, name, client_name, event_date")
+      .order("event_date", { ascending: false })
+      .returns<Pick<Project, "id" | "name" | "client_name" | "event_date">[]>(),
+    getAppLang(),
+  ]);
+
+  const projectIds = (projects ?? []).map((p) => p.id);
+
+  const [{ data: categories }, { data: actualCosts }] = await Promise.all([
+    projectIds.length
+      ? supabase
+          .from("categories")
+          .select("id, project_id, name, margin_type, margin_value, manual_cost")
+          .in("project_id", projectIds)
+          .returns<CategoryRow[]>()
+      : Promise.resolve({ data: [] as CategoryRow[] }),
+    projectIds.length
+      ? supabase
+          .from("actual_costs")
+          .select("project_id, category_id, amount")
+          .in("project_id", projectIds)
+          .returns<ActualCostRow[]>()
+      : Promise.resolve({ data: [] as ActualCostRow[] }),
+  ]);
+
+  const categoryIds = (categories ?? []).map((c) => c.id);
+  const { data: quotes } = categoryIds.length
+    ? await supabase
+        .from("quotes")
+        .select("category_id, cost_price, status")
+        .in("category_id", categoryIds)
+        .returns<QuoteRow[]>()
+    : { data: [] as QuoteRow[] };
 
   const t = await createTranslator(lang, ANALYTICS_PAGE_LABELS);
 

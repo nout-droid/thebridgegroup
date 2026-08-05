@@ -94,6 +94,7 @@ export default async function CrmPage() {
       .select("*")
       .eq("user_id", ownerId)
       .order("created_at", { ascending: false })
+      .limit(500)
       .returns<SalesLead[]>(),
     getAppLang(),
   ]);

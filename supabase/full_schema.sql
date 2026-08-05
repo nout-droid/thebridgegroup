@@ -6144,3 +6144,20 @@ alter table public.freelancers add column if not exists sell_km_rate numeric;
 alter table public.crew_members add column if not exists sell_day_rate numeric;
 alter table public.crew_members add column if not exists sell_overtime_rate numeric;
 alter table public.crew_members add column if not exists sell_km_rate numeric;
+
+-- Supabase Security Advisor: "Function Search Path Mutable" — deze 10 eigen functies hadden geen
+-- expliciete search_path, wat search_path-hijacking mogelijk maakt voor SECURITY DEFINER-achtige
+-- name resolution. ALTER (i.p.v. opnieuw CREATE OR REPLACE elders in dit bestand) is voldoende en
+-- verandert geen functiegedrag. pg_trgm's eigen functies en de bewust publiek-uitvoerbare
+-- token-based portal-RPC's (add_client_request, add_crew_note, etc.) zijn hier bewust buiten
+-- gelaten — dat zijn losstaande findings, geen zelfde soort fix.
+alter function public.bump_rider_version() set search_path = public;
+alter function public.bump_rider_version_from_item() set search_path = public;
+alter function public.co2_totals() set search_path = public;
+alter function public.equipment_rental_multiplier(uuid, integer) set search_path = public;
+alter function public.rental_multiplier(integer) set search_path = public;
+alter function public.suggest_catalog_matches(text, integer) set search_path = public;
+alter function public.suggest_catalog_matches_bulk(text[]) set search_path = public;
+alter function public.sync_quote_cost_price() set search_path = public;
+alter function public.update_catalog_last_seen_prices(uuid[], numeric[]) set search_path = public;
+alter function public.update_material_list_matches(uuid[], uuid[], numeric[]) set search_path = public;

@@ -87,6 +87,7 @@ export default async function TendersPage() {
       .select("*")
       .eq("user_id", ownerId)
       .order("submission_deadline", { ascending: true, nullsFirst: false })
+      .limit(500)
       .returns<Tender[]>(),
     getAppLang(),
   ]);

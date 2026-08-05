@@ -60,7 +60,7 @@ export default async function StagePage({
       .eq("stage_id", stageId)
       .order("sort_order", { ascending: true })
       .returns<Category[]>(),
-    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).limit(500).returns<Supplier[]>(),
     getSupplierConflicts(supabase, project),
     supabase
       .from("material_list_items")

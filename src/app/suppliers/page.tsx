@@ -65,7 +65,7 @@ export default async function SuppliersPage({
   // opvragen i.p.v. na elkaar.
   const [headersList, { data: suppliers }, lang] = await Promise.all([
     headers(),
-    supabase.from("suppliers").select("*").order("name", { ascending: true }).returns<Supplier[]>(),
+    supabase.from("suppliers").select("*").order("name", { ascending: true }).limit(500).returns<Supplier[]>(),
     getAppLang(),
   ]);
   const host = headersList.get("host");
