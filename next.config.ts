@@ -1,10 +1,30 @@
 import type { NextConfig } from "next";
 
-// Standaard hardening-headers, van toepassing op elke response. Content-Security-Policy is
-// hier bewust nog niet toegevoegd: deze app laadt org-geüploade logo's van onbekende domeinen,
-// gaat naar Stripe Checkout, en praat met Supabase Storage/DeepL/Resend — een CSP moet eerst in
-// report-only getest worden tegen die hele lijst voordat hij live mag, anders breekt hij ergens
-// stilletjes iets. De headers hieronder hebben dat risico niet.
+// org-geüploade logo's staan in Supabase Storage (bucket "org-logos", zie
+// src/app/team/organization-actions.ts) — dus altijd hetzelfde project-domein, geen
+// willekeurig extern domein. Stripe Checkout/Portal is een volledige redirect naar
+// checkout.stripe.com, geen embed/iframe, dus die hoeft niet in de policy.
+const supabaseOrigin = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
+
+// Report-Only: blokkeert niets, stuurt alleen violations naar /api/csp-report zodat we eerst
+// tegen echt verkeer kunnen zien of deze lijst compleet is voordat een enforced CSP ooit
+// overwogen wordt (die kan wél stilletjes iets breken als er een origin ontbreekt).
+const cspReportOnly = [
+  `default-src 'self'`,
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com`,
+  `style-src 'self' 'unsafe-inline'`,
+  `img-src 'self' data: blob: ${supabaseOrigin}`,
+  `font-src 'self' data:`,
+  `connect-src 'self' ${supabaseOrigin} https://challenges.cloudflare.com`,
+  `frame-src https://challenges.cloudflare.com`,
+  `object-src 'none'`,
+  `base-uri 'self'`,
+  `report-uri /api/csp-report`,
+]
+  .filter(Boolean)
+  .join("; ");
+
+// Standaard hardening-headers, van toepassing op elke response.
 const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -16,6 +36,7 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+  { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
 ];
 
 const nextConfig: NextConfig = {
