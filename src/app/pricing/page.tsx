@@ -284,7 +284,6 @@ export default async function PricingPage() {
                   minSeats={starter.minSeats}
                   maxSeats={starter.maxSeats}
                   defaultSeats={starter.defaultSeats}
-                  checkoutEnabled={isStripeConfigured}
                   startLabel="Claim your spot"
                   perSeatLabel="Number of users"
                   totalLabel="Total:"
@@ -333,7 +332,6 @@ export default async function PricingPage() {
                   minSeats={starter.minSeats}
                   maxSeats={starter.maxSeats}
                   defaultSeats={starter.defaultSeats}
-                  checkoutEnabled={isStripeConfigured}
                   startLabel="Start subscription"
                   perSeatLabel="Number of users"
                   totalLabel="Total:"
@@ -363,7 +361,6 @@ export default async function PricingPage() {
                   minSeats={team.minSeats}
                   maxSeats={team.maxSeats}
                   defaultSeats={team.defaultSeats}
-                  checkoutEnabled={isStripeConfigured}
                   startLabel="Start subscription"
                   perSeatLabel="Number of users"
                   totalLabel="Total:"

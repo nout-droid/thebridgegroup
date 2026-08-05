@@ -9,7 +9,6 @@ export function SeatCalculator({
   minSeats,
   maxSeats,
   defaultSeats,
-  checkoutEnabled,
   startLabel,
   perSeatLabel,
   totalLabel,
@@ -20,7 +19,6 @@ export function SeatCalculator({
   minSeats: number;
   maxSeats: number | null;
   defaultSeats: number;
-  checkoutEnabled: boolean;
   startLabel: string;
   perSeatLabel: string;
   totalLabel: string;
@@ -38,9 +36,12 @@ export function SeatCalculator({
   const total = seats * pricePerSeat;
   const discountedTotal = earlyAdopter ? total / 2 : total;
 
-  const href = checkoutEnabled
-    ? `/api/stripe/checkout?tier=${tier}&seats=${seats}${earlyAdopter ? "&early_adopter=1" : ""}`
-    : "/signup";
+  // Altijd naar de checkout-route, ongeacht of Stripe hier client-side "geconfigureerd"
+  // lijkt — die route kent zelf elk geval al netjes af: niet ingelogd -> /login, geen
+  // Stripe-key/prijs-ID -> duidelijke foutmelding op /team. Eerder linkte dit naar /signup
+  // zodra checkout niet beschikbaar leek, wat een bestaande, al ingelogde accounthouder
+  // straal voorbij zijn eigen account naar een nieuw-account-formulier stuurde.
+  const href = `/api/stripe/checkout?tier=${tier}&seats=${seats}${earlyAdopter ? "&early_adopter=1" : ""}`;
 
   return (
     <div className="space-y-3">
