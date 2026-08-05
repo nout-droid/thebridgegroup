@@ -4,16 +4,6 @@ import type { Organization } from "@/lib/types";
 
 export const TRIAL_PROJECT_LIMIT = 3;
 
-// Statussen die Stripe zelf teruggeeft en die wij als "geen actief abonnement" behandelen.
-const BLOCKED_STATUSES = new Set([
-  "canceled",
-  "past_due",
-  "unpaid",
-  "incomplete",
-  "incomplete_expired",
-  "paused",
-]);
-
 export type OrgAccessStatus =
   | "no_org" // organizations-tabel bestaat nog niet of geen rij — nooit blokkeren (backwards compat)
   | "active" // betalend en actief

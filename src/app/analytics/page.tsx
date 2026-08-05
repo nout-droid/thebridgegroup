@@ -33,7 +33,7 @@ interface QuoteRow {
   status: string;
 }
 
-interface CategoryRow extends Pick<Category, "id" | "project_id" | "name" | "margin_type" | "margin_value" | "manual_cost"> {}
+type CategoryRow = Pick<Category, "id" | "project_id" | "name" | "margin_type" | "margin_value" | "manual_cost">;
 
 interface ActualCostRow {
   project_id: string;

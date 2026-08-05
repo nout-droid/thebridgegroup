@@ -1,5 +1,4 @@
 import "server-only";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { estimateOneWayDistanceKm } from "@/lib/server/distance";
 import { getProjectVenueAddress } from "@/lib/server/project-venue";

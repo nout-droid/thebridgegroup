@@ -65,7 +65,7 @@ const DEFAULT_ROLES: Omit<TeamRoleDef, "id" | "owner_user_id" | "created_at">[] 
 ];
 
 export async function ensureDefaultTeamRoles(
-  supabase: SupabaseClient<any>,
+  supabase: SupabaseClient,
   ownerId: string
 ): Promise<TeamRoleDef[]> {
   const { data: existing } = await supabase

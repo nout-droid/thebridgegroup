@@ -1,5 +1,4 @@
 import "server-only";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { findOrCreateCategory } from "@/lib/server/category-helpers";
 import { computeEquipmentMultiplier, ensureEquipmentRentalMultipliers } from "@/lib/server/ensure-equipment-multipliers";
@@ -28,7 +27,13 @@ export async function syncEquipmentCostCategory(
 
   const tiers = await ensureEquipmentRentalMultipliers(supabase, project.user_id);
 
-  const total = (bookings ?? []).reduce((sum: number, booking: any) => {
+  interface BookingRow {
+    quantity: number | null;
+    access_dates: string[] | null;
+    equipment_item: { internal_day_rate: number | null } | { internal_day_rate: number | null }[] | null;
+  }
+
+  const total = (bookings ?? []).reduce((sum: number, booking: BookingRow) => {
     const item = Array.isArray(booking.equipment_item) ? booking.equipment_item[0] : booking.equipment_item;
     const dayRate = item?.internal_day_rate ?? 0;
     const days = (booking.access_dates ?? []).length;

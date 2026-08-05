@@ -604,7 +604,6 @@ export default async function ProjectBudgetPage({
         <RequestQuotesCard
           projectId={project.id}
           categories={categories ?? []}
-          stages={stages ?? []}
           suppliers={suppliersWithRatings}
           labels={requestQuotesCardLabels}
           categoryLabels={Object.fromEntries((categories ?? []).map((c) => [c.id, t(c.name)]))}

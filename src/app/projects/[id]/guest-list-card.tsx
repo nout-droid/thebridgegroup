@@ -8,8 +8,6 @@ import {
   GUEST_TYPES,
   GUEST_TYPE_LABELS,
   type EventGuest,
-  type GuestRsvpStatus,
-  type GuestType,
 } from "@/lib/types";
 import { createGuest, deleteGuest, updateGuestRsvp, updateGuestType } from "./guest-list-actions";
 import type { Translator } from "@/lib/server/translate";

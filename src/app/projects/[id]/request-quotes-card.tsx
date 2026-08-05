@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Category, Stage, Supplier } from "@/lib/types";
+import type { Category, Supplier } from "@/lib/types";
 import { requestQuotesForCategories } from "./actions";
 
 export interface RequestQuotesCardLabels {
@@ -27,7 +27,6 @@ export interface RequestQuotesCardLabels {
 export function RequestQuotesCard({
   projectId,
   categories,
-  stages,
   suppliers,
   labels,
   categoryLabels,
@@ -35,7 +34,6 @@ export function RequestQuotesCard({
 }: {
   projectId: string;
   categories: Category[];
-  stages: Stage[];
   suppliers: Supplier[];
   labels: RequestQuotesCardLabels;
   categoryLabels: Record<string, string>;

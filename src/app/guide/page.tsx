@@ -83,12 +83,12 @@ export default function GuidePage() {
                 rider for your event.
               </li>
               <li>
-                <strong className="text-white">Rundown.</strong> Follow the show's running order in
+                <strong className="text-white">Rundown.</strong> Follow the show&apos;s running order in
                 real time on the day of the event.
               </li>
               <li>
                 <strong className="text-white">Requests.</strong> Use the request form to ask for
-                changes or additions — these land directly on the production team's dashboard.
+                changes or additions — these land directly on the production team&apos;s dashboard.
               </li>
               <li>
                 <strong className="text-white">Documents.</strong> Some events include an intake
@@ -114,17 +114,17 @@ export default function GuidePage() {
                 with the supplier code and password you received.
               </li>
               <li>
-                <strong className="text-white">Quotes.</strong> Under "Budget" you'll see exactly which
-                categories you've been asked to quote on for each project — never more than what was
+                <strong className="text-white">Quotes.</strong> Under &quot;Budget&quot; you&apos;ll see exactly which
+                categories you&apos;ve been asked to quote on for each project — never more than what was
                 requested from you.
               </li>
               <li>
                 <strong className="text-white">Uploading a quote.</strong> Upload your quote as a PDF;
-                it's automatically matched line by line against the categories you were asked to quote,
-                so the production team doesn't have to re-type it.
+                it&apos;s automatically matched line by line against the categories you were asked to quote,
+                so the production team doesn&apos;t have to re-type it.
               </li>
               <li>
-                <strong className="text-white">Production requests.</strong> Under "Requests" you'll
+                <strong className="text-white">Production requests.</strong> Under &quot;Requests&quot; you&apos;ll
                 find anything specifically asked of you — equipment, catering, hotel, flights, comms or
                 power — grouped per project.
               </li>
@@ -152,17 +152,17 @@ export default function GuidePage() {
                 with the crew code you received, and pick your department when asked.
               </li>
               <li>
-                <strong className="text-white">Live rundown.</strong> You'll see the show's running
+                <strong className="text-white">Live rundown.</strong> You&apos;ll see the show&apos;s running
                 order update in real time — the same cue everyone else on site is looking at.
               </li>
               <li>
                 <strong className="text-white">Per-department instructions.</strong> Any cue with a note
-                for your department shows it directly under that cue, so you only see what's relevant to
+                for your department shows it directly under that cue, so you only see what&apos;s relevant to
                 you.
               </li>
               <li>
                 <strong className="text-white">Countdown clock.</strong> Open the shared popup clock to
-                keep an eye on the current cue's remaining time from any screen.
+                keep an eye on the current cue&apos;s remaining time from any screen.
               </li>
               <li>
                 <strong className="text-white">Chat.</strong> Use the built-in chat to coordinate with
@@ -228,14 +228,14 @@ export default function GuidePage() {
               </li>
               <li>
                 <strong className="text-white">On-site check-in.</strong> On the day, your badge is
-                scanned at the entrance and you're checked in instantly — no paper lists.
+                scanned at the entrance and you&apos;re checked in instantly — no paper lists.
               </li>
             </ol>
           </section>
         </div>
 
         <p className="mt-16 text-center text-sm text-white/40">
-          Can't find what you're looking for? Contact the production team that invited you, or reach
+          Can&apos;t find what you&apos;re looking for? Contact the production team that invited you, or reach
           The Bridge Group B.V. via{" "}
           <a href="mailto:order@thebridgeavgroup.com" className="underline hover:text-white">
             order@thebridgeavgroup.com

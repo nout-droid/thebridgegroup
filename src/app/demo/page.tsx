@@ -1,4 +1,5 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -100,7 +101,7 @@ export default async function DemoPage() {
       <header className="border-b border-black bg-black text-white">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2 font-heading text-base font-extrabold uppercase tracking-tight">
-            <img src="/logo.png" alt="The Bridge Group B.V." width={24} height={18} />
+            <Image src="/logo.png" alt="The Bridge Group B.V." width={24} height={18} />
             The Bridge — Productie
           </div>
           <Badge variant="secondary" className="uppercase tracking-wide">

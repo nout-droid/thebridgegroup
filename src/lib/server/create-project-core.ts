@@ -1,5 +1,4 @@
 import "server-only";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getOrgAccess } from "@/lib/server/subscription";
 import { getTeamOwnerId } from "@/lib/server/team";

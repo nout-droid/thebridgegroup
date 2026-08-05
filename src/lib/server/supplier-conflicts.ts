@@ -43,7 +43,7 @@ interface OtherProjectRow extends ProjectWindowFields {
 // overlappende bezettingsperiode? Geeft een lege Map terug zodra het huidige project geen
 // bruikbaar datumbereik heeft (dan is overlap niet vast te stellen).
 export async function getSupplierConflicts(
-  supabase: SupabaseClient<any>,
+  supabase: SupabaseClient,
   project: Project
 ): Promise<Map<string, SupplierConflict[]>> {
   const window = occupationWindow(project);
