@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
+import { deletePortalDocument, uploadPortalDocument } from "@/lib/server/portal-storage";
 
 function revalidateRider(projectId: string, stageId: string | null) {
   revalidatePath(`/projects/${projectId}/rider`);
@@ -134,5 +135,52 @@ export async function addRiderSectionItem(
 export async function deleteRiderSectionItem(projectId: string, stageId: string | null, itemId: string) {
   const supabase = await createClient();
   await supabase.from("rider_section_items").delete().eq("id", itemId);
+  revalidateRider(projectId, stageId);
+}
+
+export async function uploadRiderSectionAttachment(
+  projectId: string,
+  stageId: string | null,
+  sectionId: string,
+  formData: FormData
+) {
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return;
+
+  const supabase = await createClient();
+
+  const path = `rider/${projectId}/${sectionId}/${Date.now()}-${file.name}`;
+  const { error } = await uploadPortalDocument(path, file);
+  if (error) return;
+
+  await supabase.from("rider_section_attachments").insert({
+    section_id: sectionId,
+    storage_path: path,
+    original_filename: file.name,
+    uploaded_by: "owner",
+  });
+
+  revalidateRider(projectId, stageId);
+}
+
+export async function deleteRiderSectionAttachment(
+  projectId: string,
+  stageId: string | null,
+  attachmentId: string
+) {
+  const supabase = await createClient();
+
+  const { data: attachment } = await supabase
+    .from("rider_section_attachments")
+    .select("storage_path")
+    .eq("id", attachmentId)
+    .maybeSingle();
+
+  await supabase.from("rider_section_attachments").delete().eq("id", attachmentId);
+
+  if (attachment?.storage_path) {
+    await deletePortalDocument(attachment.storage_path);
+  }
+
   revalidateRider(projectId, stageId);
 }

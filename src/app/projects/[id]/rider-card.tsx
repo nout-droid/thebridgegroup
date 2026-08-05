@@ -10,8 +10,10 @@ import {
   addRiderSectionItem,
   deleteRiderSection,
   deleteRiderSectionItem,
+  deleteRiderSectionAttachment,
   moveRiderSection,
   updateRiderSection,
+  uploadRiderSectionAttachment,
 } from "./rider-actions";
 import type { Translator } from "@/lib/server/translate";
 
@@ -30,6 +32,9 @@ export const RIDER_CARD_LABELS = [
   "bv. Catering",
   "Onderdeel toevoegen",
   "Opslaan",
+  "Bijlagen",
+  "Klant",
+  "Bijlage toevoegen",
 ];
 
 const identity: Translator = (text) => text;
@@ -202,6 +207,56 @@ export function RiderCard({
                 />
                 <Button type="submit" size="sm" variant="secondary" className="h-8 shrink-0 text-xs">
                   {t("Regel toevoegen")}
+                </Button>
+              </form>
+            </div>
+
+            <div className="space-y-1.5 border-t pt-3">
+              <p className="text-xs font-medium text-muted-foreground">{t("Bijlagen")}</p>
+              {(section.attachments ?? []).length > 0 && (
+                <ul className="space-y-1">
+                  {(section.attachments ?? []).map((attachment) => (
+                    <li key={attachment.id} className="flex items-center justify-between gap-2 text-sm">
+                      <span className="flex items-center gap-2">
+                        {attachment.url ? (
+                          <a
+                            href={attachment.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary underline"
+                          >
+                            {attachment.original_filename}
+                          </a>
+                        ) : (
+                          attachment.original_filename
+                        )}
+                        {attachment.uploaded_by === "client" && (
+                          <Badge variant="secondary">{t("Klant")}</Badge>
+                        )}
+                      </span>
+                      <form
+                        action={deleteRiderSectionAttachment.bind(null, projectId, stageId, attachment.id)}
+                      >
+                        <Button type="submit" variant="ghost" size="sm" className="h-6 px-2 text-xs">
+                          {t("Verwijderen")}
+                        </Button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <form
+                action={uploadRiderSectionAttachment.bind(null, projectId, stageId, section.id)}
+                className="flex flex-wrap items-center gap-2"
+              >
+                <Input
+                  type="file"
+                  name="file"
+                  required
+                  className="h-8 max-w-xs text-xs"
+                />
+                <Button type="submit" size="sm" variant="secondary" className="h-8 text-xs">
+                  {t("Bijlage toevoegen")}
                 </Button>
               </form>
             </div>

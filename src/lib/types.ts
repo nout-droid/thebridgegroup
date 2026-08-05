@@ -407,6 +407,7 @@ export interface RiderSection {
   updated_at: string;
   created_at: string;
   items?: RiderSectionItem[];
+  attachments?: RiderSectionAttachmentWithUrl[];
 }
 
 export interface RiderSectionItem {
@@ -417,6 +418,18 @@ export interface RiderSectionItem {
   created_at: string;
 }
 
+export interface RiderSectionAttachment {
+  id: string;
+  section_id: string;
+  original_filename: string;
+  uploaded_by: "owner" | "client";
+  created_at: string;
+}
+
+export interface RiderSectionAttachmentWithUrl extends RiderSectionAttachment {
+  url: string | null;
+}
+
 export interface SharedRiderSection {
   id: string;
   title: string;
@@ -425,6 +438,7 @@ export interface SharedRiderSection {
   stage_id: string | null;
   stage_name: string | null;
   items: { id: string; description: string }[];
+  attachments: { id: string; original_filename: string; uploaded_by: "owner" | "client" }[];
 }
 
 export interface SharedRider {

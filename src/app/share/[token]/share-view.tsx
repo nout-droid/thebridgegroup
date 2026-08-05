@@ -48,6 +48,10 @@ import {
   deleteIntakeChecklistPhotoByClient,
   uploadIntakeChecklistPhotoByClient,
 } from "./intake-photo-actions";
+import {
+  deleteRiderSectionAttachmentByClient,
+  uploadRiderSectionAttachmentByClient,
+} from "./rider-attachment-actions";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -76,6 +80,7 @@ const STATIC_LABELS = [
   "Opgeslagen",
   "Nog geen rider-onderdelen.",
   "Aanvraag checklist",
+  "Bijlagen",
   "Bijlage toevoegen",
   "Bekijken",
   "Verwijderen",
@@ -435,20 +440,28 @@ function EditableRiderSection({
   title,
   content,
   items,
+  attachments,
   t,
   onSaved,
+  onAttachmentUploaded,
+  onAttachmentDeleted,
 }: {
   token: string;
   sectionId: string;
   title: string;
   content: string;
   items: { id: string; description: string }[];
+  attachments: { id: string; original_filename: string; uploaded_by: "owner" | "client" }[];
   t: Translator;
   onSaved: (sectionId: string, content: string) => void;
+  onAttachmentUploaded: (attachment: { id: string; original_filename: string; uploaded_by: "owner" | "client" }) => void;
+  onAttachmentDeleted: (attachmentId: string) => void;
 }) {
   const [value, setValue] = useState(content);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function save() {
     setSaving(true);
@@ -464,6 +477,25 @@ function EditableRiderSection({
       setSaved(true);
       onSaved(sectionId, value);
     }
+  }
+
+  async function uploadAttachment() {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.set("file", file);
+    const result = await uploadRiderSectionAttachmentByClient(token, sectionId, formData);
+    setUploading(false);
+    if (result.attachment) {
+      onAttachmentUploaded(result.attachment);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function deleteAttachment(attachmentId: string) {
+    await deleteRiderSectionAttachmentByClient(token, attachmentId);
+    onAttachmentDeleted(attachmentId);
   }
 
   return (
@@ -493,6 +525,48 @@ function EditableRiderSection({
         </Button>
         {saved && <span className="text-xs text-muted-foreground">{t("Opgeslagen")}</span>}
       </div>
+
+      <div className="space-y-1.5 border-t pt-2">
+        <p className="text-xs font-medium text-muted-foreground">{t("Bijlagen")}</p>
+        {attachments.length > 0 && (
+          <ul className="space-y-1">
+            {attachments.map((attachment) => (
+              <li key={attachment.id} className="flex items-center justify-between gap-2 text-sm">
+                <a
+                  href={`/share/${token}/rider-attachments/${attachment.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
+                  {attachment.original_filename}
+                </a>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => deleteAttachment(attachment.id)}
+                >
+                  {t("Verwijderen")}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Input ref={fileInputRef} type="file" className="h-8 max-w-xs text-xs" />
+          <Button
+            type="button"
+            size="sm"
+            variant="secondary"
+            className="h-8 text-xs"
+            onClick={uploadAttachment}
+            disabled={uploading}
+          >
+            {t("Bijlage toevoegen")}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -502,11 +576,18 @@ function RiderPanel({
   rider,
   t,
   onSectionSaved,
+  onAttachmentUploaded,
+  onAttachmentDeleted,
 }: {
   token: string;
   rider: SharedRider;
   t: Translator;
   onSectionSaved: (sectionId: string, content: string) => void;
+  onAttachmentUploaded: (
+    sectionId: string,
+    attachment: { id: string; original_filename: string; uploaded_by: "owner" | "client" }
+  ) => void;
+  onAttachmentDeleted: (sectionId: string, attachmentId: string) => void;
 }) {
   return (
     <Card>
@@ -536,8 +617,11 @@ function RiderPanel({
                 title={section.stage_name ? `[${section.stage_name}] ${section.title}` : section.title}
                 content={section.content}
                 items={section.items}
+                attachments={section.attachments}
                 t={t}
                 onSaved={onSectionSaved}
+                onAttachmentUploaded={(attachment) => onAttachmentUploaded(section.id, attachment)}
+                onAttachmentDeleted={(attachmentId) => onAttachmentDeleted(section.id, attachmentId)}
               />
             ) : (
               <div key={section.id} className="space-y-1 rounded-md border p-3">
@@ -557,6 +641,22 @@ function RiderPanel({
                   <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
                     {section.items.map((item) => (
                       <li key={item.id}>{t(item.description)}</li>
+                    ))}
+                  </ul>
+                )}
+                {section.attachments.length > 0 && (
+                  <ul className="space-y-0.5 border-t pt-2">
+                    {section.attachments.map((attachment) => (
+                      <li key={attachment.id} className="text-sm">
+                        <a
+                          href={`/share/${token}/rider-attachments/${attachment.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary underline"
+                        >
+                          {attachment.original_filename}
+                        </a>
+                      </li>
                     ))}
                   </ul>
                 )}
@@ -1817,6 +1917,34 @@ export function ShareView({
                       ...prev,
                       sections: prev.sections.map((s) =>
                         s.id === sectionId ? { ...s, content } : s
+                      ),
+                    }
+                  : prev
+              )
+            }
+            onAttachmentUploaded={(sectionId, attachment) =>
+              setRider((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      sections: prev.sections.map((s) =>
+                        s.id === sectionId
+                          ? { ...s, attachments: [...s.attachments, attachment] }
+                          : s
+                      ),
+                    }
+                  : prev
+              )
+            }
+            onAttachmentDeleted={(sectionId, attachmentId) =>
+              setRider((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      sections: prev.sections.map((s) =>
+                        s.id === sectionId
+                          ? { ...s, attachments: s.attachments.filter((a) => a.id !== attachmentId) }
+                          : s
                       ),
                     }
                   : prev

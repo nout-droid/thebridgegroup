@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProjectOrNotFound } from "@/lib/server/get-project";
 import { ensureRiderWithDefaults } from "@/lib/server/ensure-rider";
+import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import type { RiderSection, RiderSectionItem } from "@/lib/types";
@@ -35,21 +36,43 @@ export default async function ProjectRiderPage({
         .returns<RiderSection[]>()
     : { data: [] as RiderSection[] };
 
-  const { data: riderSectionItems } = riderSections?.length
-    ? await supabase
-        .from("rider_section_items")
-        .select("*")
-        .in(
-          "section_id",
-          riderSections.map((s) => s.id)
-        )
-        .order("sort_order", { ascending: true })
-        .returns<RiderSectionItem[]>()
-    : { data: [] as RiderSectionItem[] };
+  const [{ data: riderSectionItems }, { data: riderSectionAttachments }] = riderSections?.length
+    ? await Promise.all([
+        supabase
+          .from("rider_section_items")
+          .select("*")
+          .in(
+            "section_id",
+            riderSections.map((s) => s.id)
+          )
+          .order("sort_order", { ascending: true })
+          .returns<RiderSectionItem[]>(),
+        supabase
+          .from("rider_section_attachments")
+          .select("*")
+          .in(
+            "section_id",
+            riderSections.map((s) => s.id)
+          )
+          .order("created_at", { ascending: true }),
+      ])
+    : [{ data: [] as RiderSectionItem[] }, { data: [] as { id: string; section_id: string; storage_path: string; original_filename: string; uploaded_by: "owner" | "client"; created_at: string }[] }];
+
+  const attachmentsWithUrl = await Promise.all(
+    (riderSectionAttachments ?? []).map(async (attachment) => ({
+      id: attachment.id,
+      section_id: attachment.section_id,
+      original_filename: attachment.original_filename,
+      uploaded_by: attachment.uploaded_by,
+      created_at: attachment.created_at,
+      url: await getSignedPortalUrl(attachment.storage_path),
+    }))
+  );
 
   const riderSectionsWithItems = (riderSections ?? []).map((section) => ({
     ...section,
     items: (riderSectionItems ?? []).filter((item) => item.section_id === section.id),
+    attachments: attachmentsWithUrl.filter((a) => a.section_id === section.id),
   }));
 
   const t = await createTranslator(lang, ["Rider (projectbreed)", ...RIDER_CARD_LABELS]);

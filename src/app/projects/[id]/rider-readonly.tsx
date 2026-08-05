@@ -4,7 +4,7 @@ import type { RiderSection } from "@/lib/types";
 
 const identity = (text: string) => text;
 
-export const RIDER_READONLY_LABELS = ["Rider", "Klant vult in"];
+export const RIDER_READONLY_LABELS = ["Rider", "Klant vult in", "Bijlagen"];
 
 // t is optioneel (default: geen vertaling) — interne, Nederlandstalige weergaven (bv.
 // eigenaar-kant stagepagina's) geven 'm gewoon niet mee; het leveranciersportaal wel.
@@ -45,6 +45,31 @@ export function RiderReadOnly({
                   <li key={item.id}>{t(item.description)}</li>
                 ))}
               </ul>
+            )}
+            {(section.attachments ?? []).length > 0 && (
+              <div className="space-y-0.5 border-t pt-2">
+                <p className="text-xs font-medium text-muted-foreground">{t("Bijlagen")}</p>
+                <ul className="space-y-0.5">
+                  {(section.attachments ?? []).map((attachment) =>
+                    attachment.url ? (
+                      <li key={attachment.id}>
+                        <a
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-primary underline"
+                        >
+                          {attachment.original_filename}
+                        </a>
+                      </li>
+                    ) : (
+                      <li key={attachment.id} className="text-sm text-muted-foreground">
+                        {attachment.original_filename}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
             )}
           </div>
         ))}
