@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkRateLimit, getClientIp, RATE_LIMIT_MESSAGE_NL } from "@/lib/server/rate-limit";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export async function signUp(formData: FormData) {
   const companyName = String(formData.get("company_name") ?? "").trim();
@@ -17,6 +18,11 @@ export async function signUp(formData: FormData) {
   const ip = await getClientIp();
   const { blocked } = await checkRateLimit("signup", ip, { maxAttempts: 8, windowMinutes: 60 });
   if (blocked) redirect(`/signup?error=${encodeURIComponent(RATE_LIMIT_MESSAGE_NL)}`);
+
+  const turnstileOk = await verifyTurnstileToken(String(formData.get("cf-turnstile-response") ?? ""), ip);
+  if (!turnstileOk) {
+    redirect(`/signup?error=${encodeURIComponent("Verificatie mislukt. Probeer het opnieuw.")}`);
+  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });

@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/submit-button";
 import { Footer } from "@/components/footer";
 import { useTranslator } from "@/hooks/use-translator";
 import { LanguageToggle } from "@/components/language-toggle";
+import { TurnstileWidget } from "@/components/turnstile-widget";
 
 const STATIC_LABELS = [
   "Nieuw account aanmaken",
@@ -105,6 +106,7 @@ export function SignupView({
               className="border-white/20 bg-white/5 text-white placeholder:text-white/30"
             />
           </div>
+          <TurnstileWidget />
           <SubmitButton className="w-full" pendingText={t("Bezig met aanmelden…")}>
             {t("Account aanmaken")}
           </SubmitButton>
