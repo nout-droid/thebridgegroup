@@ -22,6 +22,11 @@ export default function PrivacyPage() {
             voor de accountgegevens van organisaties die een abonnement afsluiten. Voor gegevens die een
             organisatie zelf invoert over haar projecten, klanten, leveranciers, crew en gasten treden wij
             op als verwerker: de organisatie zelf blijft verwerkingsverantwoordelijke voor die gegevens.
+            Zie onze{" "}
+            <Link href="/verwerkersovereenkomst" className="underline">
+              verwerkersovereenkomst
+            </Link>{" "}
+            voor de afspraken die daarbij horen.
           </p>
         </section>
 
@@ -92,8 +97,12 @@ export default function PrivacyPage() {
         <section className="space-y-2">
           <h2 className="font-heading text-xl font-bold uppercase tracking-tight">8. Cookies</h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Het Platform gebruikt uitsluitend functionele cookies (voor inloggen en taalvoorkeur) —
-            geen tracking- of advertentiecookies.
+            Het Platform gebruikt uitsluitend functionele cookies (voor inloggen, portaaltoegang en
+            taalvoorkeur) — geen tracking- of advertentiecookies. Zie ons{" "}
+            <Link href="/cookies" className="underline">
+              cookiebeleid
+            </Link>{" "}
+            voor het volledige overzicht.
           </p>
         </section>
 

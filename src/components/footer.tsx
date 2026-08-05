@@ -17,6 +17,12 @@ export function Footer({ variant = "light" }: { variant?: "light" | "dark" }) {
         <Link href="/privacy" className="underline-offset-4 hover:underline">
           Privacyverklaring
         </Link>
+        <Link href="/cookies" className="underline-offset-4 hover:underline">
+          Cookiebeleid
+        </Link>
+        <Link href="/verwerkersovereenkomst" className="underline-offset-4 hover:underline">
+          Verwerkersovereenkomst
+        </Link>
       </p>
     </footer>
   );
