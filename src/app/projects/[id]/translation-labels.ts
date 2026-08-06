@@ -210,6 +210,8 @@ export const CREW_PLANNING_CARD_LABELS = [
   "Verkoopprijs km (€/km)",
   "Opslaan",
   "Ontkoppelen",
+  "Ook toevoegen aan crewdatabase",
+  "Nog geen crewleden in de database. Vink hieronder aan om deze persoon meteen toe te voegen — dan staat die de volgende keer wél in de lijst.",
 ];
 
 export const REQUEST_QUOTES_CARD_LABELS = [

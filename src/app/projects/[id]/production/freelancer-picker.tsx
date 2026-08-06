@@ -29,6 +29,8 @@ export interface FreelancerPickerLabels {
   sellDayRate: string;
   sellOvertimeRate: string;
   sellKmRate: string;
+  saveToDatabase: string;
+  noFreelancersHint: string;
 }
 
 // Los kiezen uit de centrale crew-database (i.p.v. steeds opnieuw naam/tarieven/adres
@@ -92,7 +94,7 @@ export function FreelancerPicker({
 
   return (
     <>
-      {freelancers.length > 0 && (
+      {freelancers.length > 0 ? (
         <div className="space-y-1 sm:col-span-2">
           <Label htmlFor={`${idPrefix}-freelancer`} className="text-xs">
             {labels.fromDatabase}
@@ -107,10 +109,13 @@ export function FreelancerPicker({
             {freelancers.map((freelancer) => (
               <option key={freelancer.id} value={freelancer.id}>
                 {freelancer.name}
+                {freelancer.role ? ` — ${freelancer.role}` : ""}
               </option>
             ))}
           </select>
         </div>
+      ) : (
+        <p className="text-xs text-muted-foreground sm:col-span-2">{labels.noFreelancersHint}</p>
       )}
       <input type="hidden" name="freelancer_id" value={selectedId === MANUAL_VALUE ? "" : selectedId} />
 
@@ -259,6 +264,12 @@ export function FreelancerPicker({
           className="h-8 text-xs"
         />
       </div>
+      {selectedId === MANUAL_VALUE && (
+        <label className="flex items-center gap-1.5 text-xs text-muted-foreground sm:col-span-2">
+          <input type="checkbox" name="save_to_database" defaultChecked className="h-4 w-4" />
+          {labels.saveToDatabase}
+        </label>
+      )}
     </>
   );
 }

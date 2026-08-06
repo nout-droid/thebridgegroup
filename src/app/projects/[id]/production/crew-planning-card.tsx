@@ -58,6 +58,8 @@ export interface CrewPlanningCardLabels {
   sellKmRate: string;
   savePerson: string;
   unlink: string;
+  saveToDatabase: string;
+  noFreelancersHint: string;
 }
 
 function PositionMemberForm({
@@ -83,6 +85,8 @@ function PositionMemberForm({
     sellDayRate: labels.sellDayRate,
     sellOvertimeRate: labels.sellOvertimeRate,
     sellKmRate: labels.sellKmRate,
+    saveToDatabase: labels.saveToDatabase,
+    noFreelancersHint: labels.noFreelancersHint,
   };
 
   return (

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { syncCrewRatesCategory } from "@/lib/server/crew-rates";
 import { estimateOneWayDistanceKm } from "@/lib/server/distance";
 import { getProjectVenueAddress } from "@/lib/server/project-venue";
+import { getTeamOwnerId } from "@/lib/server/team";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
 type ProvidedBy = "wij" | "klant" | "leverancier";
@@ -170,7 +171,8 @@ export async function savePositionMember(projectId: string, memberId: string, fo
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return;
 
-  const freelancerId = String(formData.get("freelancer_id") ?? "") || null;
+  let freelancerId = String(formData.get("freelancer_id") ?? "") || null;
+  const saveToDatabase = formData.get("save_to_database") === "on";
   const role = String(formData.get("role") ?? "").trim();
   const homeAddress = String(formData.get("home_address") ?? "").trim();
   const dayRate = Math.max(0, Number(formData.get("day_rate") ?? 0));
@@ -188,6 +190,48 @@ export async function savePositionMember(projectId: string, memberId: string, fo
     .eq("id", memberId)
     .maybeSingle();
   if (!member) return;
+
+  // Handmatig ingevoerd + "ook toevoegen aan crewdatabase" aangevinkt: dan hoeft de planner
+  // deze persoon niet nog een keer los via /freelancers aan te maken — hij/zij staat de
+  // volgende keer meteen in de kies-lijst. Bestaat er al een freelancer met dezelfde naam
+  // voor deze eigenaar, dan koppelen we daaraan i.p.v. een dubbele rij aan te maken.
+  if (!freelancerId && saveToDatabase && name) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const ownerId = user ? await getTeamOwnerId(supabase, user.id) : null;
+
+    if (ownerId) {
+      const { data: existingFreelancer } = await supabase
+        .from("freelancers")
+        .select("id")
+        .eq("user_id", ownerId)
+        .ilike("name", name)
+        .maybeSingle();
+
+      if (existingFreelancer) {
+        freelancerId = existingFreelancer.id;
+      } else {
+        const { data: createdFreelancer } = await supabase
+          .from("freelancers")
+          .insert({
+            user_id: ownerId,
+            name,
+            role,
+            home_address: homeAddress,
+            day_rate: dayRate,
+            overtime_rate: overtimeRate,
+            km_rate: kmRate,
+            sell_day_rate: sellDayRate,
+            sell_overtime_rate: sellOvertimeRate,
+            sell_km_rate: sellKmRate,
+          })
+          .select("id")
+          .single();
+        if (createdFreelancer) freelancerId = createdFreelancer.id;
+      }
+    }
+  }
 
   if (freelancerId) {
     const accessDates = member.access_dates ?? [];

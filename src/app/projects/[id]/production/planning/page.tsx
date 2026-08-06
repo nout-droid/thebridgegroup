@@ -111,6 +111,10 @@ export default async function ProductionPlanningPage({
     sellKmRate: t("Verkoopprijs km (€/km)"),
     savePerson: t("Opslaan"),
     unlink: t("Ontkoppelen"),
+    saveToDatabase: t("Ook toevoegen aan crewdatabase"),
+    noFreelancersHint: t(
+      "Nog geen crewleden in de database. Vink hieronder aan om deze persoon meteen toe te voegen — dan staat die de volgende keer wél in de lijst."
+    ),
   };
 
   return (

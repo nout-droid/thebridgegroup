@@ -72,6 +72,7 @@ const FREELANCERS_PAGE_LABELS = [
   "Naar planning",
   "Algemeen",
   "Kies crewlid",
+  "Nog geen crewleden in de database om toe te wijzen — voeg er hieronder eerst één toe bij \"Nieuw crewlid\".",
 ];
 
 interface CrewRow {
@@ -285,6 +286,13 @@ export default async function FreelancersPage({
               <p className="text-sm text-muted-foreground">{t("Nergens openstaande functies.")}</p>
             ) : (
               <div className="space-y-4">
+                {(!freelancers || freelancers.length === 0) && (
+                  <p className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
+                    {t(
+                      'Nog geen crewleden in de database om toe te wijzen — voeg er hieronder eerst één toe bij "Nieuw crewlid".'
+                    )}
+                  </p>
+                )}
                 {[...openPositionsByProject.entries()].map(([projectId, positions]) => (
                   <div key={projectId} className="space-y-1.5">
                     <p className="text-sm font-semibold">{t(projectNameById.get(projectId) ?? "")}</p>
