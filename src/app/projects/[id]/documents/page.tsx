@@ -13,6 +13,7 @@ import { addLostFoundItem, updateLostFoundStatus, deleteLostFoundItem } from "..
 import { ProjectSubNav } from "../project-sub-nav";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { INTAKE_CHECKLIST_SECTIONS } from "@/lib/intake-checklist-sections";
 
 const DOCUMENTS_PAGE_LABELS = [
   "Nieuw document toevoegen",
@@ -199,9 +200,11 @@ export default async function ProjectDocumentsPage({
       .select("id, section_key, storage_path, original_filename, created_at")
       .eq("checklist_id", checklist.id);
     for (const photo of photos ?? []) {
+      const section = INTAKE_CHECKLIST_SECTIONS.find((s) => s.key === photo.section_key);
+      const sectionTitle = section ? (lang === "en" ? section.title_en : section.title_nl) : photo.section_key;
       rows.push({
         id: photo.id,
-        title: `${photo.section_key} — ${photo.original_filename}`,
+        title: `${sectionTitle} — ${photo.original_filename}`,
         storagePath: photo.storage_path,
         source: "Checklist",
         deletable: false,
