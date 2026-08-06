@@ -148,6 +148,7 @@ export interface Organization {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   trial_ends_at: string | null;
+  early_adopter: boolean;
   created_at: string;
 }
 
@@ -188,6 +189,7 @@ export interface SalesLead {
   estimated_value: number;
   probability_percentage: number;
   expected_close_date: string | null;
+  next_follow_up_date: string | null;
   notes: string;
   project_id: string | null;
   created_at: string;
@@ -203,6 +205,47 @@ export interface SalesLeadActivity {
   activity_type: SalesLeadActivityType;
   description: string;
   created_by: string | null;
+  created_at: string;
+}
+
+// Platform-backoffice (/admin) — losse pipeline van álle organisaties (dus elke signup) op
+// het SaaS-product zelf, niet te verwarren met SalesLead hierboven (dat is de per-klant CRM
+// die klanten voor hun EIGEN leads gebruiken).
+export type PlatformLeadStatus =
+  | "new"
+  | "contacted"
+  | "demo_given"
+  | "negotiating"
+  | "won"
+  | "lost"
+  | "churned";
+
+export interface PlatformLead {
+  id: string;
+  organization_id: string;
+  status: PlatformLeadStatus;
+  last_contact_at: string | null;
+  next_follow_up_date: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+  // Verrijkt in de server action/page, niet kolommen op deze tabel zelf.
+  organization_name: string;
+  owner_email: string;
+  plan: string;
+  subscription_status: string;
+  trial_ends_at: string | null;
+  early_adopter: boolean;
+  seats: number;
+  org_created_at: string;
+  activities?: PlatformLeadActivity[];
+}
+
+export interface PlatformLeadActivity {
+  id: string;
+  platform_lead_id: string;
+  activity_type: SalesLeadActivityType;
+  description: string;
   created_at: string;
 }
 

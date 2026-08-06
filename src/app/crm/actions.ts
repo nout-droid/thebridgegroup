@@ -51,6 +51,7 @@ export async function createLead(formData: FormData) {
     estimated_value: Math.max(0, Number(formData.get("estimated_value") ?? 0)),
     probability_percentage: Number(formData.get("probability_percentage") ?? DEFAULT_PROBABILITY[stage]),
     expected_close_date: String(formData.get("expected_close_date") ?? "") || null,
+    next_follow_up_date: String(formData.get("next_follow_up_date") ?? "") || null,
     notes: String(formData.get("notes") ?? "").trim(),
   });
 
@@ -77,6 +78,7 @@ export async function updateLead(leadId: string, formData: FormData) {
       estimated_value: Math.max(0, Number(formData.get("estimated_value") ?? 0)),
       probability_percentage: Number(formData.get("probability_percentage") ?? DEFAULT_PROBABILITY[stage]),
       expected_close_date: String(formData.get("expected_close_date") ?? "") || null,
+      next_follow_up_date: String(formData.get("next_follow_up_date") ?? "") || null,
       notes: String(formData.get("notes") ?? "").trim(),
       updated_at: new Date().toISOString(),
     })

@@ -32,12 +32,22 @@ export async function signUp(formData: FormData) {
   }
 
   const admin = createAdminClient();
-  await admin.from("organizations").insert({
-    owner_user_id: data.user.id,
-    name: companyName,
-    plan: "trial",
-    subscription_status: "trialing",
-  });
+  const { data: org } = await admin
+    .from("organizations")
+    .insert({
+      owner_user_id: data.user.id,
+      name: companyName,
+      plan: "trial",
+      subscription_status: "trialing",
+    })
+    .select("id")
+    .single();
+
+  // Elke aanmelding wordt automatisch een lead in de platform-backoffice (/admin) — zo ziet
+  // Nout als producteigenaar wie de tool test, zonder dat hij dit los hoeft bij te houden.
+  if (org) {
+    await admin.from("platform_leads").insert({ organization_id: org.id, status: "new" });
+  }
 
   if (data.session) {
     redirect("/projects");

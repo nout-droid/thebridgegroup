@@ -9,6 +9,7 @@ import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 import { getViewerTeamInfo } from "@/lib/server/team";
 import { DEFAULT_BRANDING, getOrgBranding } from "@/lib/server/organization";
+import { isPlatformAdmin } from "@/lib/server/platform-admin";
 
 export async function Nav() {
   const supabase = await createClient();
@@ -53,6 +54,7 @@ export async function Nav() {
     "Locaties",
     "Klanten",
     "Team",
+    "Backoffice",
     "Uitloggen",
   ]);
 
@@ -76,6 +78,7 @@ export async function Nav() {
       hasSection("venues") && { href: "/venues", label: t("Locaties") },
       hasSection("clients") && { href: "/clients", label: t("Klanten") },
       hasSection("team") && { href: "/team", label: t("Team") },
+      isPlatformAdmin(user?.email) && { href: "/admin", label: t("Backoffice") },
     ] as (MobileNavLink | false)[]
   ).filter((link): link is MobileNavLink => Boolean(link));
 

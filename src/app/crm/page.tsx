@@ -42,7 +42,17 @@ const CRM_PAGE_LABELS = [
   "Dealwaarde (€)",
   "Win-kans (%)",
   "Verwachte sluitdatum",
+  "Volgende follow-up",
   "Notities",
+  "Zoek op bedrijf of contactpersoon",
+  "Zoeken",
+  "Laatste contact:",
+  "Nog geen contact",
+  "Vandaag",
+  "Gisteren",
+  "dagen geleden",
+  "Follow-up verlopen",
+  "Follow-up binnenkort",
   "Lead toevoegen",
   "Lead",
   "Contact gelegd",
@@ -79,7 +89,28 @@ function monthKey(dateStr: string) {
   return dateStr.slice(0, 7); // YYYY-MM
 }
 
-export default async function CrmPage() {
+function formatLastContact(dateStr: string | undefined, t: (text: string) => string): string {
+  if (!dateStr) return t("Nog geen contact");
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+  if (days <= 0) return t("Vandaag");
+  if (days === 1) return t("Gisteren");
+  return `${days} ${t("dagen geleden")}`;
+}
+
+function followUpUrgency(dateStr: string | null): "overdue" | "soon" | null {
+  if (!dateStr) return null;
+  const today = new Date(new Date().toDateString());
+  const diffDays = Math.round((new Date(dateStr).getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays < 0) return "overdue";
+  if (diffDays <= 3) return "soon";
+  return null;
+}
+
+export default async function CrmPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -87,8 +118,10 @@ export default async function CrmPage() {
   if (!user) redirect("/login");
 
   const ownerId = await getTeamOwnerId(supabase, user.id);
+  const { q } = await searchParams;
+  const query = (q ?? "").trim().toLowerCase();
 
-  const [{ data: leads }, lang] = await Promise.all([
+  const [{ data: allLeads }, lang] = await Promise.all([
     supabase
       .from("sales_leads")
       .select("*")
@@ -98,6 +131,15 @@ export default async function CrmPage() {
       .returns<SalesLead[]>(),
     getAppLang(),
   ]);
+
+  const leads = query
+    ? (allLeads ?? []).filter(
+        (l) =>
+          l.company_name.toLowerCase().includes(query) ||
+          l.contact_name.toLowerCase().includes(query) ||
+          l.contact_email.toLowerCase().includes(query)
+      )
+    : allLeads;
 
   const leadIds = (leads ?? []).map((l) => l.id);
   const { data: activities } = leadIds.length
@@ -154,6 +196,15 @@ export default async function CrmPage() {
   for (const stage of STAGES) leadsByStage.set(stage, []);
   for (const lead of leads ?? []) {
     leadsByStage.get(lead.stage)?.push(lead);
+  }
+  // Binnen elk stadium: urgentste follow-up eerst, geen follow-up-datum onderaan.
+  for (const stage of STAGES) {
+    leadsByStage.get(stage)?.sort((a, b) => {
+      if (!a.next_follow_up_date && !b.next_follow_up_date) return 0;
+      if (!a.next_follow_up_date) return 1;
+      if (!b.next_follow_up_date) return -1;
+      return a.next_follow_up_date.localeCompare(b.next_follow_up_date);
+    });
   }
 
   return (
@@ -214,6 +265,16 @@ export default async function CrmPage() {
           </Card>
         )}
 
+        <form action="/crm" className="flex items-end gap-2">
+          <div className="min-w-0 flex-1 space-y-1.5">
+            <Label htmlFor="crm-search">{t("Zoek op bedrijf of contactpersoon")}</Label>
+            <Input id="crm-search" name="q" defaultValue={q ?? ""} className="max-w-sm" />
+          </div>
+          <Button type="submit" variant="secondary" size="sm">
+            {t("Zoeken")}
+          </Button>
+        </form>
+
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("Nieuwe lead")}</CardTitle>
@@ -268,6 +329,10 @@ export default async function CrmPage() {
                   <Label htmlFor="new-close-date">{t("Verwachte sluitdatum")}</Label>
                   <Input id="new-close-date" name="expected_close_date" type="date" />
                 </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="new-follow-up">{t("Volgende follow-up")}</Label>
+                  <Input id="new-follow-up" name="next_follow_up_date" type="date" />
+                </div>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="new-notes">{t("Notities")}</Label>
@@ -301,11 +366,24 @@ export default async function CrmPage() {
                     stageLeads.map((lead) => (
                       <details key={lead.id} className="rounded-md border p-2.5">
                         <summary className="flex cursor-pointer items-center justify-between gap-2 text-sm">
-                          <span className="font-medium">{t(lead.company_name)}</span>
-                          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="min-w-0 truncate font-medium">{t(lead.company_name)}</span>
+                          <span className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                             {euro(lead.estimated_value)} · {lead.probability_percentage}%
+                            {followUpUrgency(lead.next_follow_up_date) === "overdue" && (
+                              <Badge variant="destructive" className="text-[10px]">
+                                {t("Follow-up verlopen")}
+                              </Badge>
+                            )}
+                            {followUpUrgency(lead.next_follow_up_date) === "soon" && (
+                              <Badge variant="secondary" className="border border-amber-400 text-[10px] text-amber-700">
+                                {t("Follow-up binnenkort")}
+                              </Badge>
+                            )}
                           </span>
                         </summary>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {t("Laatste contact:")} {formatLastContact(activitiesByLead.get(lead.id)?.[0]?.created_at, t)}
+                        </p>
 
                         <div className="mt-3 space-y-4 border-t pt-3">
                           <form action={updateLead.bind(null, lead.id)} className="space-y-3">
@@ -377,6 +455,15 @@ export default async function CrmPage() {
                                   name="expected_close_date"
                                   type="date"
                                   defaultValue={lead.expected_close_date ?? ""}
+                                  className="h-8 text-xs"
+                                />
+                              </div>
+                              <div className="space-y-1">
+                                <Label className="text-xs">{t("Volgende follow-up")}</Label>
+                                <Input
+                                  name="next_follow_up_date"
+                                  type="date"
+                                  defaultValue={lead.next_follow_up_date ?? ""}
                                   className="h-8 text-xs"
                                 />
                               </div>
