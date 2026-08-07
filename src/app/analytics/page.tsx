@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { computeClientPrice, type Category, type Project } from "@/lib/types";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { YearComparisonChart } from "./analytics-charts";
 
 const ANALYTICS_PAGE_LABELS = [
   "Analytics",
@@ -25,6 +26,19 @@ const ANALYTICS_PAGE_LABELS = [
   "Gem. afwijking",
   "Aantal projecten",
   "Nog geen werkelijke kosten geregistreerd.",
+  "Jaaroverzicht",
+  "Omzet, kosten en marge per jaar, op basis van de event-datum.",
+  "Jaar",
+  "Aantal",
+  "Kosten",
+  "Omzet",
+  "Nog geen projecten met een event-datum om per jaar te vergelijken.",
+  "Forecast",
+  "Voorspelling voor dit jaar op basis van het tempo van boekingen t.o.v. vorig jaar.",
+  "Al vastgelegd dit jaar",
+  "Voorspeld jaartotaal",
+  "vs. vorig jaar op dit punt in het jaar",
+  "Nog niet genoeg historie voor een trendvoorspelling — dit toont alleen het al vastgelegde bedrag.",
 ];
 
 interface QuoteRow {
@@ -56,9 +70,9 @@ export default async function AnalyticsPage() {
   const [{ data: projects }, lang] = await Promise.all([
     supabase
       .from("projects")
-      .select("id, name, client_name, event_date")
+      .select("id, name, client_name, event_date, created_at")
       .order("event_date", { ascending: false })
-      .returns<Pick<Project, "id" | "name" | "client_name" | "event_date">[]>(),
+      .returns<Pick<Project, "id" | "name" | "client_name" | "event_date" | "created_at">[]>(),
     getAppLang(),
   ]);
 
@@ -127,6 +141,64 @@ export default async function AnalyticsPage() {
     })
     .filter((row) => row.cost > 0 || row.client > 0);
 
+  // ---- Jaaroverzicht + forecast ----
+  // Jaar wordt afgeleid uit event_date (niet created_at) — dat is het jaar waarin het
+  // event daadwerkelijk plaatsvindt, dezelfde as die overal elders in de app leidend is.
+  interface YearStat {
+    year: number;
+    count: number;
+    cost: number;
+    client: number;
+    margin: number;
+  }
+  const yearStats = new Map<number, YearStat>();
+  for (const row of projectMargins) {
+    if (!row.project.event_date) continue;
+    const year = new Date(`${row.project.event_date}T00:00:00`).getFullYear();
+    const stat = yearStats.get(year) ?? { year, count: 0, cost: 0, client: 0, margin: 0 };
+    stat.count += 1;
+    stat.cost += row.cost;
+    stat.client += row.client;
+    stat.margin += row.margin;
+    yearStats.set(year, stat);
+  }
+  const yearRows = [...yearStats.values()].sort((a, b) => b.year - a.year).slice(0, 6);
+  const yearChartData = [...yearRows]
+    .reverse()
+    .map((y) => ({ year: String(y.year), omzet: Math.round(y.client), marge: Math.round(y.margin) }));
+
+  // Forecast: vergelijk hoeveel omzet voor dit jaar tot nu toe is VASTGELEGD (created_at van
+  // het project, dus het boekingstempo) met hoeveel er op hetzelfde punt vorig jaar was
+  // vastgelegd voor de events van toen — dat is een eerlijkere maat dan "events die al hebben
+  // plaatsgevonden", want in de eventbranche wordt vrijwel alles ver van tevoren geboekt.
+  // Die groei passen we toe op de omzet van heel vorig jaar — een eenvoudige, uitlegbare
+  // trendvoorspelling. Zonder vorig-jaar-data tonen we alleen het al vastgelegde bedrag.
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const previousYear = currentYear - 1;
+  const todayStr = today.toISOString().slice(0, 10);
+  const previousYearCutoff = `${previousYear}-${todayStr.slice(5)}`;
+
+  let toDateThisYear = 0;
+  let toDateLastYear = 0;
+  for (const row of projectMargins) {
+    const eventDate = row.project.event_date;
+    if (!eventDate) continue;
+    const bookedDate = row.project.created_at.slice(0, 10);
+    if (eventDate.slice(0, 4) === String(currentYear) && bookedDate <= todayStr) toDateThisYear += row.client;
+    if (eventDate.slice(0, 4) === String(previousYear) && bookedDate <= previousYearCutoff) toDateLastYear += row.client;
+  }
+
+  const bookedThisYear = yearStats.get(currentYear)?.client ?? 0;
+  const bookedMarginThisYear = yearStats.get(currentYear)?.margin ?? 0;
+  const lastYearTotal = yearStats.get(previousYear)?.client ?? 0;
+  const lastYearMarginTotal = yearStats.get(previousYear)?.margin ?? 0;
+  const growthPct = toDateLastYear > 0 ? ((toDateThisYear - toDateLastYear) / toDateLastYear) * 100 : null;
+  const forecastTotal =
+    growthPct != null ? Math.max(lastYearTotal * (1 + growthPct / 100), bookedThisYear) : bookedThisYear;
+  const forecastMargin =
+    growthPct != null ? Math.max(lastYearMarginTotal * (1 + growthPct / 100), bookedMarginThisYear) : bookedMarginThisYear;
+
   // ---- Top klanten op marge ----
   const marginByClient = new Map<string, number>();
   for (const row of projectMargins) {
@@ -168,6 +240,91 @@ export default async function AnalyticsPage() {
         <div>
           <h1 className="text-2xl font-semibold">{t("Analytics")}</h1>
           <p className="text-sm text-muted-foreground">{t("Marge, klanten en kostenoverschrijding over al je projecten heen.")}</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("Jaaroverzicht")}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {t("Omzet, kosten en marge per jaar, op basis van de event-datum.")}
+              </p>
+            </CardHeader>
+            <CardContent>
+              {yearRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("Nog geen projecten met een event-datum om per jaar te vergelijken.")}
+                </p>
+              ) : (
+                <>
+                  <YearComparisonChart data={yearChartData} omzetLabel={t("Omzet")} margeLabel={t("Marge")} />
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b text-left text-xs text-muted-foreground">
+                          <th className="py-2 pr-3">{t("Jaar")}</th>
+                          <th className="py-2 pr-3 text-right">{t("Aantal")}</th>
+                          <th className="py-2 pr-3 text-right">{t("Kosten")}</th>
+                          <th className="py-2 pr-3 text-right">{t("Omzet")}</th>
+                          <th className="py-2 text-right">{t("Marge")}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {yearRows.map((y) => (
+                          <tr key={y.year} className="border-b last:border-0">
+                            <td className="py-2 pr-3 font-medium">{y.year}</td>
+                            <td className="py-2 pr-3 text-right text-muted-foreground">{y.count}</td>
+                            <td className="py-2 pr-3 text-right">{euro(y.cost)}</td>
+                            <td className="py-2 pr-3 text-right">{euro(y.client)}</td>
+                            <td className="py-2 text-right font-medium">{euro(y.margin)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">{t("Forecast")}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {t("Voorspelling voor dit jaar op basis van het tempo van boekingen t.o.v. vorig jaar.")}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {t("Al vastgelegd dit jaar")}
+                  </p>
+                  <p className="text-2xl font-semibold">{euro(bookedThisYear)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Marge")}: {euro(bookedMarginThisYear)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{t("Voorspeld jaartotaal")}</p>
+                  <p className="text-2xl font-semibold">{euro(forecastTotal)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("Marge")}: {euro(forecastMargin)}
+                  </p>
+                </div>
+              </div>
+              {growthPct != null ? (
+                <p className={`text-sm font-medium ${growthPct >= 0 ? "text-green-700" : "text-red-600"}`}>
+                  {growthPct >= 0 ? "+" : ""}
+                  {growthPct.toFixed(0)}% {t("vs. vorig jaar op dit punt in het jaar")}
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {t("Nog niet genoeg historie voor een trendvoorspelling — dit toont alleen het al vastgelegde bedrag.")}
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
         <Card>
