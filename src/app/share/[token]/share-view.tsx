@@ -319,7 +319,42 @@ function collectDynamicTexts(
   return Array.from(texts);
 }
 
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-4 top-4 text-3xl leading-none text-white"
+        aria-label="Sluiten"
+      >
+        ×
+      </button>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className="max-h-full max-w-full rounded-md object-contain"
+        onClick={(e) => e.stopPropagation()}
+      />
+    </div>
+  );
+}
+
 function MediaGallery({ media, t }: { media: SharedMedia[]; t: Translator }) {
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+
   if (!media.length) return null;
 
   const photos = media.filter((m) => m.kind === "photo");
@@ -333,15 +368,24 @@ function MediaGallery({ media, t }: { media: SharedMedia[]; t: Translator }) {
       <CardContent className="space-y-4">
         {photos.length > 0 && (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {photos.map((photo, index) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={index}
-                src={photo.url}
-                alt={photo.caption ? t(photo.caption) : "Render"}
-                className="aspect-video w-full rounded-md object-cover"
-              />
-            ))}
+            {photos.map((photo, index) => {
+              const alt = photo.caption ? t(photo.caption) : "Render";
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setLightbox({ src: photo.url, alt })}
+                  className="block"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photo.url}
+                    alt={alt}
+                    className="aspect-video w-full cursor-zoom-in rounded-md object-cover"
+                  />
+                </button>
+              );
+            })}
           </div>
         )}
         {videos.map((video, index) => {
@@ -370,6 +414,9 @@ function MediaGallery({ media, t }: { media: SharedMedia[]; t: Translator }) {
           );
         })}
       </CardContent>
+      {lightbox && (
+        <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
+      )}
     </Card>
   );
 }
@@ -708,6 +755,7 @@ function StorybookPanel({
   onChapterResponded: (chapterId: string, approvedAt: string | null) => void;
 }) {
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
   async function respond(chapterId: string, approved: boolean) {
     setSubmittingId(chapterId);
@@ -751,15 +799,24 @@ function StorybookPanel({
           <CardContent className="space-y-3">
             {chapter.images.length > 0 && (
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {chapter.images.map((image) => (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    key={image.id}
-                    src={image.url}
-                    alt={image.caption ? t(image.caption) : chapter.title}
-                    className="aspect-video w-full rounded-md object-cover"
-                  />
-                ))}
+                {chapter.images.map((image) => {
+                  const alt = image.caption ? t(image.caption) : chapter.title;
+                  return (
+                    <button
+                      key={image.id}
+                      type="button"
+                      onClick={() => setLightbox({ src: image.url, alt })}
+                      className="block"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={image.url}
+                        alt={alt}
+                        className="aspect-video w-full cursor-zoom-in rounded-md object-cover"
+                      />
+                    </button>
+                  );
+                })}
               </div>
             )}
             <div>
@@ -778,6 +835,9 @@ function StorybookPanel({
           </CardContent>
         </Card>
       ))}
+      {lightbox && (
+        <Lightbox src={lightbox.src} alt={lightbox.alt} onClose={() => setLightbox(null)} />
+      )}
     </div>
   );
 }

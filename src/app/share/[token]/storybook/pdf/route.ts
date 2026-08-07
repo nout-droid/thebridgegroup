@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateStorybookPdf } from "@/lib/generate-storybook-pdf";
 import { getOrgBranding } from "@/lib/server/organization";
+import { resolveImageBuffer } from "@/lib/pdf-branding";
 
 export async function GET(
   _request: Request,
@@ -52,17 +53,29 @@ export async function GET(
     .maybeSingle();
   const branding = await getOrgBranding(ownerProject?.user_id);
 
+  // @react-pdf/renderer laadt image-URL's onbetrouwbaar zelf op; eerst zelf ophalen als
+  // Buffer (zoals het org-logo) i.p.v. de rauwe URL doorgeven — zie resolveImageBuffer.
+  const chapters = await Promise.all(
+    storybookData.map(
+      async (chapter: { title: string; description: string; images: { url: string; caption: string }[] }) => {
+        const images = (
+          await Promise.all(
+            chapter.images.map(async (image) => ({
+              buffer: await resolveImageBuffer(image.url),
+              caption: image.caption,
+            }))
+          )
+        ).filter((image): image is { buffer: Buffer; caption: string } => image.buffer !== null);
+        return { title: chapter.title, description: chapter.description, images };
+      }
+    )
+  );
+
   const pdfBuffer = await generateStorybookPdf(
     {
       projectName: projectData.project.name,
       generatedAt: new Date(),
-      chapters: storybookData.map(
-        (chapter: { title: string; description: string; images: { url: string; caption: string }[] }) => ({
-          title: chapter.title,
-          description: chapter.description,
-          images: chapter.images,
-        })
-      ),
+      chapters,
     },
     branding
   );

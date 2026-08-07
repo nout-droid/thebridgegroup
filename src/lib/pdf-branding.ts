@@ -21,3 +21,17 @@ export async function resolveLogoBuffer(branding: OrgBranding): Promise<Buffer> 
     return fs.readFileSync(DEFAULT_LOGO_PATH);
   }
 }
+
+// @react-pdf/renderer's <Image src="https://..."> laadt de afbeelding zelf op het moment van
+// renderen, en dat blijkt onbetrouwbaar voor Supabase Storage-URL's (afbeelding blijft soms
+// leeg, zonder fout). Zelfde oplossing als het logo hierboven: vooraf zelf ophalen als Buffer
+// en dat aan <Image> geven — dan hoeft react-pdf niets meer zelf te fetchen.
+export async function resolveImageBuffer(url: string): Promise<Buffer | null> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    return Buffer.from(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}

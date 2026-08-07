@@ -5,7 +5,7 @@ import type { OrgBranding } from "./server/organization";
 import { resolveLogoBuffer } from "./pdf-branding";
 
 export interface StorybookPdfImage {
-  url: string;
+  buffer: Buffer;
   caption: string;
 }
 
@@ -135,7 +135,7 @@ export async function generateStorybookPdf(data: StorybookPdfData, branding: Org
                 <View style={styles.imageGrid}>
                   {chapter.images.map((image, imgIndex) => (
                     <View key={imgIndex} style={styles.imageBlock}>
-                      <Image src={image.url} style={styles.image} />
+                      <Image src={image.buffer} style={styles.image} />
                       {image.caption && <Text style={styles.caption}>{image.caption}</Text>}
                     </View>
                   ))}
