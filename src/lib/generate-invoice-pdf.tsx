@@ -40,6 +40,10 @@ export interface InvoicePdfData {
   // Absolute URL naar de live klantportal van dit project — als aanwezig wordt er een
   // QR-code getoond zodat de klant direct naar de actuele status kan scannen.
   portalUrl: string | null;
+  // Digitale handtekening die de klant in de klantportal heeft gezet (src/app/share/[token]/
+  // signature-pad.tsx) — als aanwezig verschijnt die onderaan het document, op zowel de
+  // offerte als de factuur.
+  signature: { url: string; signedBy: string; signedAt: string } | null;
 }
 
 const FONT_DIR = path.join(process.cwd(), "node_modules/@fontsource/poppins/files");
@@ -154,6 +158,9 @@ const styles = StyleSheet.create({
   qrBox: { flexDirection: "row", alignItems: "center", marginTop: 16, gap: 10 },
   qrImage: { width: 46, height: 46 },
   qrText: { fontSize: 8, color: "#888", maxWidth: 320, lineHeight: 1.4 },
+  signatureBox: { marginTop: 20, paddingTop: 12, borderTop: 1, borderTopColor: "#eee" },
+  signatureImage: { width: 140, height: 52, objectFit: "contain" },
+  signatureText: { fontSize: 8, color: "#888", marginTop: 4 },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -205,6 +212,7 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       paymentTitle: "Gelieve het bedrag over te maken naar IBAN",
       paymentSuffix: "onder vermelding van het factuurnummer.",
       portalText: "Scan voor de actuele status van dit event in de klantportal.",
+      signedBy: "Digitaal ondertekend door",
     },
   },
   en: {
@@ -233,6 +241,7 @@ const LABELS: Record<AppLang, Record<InvoiceDocumentType | "shared", Record<stri
       paymentTitle: "Please transfer the amount to IBAN",
       paymentSuffix: "quoting the invoice number.",
       portalText: "Scan for the live status of this event in the client portal.",
+      signedBy: "Digitally signed by",
     },
   },
 };
@@ -359,6 +368,16 @@ export async function generateInvoicePdf(data: InvoicePdfData, branding: OrgBran
             <View style={styles.notesBox}>
               <Text style={styles.notesTitle}>{shared.notesTitle}</Text>
               <Text style={styles.notesText}>{data.notes}</Text>
+            </View>
+          )}
+
+          {data.signature && (
+            <View style={styles.signatureBox}>
+              <Image src={data.signature.url} style={styles.signatureImage} />
+              <Text style={styles.signatureText}>
+                {shared.signedBy} {data.signature.signedBy} ·{" "}
+                {new Date(data.signature.signedAt).toLocaleString(dateLocale)}
+              </Text>
             </View>
           )}
 

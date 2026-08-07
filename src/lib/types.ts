@@ -380,6 +380,9 @@ export interface Project {
   contingency_plan: string;
   moneybird_invoice_id: string | null;
   moneybird_synced_at: string | null;
+  signature_url: string | null;
+  signature_signed_by: string | null;
+  signature_signed_at: string | null;
   invoice_number: string | null;
   invoice_status: InvoiceStatus;
   invoice_date: string | null;
@@ -1241,6 +1244,9 @@ export interface SharedProject {
     budget_approval_comment: string | null;
     organization_name: string;
     budget_access: BudgetAccess;
+    signature_url: string | null;
+    signature_signed_by: string | null;
+    signature_signed_at: string | null;
   };
   project_wide_categories: SharedCategory[];
   stages: SharedStage[];

@@ -53,6 +53,7 @@ import {
   deleteRiderSectionAttachmentByClient,
   uploadRiderSectionAttachmentByClient,
 } from "./rider-attachment-actions";
+import { SignaturePad } from "./signature-pad";
 
 const POLL_INTERVAL_MS = 5000;
 
@@ -76,6 +77,16 @@ const STATIC_LABELS = [
   "Event rider",
   "Rider downloaden",
   "Storybook",
+  "Digitale handtekening",
+  "Verschijnt automatisch op de offerte/factuur-PDF zodra de organisator die downloadt.",
+  "Handtekening",
+  "Ondertekend door",
+  "Opnieuw ondertekenen",
+  "Jouw naam",
+  "Wissen",
+  "Ondertekenen",
+  "Teken eerst je handtekening.",
+  "Vul je naam in.",
   "Door jou goedgekeurd",
   "Goedkeuring intrekken",
   "Dit hoofdstuk goedkeuren",
@@ -2185,6 +2196,29 @@ export function ShareView({
                           ...prev.project,
                           budget_approval_status: status,
                           budget_approval_comment: comment,
+                        },
+                      }
+                    : prev
+                )
+              }
+            />
+
+            <SignaturePad
+              token={token}
+              signatureUrl={data.project.signature_url}
+              signedBy={data.project.signature_signed_by}
+              signedAt={data.project.signature_signed_at}
+              t={t}
+              onSigned={(url, signedByValue, signedAtValue) =>
+                setData((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        project: {
+                          ...prev.project,
+                          signature_url: url,
+                          signature_signed_by: signedByValue,
+                          signature_signed_at: signedAtValue,
                         },
                       }
                     : prev

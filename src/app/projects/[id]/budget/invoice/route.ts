@@ -22,7 +22,9 @@ export async function GET(
 
   const { data: project } = await supabase
     .from("projects")
-    .select("id, name, client_name, event_date, user_id, invoice_number, invoice_date, client_reference, share_token")
+    .select(
+      "id, name, client_name, event_date, user_id, invoice_number, invoice_date, client_reference, share_token, signature_url, signature_signed_by, signature_signed_at"
+    )
     .eq("id", id)
     .maybeSingle();
 
@@ -74,6 +76,14 @@ export async function GET(
       clientReference: project.client_reference || null,
       iban: branding.iban,
       portalUrl: `${origin}/share/${project.share_token}`,
+      signature:
+        project.signature_url && project.signature_signed_by && project.signature_signed_at
+          ? {
+              url: project.signature_url,
+              signedBy: project.signature_signed_by,
+              signedAt: project.signature_signed_at,
+            }
+          : null,
     },
     branding
   );
