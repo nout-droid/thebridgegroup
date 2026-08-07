@@ -11,6 +11,7 @@ const TABS = [
   { key: "comms", label: "Comms & Portofoons" },
   { key: "power", label: "Stroom" },
   { key: "catering", label: "Catering" },
+  { key: "guest-catering", label: "Catering gasten" },
   { key: "artiesten", label: "Artiestenriders" },
   { key: "speakers", label: "Sprekers" },
   { key: "vragen", label: "Open vragen" },

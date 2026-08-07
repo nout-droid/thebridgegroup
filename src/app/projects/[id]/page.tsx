@@ -13,9 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   computeClientPrice,
+  EVENT_TYPES,
   type ActivityLogEntry,
   type Category,
   type ClientRequest,
+  type EventType,
   type IncidentReport,
   type Quote,
   type Stage,
@@ -76,6 +78,16 @@ const CLIENT_REQUEST_STATUS_LABELS: Record<string, string> = {
   done: "Afgehandeld",
 };
 
+const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  festival: "Festival",
+  wedding: "Bruiloft",
+  corporate: "Zakelijk",
+  gala: "Gala",
+  conference: "Conferentie",
+  concert: "Concert",
+  other: "Overig",
+};
+
 const STATIC_LABELS = [
   "Productieboek",
   "Bundelt rider, hotel- en vluchtaanvraag, draaiboek, materieel, comms, stroom en catering in één PDF — voor de map on-site.",
@@ -133,6 +145,15 @@ const STATIC_LABELS = [
   "Contact",
   "Notities",
   "Bewerken in locatiecatalogus →",
+  "Type event",
+  "Bepaalt de standaard-stijl bij nieuwe catering gasten-orders.",
+  "Festival",
+  "Bruiloft",
+  "Zakelijk",
+  "Gala",
+  "Conferentie",
+  "Concert",
+  "Overig",
   "Dit is een outdoor event",
   "Plan B bij slecht weer",
   "bv. indoor alternatief, extra overkapping, aangepaste tijdlijn — zichtbaar voor crew bij een weeralert",
@@ -690,6 +711,24 @@ export default async function ProjectPage({
                     </option>
                   ))}
                 </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="event_type">{t("Type event")}</Label>
+                <select
+                  id="event_type"
+                  name="event_type"
+                  defaultValue={project.event_type}
+                  className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                >
+                  {EVENT_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {t(EVENT_TYPE_LABELS[type])}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground">
+                  {t("Bepaalt de standaard-stijl bij nieuwe catering gasten-orders.")}
+                </p>
               </div>
 
               <div className="space-y-2 rounded-md border p-3 sm:col-span-4">

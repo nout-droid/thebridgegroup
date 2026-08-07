@@ -22,6 +22,8 @@ import {
 import {
   CATEGORY_STATUS_LABELS,
   CLIENT_REQUEST_CATEGORIES,
+  GUEST_CATERING_MOMENT_LABELS,
+  GUEST_CATERING_STYLE_LABELS,
   type BudgetAccess,
   type ClientRequest,
   type ClientRequestCategory,
@@ -58,6 +60,14 @@ import { SignaturePad } from "./signature-pad";
 const POLL_INTERVAL_MS = 5000;
 
 const STATIC_LABELS = [
+  "Catering gasten",
+  "Moment",
+  "Stijl",
+  "Gasten",
+  "Dieetwensen vanuit RSVP",
+  "+1:",
+  ...Object.values(GUEST_CATERING_MOMENT_LABELS),
+  ...Object.values(GUEST_CATERING_STYLE_LABELS),
   "Begroting per onderdeel",
   "Overige kosten",
   "Sfeerimpressie",
@@ -244,6 +254,16 @@ function collectDynamicTexts(
       if (c.party) texts.add(c.party);
       if (c.notes) texts.add(c.notes);
       if (c.supplier_name) texts.add(c.supplier_name);
+    }
+    for (const g of production.guest_catering) {
+      if (g.stage_name) texts.add(g.stage_name);
+      if (g.notes) texts.add(g.notes);
+      if (g.supplier_name) texts.add(g.supplier_name);
+    }
+    for (const d of production.guest_dietary) {
+      if (d.name) texts.add(d.name);
+      if (d.plus_one_name) texts.add(d.plus_one_name);
+      if (d.dietary_notes) texts.add(d.dietary_notes);
     }
     for (const e of production.equipment) {
       if (e.machine_type) texts.add(e.machine_type);
@@ -1386,6 +1406,7 @@ function groupScheduleByDate(entries: SharedScheduleItem[]): { date: string; ite
 
 const PRODUCTION_SECTIONS = [
   { key: "catering", label: "Catering" },
+  { key: "guest_catering", label: "Catering gasten" },
   { key: "equipment", label: "Materieel" },
   { key: "comms", label: "Comms & Portofoons" },
   { key: "power", label: "Stroom" },
@@ -1429,6 +1450,8 @@ function ProductionPanel({
     switch (section.key) {
       case "catering":
         return production.catering.length > 0;
+      case "guest_catering":
+        return production.guest_catering.length > 0 || production.guest_dietary.length > 0;
       case "equipment":
         return production.equipment.length > 0;
       case "comms":
@@ -1579,6 +1602,67 @@ function ProductionPanel({
                     </TableBody>
                   </Table>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {section === "guest_catering" && (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-2">
+                  <CardTitle className="text-base">{t("Catering gasten")}</CardTitle>
+                  <PdfDownloadLink token={token} path="guest-catering" t={t} />
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {production.guest_catering.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">Detail</p>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{t("Datum")}</TableHead>
+                          <TableHead>{t("Area")}</TableHead>
+                          <TableHead>{t("Moment")}</TableHead>
+                          <TableHead>{t("Stijl")}</TableHead>
+                          <TableHead>{t("Gasten")}</TableHead>
+                          <TableHead>{t("Leverancier")}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {production.guest_catering.map((g) => (
+                          <TableRow key={g.id}>
+                            <TableCell>{g.order_date}</TableCell>
+                            <TableCell>{g.stage_name ? t(g.stage_name) : t("Projectbreed")}</TableCell>
+                            <TableCell>{t(GUEST_CATERING_MOMENT_LABELS[g.moment] ?? g.moment)}</TableCell>
+                            <TableCell>{t(GUEST_CATERING_STYLE_LABELS[g.style] ?? g.style)}</TableCell>
+                            <TableCell>
+                              {g.guest_count} ({g.veggie_count} veg / {g.vegan_count} vegan / {g.kids_count} kids)
+                            </TableCell>
+                            <TableCell>{g.supplier_name ? t(g.supplier_name) : "—"}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+                {production.guest_dietary.length > 0 && (
+                  <div>
+                    <p className="mb-1.5 text-xs font-medium text-muted-foreground">
+                      {t("Dieetwensen vanuit RSVP")}
+                    </p>
+                    <ul className="space-y-1 text-sm">
+                      {production.guest_dietary.map((d, index) => (
+                        <li key={index}>
+                          <span className="font-medium">{t(d.name)}</span>
+                          {d.plus_one_name && <span> ({t("+1:")} {t(d.plus_one_name)})</span>}
+                          {": "}
+                          {t(d.dietary_notes)}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

@@ -8,6 +8,7 @@ import { generateEquipmentPdf } from "@/lib/generate-equipment-pdf";
 import { generateCommsPdf } from "@/lib/generate-comms-pdf";
 import { generatePowerPdf } from "@/lib/generate-power-pdf";
 import { generateCateringPdf } from "@/lib/generate-catering-pdf";
+import { generateGuestCateringPdf } from "@/lib/generate-guest-catering-pdf";
 import { mergePdfBuffers } from "@/lib/merge-pdfs";
 import { computeNights } from "@/lib/nights";
 import { getOrgBranding } from "@/lib/server/organization";
@@ -299,6 +300,53 @@ export async function GET(
             notes: item.notes,
             supplier_name: name(item.supplier),
             stage_name: name(item.stage),
+          })),
+        },
+        branding
+      )
+    );
+  }
+
+  // Catering gasten
+  const [{ data: guestCatering }, { data: dietaryGuests }] = await Promise.all([
+    supabase
+      .from("guest_catering_orders")
+      .select(
+        "order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, supplier:suppliers(name), stage:stages(name)"
+      )
+      .eq("project_id", id)
+      .order("order_date", { ascending: true })
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("event_guests")
+      .select("name, plus_one_name, dietary_notes")
+      .eq("project_id", id)
+      .neq("dietary_notes", "")
+      .order("sort_order", { ascending: true }),
+  ]);
+  if (guestCatering?.length) {
+    buffers.push(
+      await generateGuestCateringPdf(
+        {
+          projectName: project.name,
+          generatedAt,
+          entries: guestCatering.map((item) => ({
+            order_date: item.order_date,
+            stage_name: name(item.stage),
+            moment: item.moment,
+            style: item.style,
+            guest_count: item.guest_count,
+            veggie_count: item.veggie_count,
+            vegan_count: item.vegan_count,
+            kids_count: item.kids_count,
+            special_diet_count: item.special_diet_count,
+            supplier_name: name(item.supplier),
+            notes: item.notes,
+          })),
+          dietary: (dietaryGuests ?? []).map((g) => ({
+            name: g.name,
+            plus_one_name: g.plus_one_name,
+            dietary_notes: g.dietary_notes,
           })),
         },
         branding

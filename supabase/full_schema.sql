@@ -6476,3 +6476,271 @@ as $$
 $$;
 
 grant execute on function public.get_shared_project(uuid, uuid) to anon;
+
+-- === migrations_guest_catering.sql ===
+-- Catering voor gasten stond nog nergens los van de crew-catering (die alleen lunch/
+-- diner/night snacks per crewafnemer kent). Gasten hebben structureel andere info nodig
+-- (moment, stijl van serveren, meerdere dieetcategorieën) en die behoefte verschilt per
+-- type event (festival -> foodtrucks/borrel, wedding/gala -> seated diner, corporate ->
+-- coffee breaks). event_type op projects geeft alleen een zinnige default bij het
+-- aanmaken van een nieuwe order; validatie van de toegestane waarden gebeurt in
+-- TypeScript (zelfde patroon als rsvp_status), niet via een DB check-constraint, zodat
+-- deze migratie idempotent blijft op een bestaande projects-tabel.
+
+alter table public.projects add column if not exists event_type text not null default 'festival';
+
+create table if not exists public.guest_catering_orders (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  stage_id uuid references public.stages(id) on delete set null,
+  order_date date not null,
+  moment text not null default 'diner',
+  style text not null default 'buffet',
+  guest_count int not null default 0,
+  veggie_count int not null default 0,
+  vegan_count int not null default 0,
+  kids_count int not null default 0,
+  special_diet_count int not null default 0,
+  supplier_id uuid references public.suppliers(id) on delete set null,
+  notes text not null default '',
+  sort_order int not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists guest_catering_orders_project_id_idx on public.guest_catering_orders(project_id);
+create index if not exists guest_catering_orders_supplier_id_idx on public.guest_catering_orders(supplier_id);
+create index if not exists guest_catering_orders_stage_id_idx on public.guest_catering_orders(stage_id);
+
+alter table public.guest_catering_orders enable row level security;
+
+drop policy if exists "owner full access on guest_catering_orders" on public.guest_catering_orders;
+create policy "owner full access on guest_catering_orders" on public.guest_catering_orders
+  for all using (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  ) with check (
+    exists (select 1 from public.projects p where p.id = project_id and public.has_project_access(p.id))
+  );
+
+-- get_shared_production uitgebreid met 'guest_catering' (per order) en 'guest_dietary'
+-- (rollup van event_guests.dietary_notes, al ingevuld door gasten zelf via RSVP) — zelfde
+-- functie-body als full_schema.sql, met twee extra keys in de json_build_object.
+create or replace function public.get_shared_production(p_token uuid)
+returns json
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with proj as (
+    select id from public.projects where share_token = p_token
+  )
+  select json_build_object(
+    'catering', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', co.id,
+          'order_date', co.order_date,
+          'party', co.party,
+          'crew_lunch', co.crew_lunch,
+          'veggie_lunch', co.veggie_lunch,
+          'crew_dinner', co.crew_dinner,
+          'veggie_dinner', co.veggie_dinner,
+          'night_snacks', co.night_snacks,
+          'notes', co.notes,
+          'supplier_name', s.name
+        ) order by co.order_date, co.sort_order
+      )
+      from public.catering_orders co
+      join proj on true
+      left join public.suppliers s on s.id = co.supplier_id
+      where co.project_id = proj.id
+    ), '[]'::json),
+    'guest_catering', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', gco.id,
+          'order_date', gco.order_date,
+          'stage_name', st.name,
+          'moment', gco.moment,
+          'style', gco.style,
+          'guest_count', gco.guest_count,
+          'veggie_count', gco.veggie_count,
+          'vegan_count', gco.vegan_count,
+          'kids_count', gco.kids_count,
+          'special_diet_count', gco.special_diet_count,
+          'notes', gco.notes,
+          'supplier_name', s.name
+        ) order by gco.order_date, gco.sort_order
+      )
+      from public.guest_catering_orders gco
+      join proj on true
+      left join public.stages st on st.id = gco.stage_id
+      left join public.suppliers s on s.id = gco.supplier_id
+      where gco.project_id = proj.id
+    ), '[]'::json),
+    'guest_dietary', coalesce((
+      select json_agg(
+        json_build_object(
+          'name', eg.name,
+          'plus_one_name', eg.plus_one_name,
+          'dietary_notes', eg.dietary_notes
+        ) order by eg.sort_order
+      )
+      from public.event_guests eg
+      join proj on true
+      where eg.project_id = proj.id and eg.dietary_notes <> ''
+    ), '[]'::json),
+    'equipment', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', er.id,
+          'machine_type', er.machine_type,
+          'quantity', er.quantity,
+          'accessories', er.accessories,
+          'reservation_date', er.reservation_date,
+          'duration', er.duration,
+          'supplier_name', s.name
+        ) order by er.reservation_date, er.sort_order
+      )
+      from public.equipment_reservations er
+      join proj on true
+      left join public.suppliers s on s.id = er.supplier_id
+      where er.project_id = proj.id
+    ), '[]'::json),
+    'comms', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', ca.id,
+          'kind', ca.kind,
+          'user_name', ca.user_name,
+          'device_type', ca.device_type,
+          'channels', ca.channels,
+          'supplier_name', s.name
+        ) order by ca.sort_order
+      )
+      from public.comms_assignments ca
+      join proj on true
+      left join public.suppliers s on s.id = ca.supplier_id
+      where ca.project_id = proj.id
+    ), '[]'::json),
+    'power', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', pr.id,
+          'stage_name', st.name,
+          'description', pr.description,
+          'quantity', pr.quantity,
+          'position', pr.position,
+          'notes', pr.notes,
+          'supplier_name', s.name
+        ) order by pr.sort_order
+      )
+      from public.power_requests pr
+      join proj on true
+      left join public.stages st on st.id = pr.stage_id
+      left join public.suppliers s on s.id = pr.supplier_id
+      where pr.project_id = proj.id
+    ), '[]'::json),
+    'schedule', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', si.id,
+          'stage_name', st.name,
+          'activity_date', si.activity_date,
+          'activity_time', si.activity_time,
+          'activity', si.activity,
+          'notes', si.notes,
+          'suppliers', coalesce((
+            select json_agg(s2.name order by sis.sort_order)
+            from public.schedule_item_suppliers sis
+            join public.suppliers s2 on s2.id = sis.supplier_id
+            where sis.schedule_item_id = si.id
+          ), '[]'::json)
+        ) order by si.activity_date, si.activity_time, si.sort_order
+      )
+      from public.schedule_items si
+      join proj on true
+      left join public.stages st on st.id = si.stage_id
+      where si.project_id = proj.id
+    ), '[]'::json),
+    'artist_riders', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', ar.id,
+          'artist_name', ar.artist_name,
+          'rider_received', ar.rider_received,
+          'notes', ar.notes,
+          'own_light_operator', ar.own_light_operator,
+          'own_audio_operator', ar.own_audio_operator,
+          'rider_link', ar.rider_link
+        ) order by ar.sort_order
+      )
+      from public.artist_riders ar
+      join proj on true
+      where ar.project_id = proj.id
+    ), '[]'::json),
+    'open_questions', coalesce((
+      select json_agg(
+        json_build_object('id', oq.id, 'question', oq.question, 'answer', oq.answer, 'pending', oq.pending)
+        order by oq.sort_order
+      )
+      from public.open_questions oq
+      join proj on true
+      where oq.project_id = proj.id
+    ), '[]'::json),
+    'meeting_notes', coalesce((
+      select json_agg(
+        json_build_object('id', mn.id, 'note', mn.note, 'created_at', mn.created_at)
+        order by mn.created_at desc
+      )
+      from public.meeting_notes mn
+      join proj on true
+      where mn.project_id = proj.id
+    ), '[]'::json),
+    'flights', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', cm.id,
+          'name', cm.name,
+          'role', cm.role,
+          'flight_departure_airport', cm.flight_departure_airport,
+          'flight_destination', cm.flight_destination,
+          'flight_departure_at', cm.flight_departure_at,
+          'flight_return_at', cm.flight_return_at
+        ) order by cm.sort_order
+      )
+      from public.crew_members cm
+      join proj on true
+      where cm.project_id = proj.id and cm.needs_flight = true
+    ), '[]'::json),
+    'hotel', coalesce((
+      select json_agg(
+        json_build_object('id', cm.id, 'name', cm.name, 'role', cm.role)
+        order by cm.sort_order
+      )
+      from public.crew_members cm
+      join proj on true
+      where cm.project_id = proj.id and cm.needs_hotel = true
+    ), '[]'::json),
+    'client_requests', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', cr.id,
+          'category', cr.category,
+          'description', cr.description,
+          'quantity', cr.quantity,
+          'requested_date', cr.requested_date,
+          'notes', cr.notes,
+          'status', cr.status,
+          'created_at', cr.created_at
+        ) order by cr.created_at desc
+      )
+      from public.client_requests cr
+      join proj on true
+      where cr.project_id = proj.id
+    ), '[]'::json)
+  )
+  from proj;
+$$;
+
+grant execute on function public.get_shared_production(uuid) to anon;

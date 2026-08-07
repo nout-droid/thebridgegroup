@@ -11,7 +11,7 @@ import {
   findOrCreateQuote,
   quoteRevalidationPath,
 } from "@/lib/server/category-helpers";
-import { catalogCategoryLabel } from "@/lib/types";
+import { catalogCategoryLabel, EVENT_TYPES } from "@/lib/types";
 import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { logAudit } from "@/lib/server/audit";
@@ -228,6 +228,8 @@ export async function updateProjectDetails(projectId: string, formData: FormData
   const venueId = String(formData.get("venue_id") ?? "").trim() || null;
   const isOutdoor = formData.get("is_outdoor") === "on";
   const contingencyPlan = String(formData.get("contingency_plan") ?? "").trim();
+  const eventTypeRaw = String(formData.get("event_type") ?? "festival");
+  const eventType = (EVENT_TYPES as readonly string[]).includes(eventTypeRaw) ? eventTypeRaw : "festival";
 
   if (!name) return;
 
@@ -247,6 +249,7 @@ export async function updateProjectDetails(projectId: string, formData: FormData
       venue_id: venueId,
       is_outdoor: isOutdoor,
       contingency_plan: contingencyPlan,
+      event_type: eventType,
     })
     .eq("id", projectId);
 

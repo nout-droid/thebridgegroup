@@ -394,6 +394,91 @@ export interface Project {
   weather_alert_sent_at: string | null;
   ai_client_update_draft: string | null;
   ai_client_update_generated_at: string | null;
+  event_type: EventType;
+  created_at: string;
+}
+
+export const EVENT_TYPES = [
+  "festival",
+  "wedding",
+  "corporate",
+  "gala",
+  "conference",
+  "concert",
+  "other",
+] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export const GUEST_CATERING_MOMENTS = [
+  "ontbijt",
+  "lunch",
+  "diner",
+  "borrel",
+  "coffee_break",
+  "snack",
+  "overig",
+] as const;
+export type GuestCateringMoment = (typeof GUEST_CATERING_MOMENTS)[number];
+
+export const GUEST_CATERING_MOMENT_LABELS: Record<string, string> = {
+  ontbijt: "Ontbijt",
+  lunch: "Lunch",
+  diner: "Diner",
+  borrel: "Borrel",
+  coffee_break: "Coffee break",
+  snack: "Snack",
+  overig: "Overig",
+};
+
+export const GUEST_CATERING_STYLES = [
+  "buffet",
+  "seated",
+  "walking_dinner",
+  "food_trucks",
+  "coffee_station",
+  "borrel",
+  "overig",
+] as const;
+export type GuestCateringStyle = (typeof GUEST_CATERING_STYLES)[number];
+
+export const GUEST_CATERING_STYLE_LABELS: Record<string, string> = {
+  buffet: "Buffet",
+  seated: "Seated diner",
+  walking_dinner: "Walking dinner",
+  food_trucks: "Foodtrucks",
+  coffee_station: "Coffee station",
+  borrel: "Borrelhapjes",
+  overig: "Overig",
+};
+
+// Zinnige default-stijl per event_type bij het aanmaken van een nieuwe order — de UI blijft
+// vrij om elke stijl te kiezen, dit is puur een startpunt zodat de planner niet steeds
+// "buffet" hoeft te wijzigen naar wat voor dit type event gebruikelijk is.
+export const DEFAULT_GUEST_CATERING_STYLE_BY_EVENT_TYPE: Record<EventType, GuestCateringStyle> = {
+  festival: "food_trucks",
+  wedding: "seated",
+  corporate: "coffee_station",
+  gala: "seated",
+  conference: "coffee_station",
+  concert: "borrel",
+  other: "buffet",
+};
+
+export interface GuestCateringOrder {
+  id: string;
+  project_id: string;
+  stage_id: string | null;
+  order_date: string;
+  moment: GuestCateringMoment | string;
+  style: GuestCateringStyle | string;
+  guest_count: number;
+  veggie_count: number;
+  vegan_count: number;
+  kids_count: number;
+  special_diet_count: number;
+  supplier_id: string | null;
+  notes: string;
+  sort_order: number;
   created_at: string;
 }
 
@@ -606,6 +691,27 @@ export interface SharedCatering {
   supplier_name: string | null;
 }
 
+export interface SharedGuestCatering {
+  id: string;
+  order_date: string;
+  stage_name: string | null;
+  moment: string;
+  style: string;
+  guest_count: number;
+  veggie_count: number;
+  vegan_count: number;
+  kids_count: number;
+  special_diet_count: number;
+  notes: string;
+  supplier_name: string | null;
+}
+
+export interface SharedGuestDietary {
+  name: string;
+  plus_one_name: string;
+  dietary_notes: string;
+}
+
 export interface SharedEquipment {
   id: string;
   machine_type: string;
@@ -686,6 +792,8 @@ export interface SharedHotelGuest {
 
 export interface SharedProduction {
   catering: SharedCatering[];
+  guest_catering: SharedGuestCatering[];
+  guest_dietary: SharedGuestDietary[];
   equipment: SharedEquipment[];
   comms: SharedComms[];
   power: SharedPower[];
