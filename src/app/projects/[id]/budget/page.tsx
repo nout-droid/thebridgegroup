@@ -41,11 +41,12 @@ import { QUOTE_PDF_IMPORT_LABELS, REQUEST_QUOTES_CARD_LABELS } from "../translat
 import { ActualCostsSummaryCard, ACTUAL_COSTS_SUMMARY_LABELS } from "../actual-costs-summary-card";
 import { ProjectSubNav } from "../project-sub-nav";
 import { updateProjectBudget, updateInvoiceDetails } from "../actions";
-import { setInvoiceStatus } from "../invoice-actions";
+import { setInvoiceStatus, pushInvoiceToMoneybirdAction } from "../invoice-actions";
 import { computeRentalDays } from "@/lib/rental-days";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator, type Translator } from "@/lib/server/translate";
 import { PdfDownloadLink } from "@/components/pdf-download-link";
+import { isMoneybirdConfigured } from "@/lib/server/moneybird";
 
 // Het parsen van een offerte-PDF matcht elke regel tegen de catalogus (RPC-aanroepen) —
 // bij een offerte met honderden regels kan dat de standaard 10-15s functie-timeout
@@ -60,6 +61,8 @@ interface Totals {
 const BUDGET_PAGE_LABELS = [
   "Factuur downloaden (PDF)",
   "Offerte downloaden (PDF)",
+  "Naar Moneybird sturen",
+  "Verstuurd naar Moneybird",
   "Download in het Nederlands",
   "Download in het Engels",
   "Factuurstatus",
@@ -185,10 +188,13 @@ function BudgetGroup({
 
 export default async function ProjectBudgetPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const supabase = await createClient();
 
   const project = await getProjectOrNotFound(supabase, id);
@@ -205,6 +211,7 @@ export default async function ProjectBudgetPage({
     { data: materialListItems },
     { data: rentalMultiplier },
     { data: actualCosts },
+    { data: organization },
     lang,
   ] = await Promise.all([
     checkCanViewBudget(supabase, id),
@@ -236,6 +243,11 @@ export default async function ProjectBudgetPage({
       .eq("project_id", id)
       .order("created_at", { ascending: false })
       .returns<ActualCost[]>(),
+    supabase
+      .from("organizations")
+      .select("moneybird_administration_id, moneybird_access_token")
+      .eq("owner_user_id", project.user_id)
+      .maybeSingle(),
     getAppLang(),
   ]);
 
@@ -380,6 +392,7 @@ export default async function ProjectBudgetPage({
       <Nav />
       <ProjectSubNav projectId={project.id} projectName={project.name} active="budget" />
       <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-6 py-8">
+        {error && <p className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
         <Card>
           <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
             <CardTitle className="text-base">{t("Totaaloverzicht")}</CardTitle>
@@ -432,6 +445,13 @@ export default async function ProjectBudgetPage({
                 nlTitle={t("Download in het Nederlands")}
                 enTitle={t("Download in het Engels")}
               />
+              {isMoneybirdConfigured(organization) && (
+                <form action={pushInvoiceToMoneybirdAction.bind(null, project.id)}>
+                  <Button type="submit" size="sm" variant="outline">
+                    {project.moneybird_synced_at ? t("Verstuurd naar Moneybird") : t("Naar Moneybird sturen")}
+                  </Button>
+                </form>
+              )}
             </div>
           </CardHeader>
           <CardContent>

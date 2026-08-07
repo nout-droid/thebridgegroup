@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { publicStorageUrl, uploadToStorage } from "@/lib/supabase/storage-rest";
 import { logAudit } from "@/lib/server/audit";
+import { testMoneybirdConnection } from "@/lib/server/moneybird";
 
 export async function updateOrganizationName(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -31,6 +32,39 @@ export async function updateOrganizationIban(formData: FormData) {
   if (!user) return;
 
   await supabase.from("organizations").update({ iban: iban || null }).eq("owner_user_id", user.id);
+  revalidatePath("/team");
+}
+
+export async function updateMoneybirdConnection(formData: FormData) {
+  const administrationId = String(formData.get("moneybird_administration_id") ?? "").trim();
+  const accessToken = String(formData.get("moneybird_access_token") ?? "").trim();
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  await supabase
+    .from("organizations")
+    .update({
+      moneybird_administration_id: administrationId || null,
+      moneybird_access_token: accessToken || null,
+    })
+    .eq("owner_user_id", user.id);
+
+  if (administrationId && accessToken) {
+    const ok = await testMoneybirdConnection({
+      moneybird_administration_id: administrationId,
+      moneybird_access_token: accessToken,
+    });
+    if (!ok) {
+      redirect(
+        `/team?error=${encodeURIComponent("Moneybird-koppeling opgeslagen, maar de verbinding kon niet worden geverifieerd. Controleer administratie-ID en token.")}`
+      );
+    }
+  }
+
   revalidatePath("/team");
 }
 

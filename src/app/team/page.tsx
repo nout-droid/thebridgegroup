@@ -5,6 +5,7 @@ import { getTeamOwnerId } from "@/lib/server/team";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -34,8 +35,10 @@ import {
   updateOrganizationName,
   updateOrganizationBranding,
   updateOrganizationIban,
+  updateMoneybirdConnection,
   deleteOrganizationAccount,
 } from "./organization-actions";
+import { isMoneybirdConfigured } from "@/lib/server/moneybird";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 
@@ -80,6 +83,13 @@ const TEAM_PAGE_LABELS = [
   "Bankgegevens",
   "IBAN — verschijnt als betaalinstructie onderaan elke gedownloade factuur.",
   "IBAN",
+  "Boekhouding (Moneybird)",
+  "Koppel je Moneybird-administratie om facturen met één klik te versturen naar de boekhouding.",
+  "Administratie-ID",
+  "Access token",
+  "Verbonden",
+  "Niet verbonden",
+  "Opslaan",
   "Logboek",
   "Wie deed wat, voor gevoelige acties zoals projectverwijdering en teamwijzigingen.",
   "Actie",
@@ -309,6 +319,49 @@ export default async function TeamPage({
                         name="iban"
                         defaultValue={organization.iban ?? ""}
                         placeholder="NL00 BANK 0000 0000 00"
+                        className="w-64"
+                      />
+                    </div>
+                    <Button type="submit" size="sm">
+                      {t("Opslaan")}
+                    </Button>
+                  </form>
+                </div>
+              )}
+              {isOwner && (
+                <div className="space-y-3 border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <Label>{t("Boekhouding (Moneybird)")}</Label>
+                    {isMoneybirdConfigured(organization) ? (
+                      <Badge className="bg-green-100 text-green-800 hover:bg-green-100">
+                        {t("Verbonden")}
+                      </Badge>
+                    ) : (
+                      <Badge variant="secondary">{t("Niet verbonden")}</Badge>
+                    )}
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      "Koppel je Moneybird-administratie om facturen met één klik te versturen naar de boekhouding."
+                    )}
+                  </p>
+                  <form action={updateMoneybirdConnection} className="flex flex-wrap items-end gap-2">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="moneybird-admin-id">{t("Administratie-ID")}</Label>
+                      <Input
+                        id="moneybird-admin-id"
+                        name="moneybird_administration_id"
+                        defaultValue={organization.moneybird_administration_id ?? ""}
+                        className="w-48"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="moneybird-token">{t("Access token")}</Label>
+                      <Input
+                        id="moneybird-token"
+                        name="moneybird_access_token"
+                        type="password"
+                        defaultValue={organization.moneybird_access_token ?? ""}
                         className="w-64"
                       />
                     </div>

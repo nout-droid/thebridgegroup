@@ -153,6 +153,8 @@ export interface Organization {
   stripe_subscription_id: string | null;
   trial_ends_at: string | null;
   early_adopter: boolean;
+  moneybird_administration_id: string | null;
+  moneybird_access_token: string | null;
   created_at: string;
 }
 
@@ -376,6 +378,8 @@ export interface Project {
   venue_id: string | null;
   is_outdoor: boolean;
   contingency_plan: string;
+  moneybird_invoice_id: string | null;
+  moneybird_synced_at: string | null;
   invoice_number: string | null;
   invoice_status: InvoiceStatus;
   invoice_date: string | null;

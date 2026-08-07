@@ -6362,3 +6362,15 @@ create unique index if not exists event_guests_invite_token_idx on public.event_
 alter table public.event_guests add column if not exists plus_one_name text not null default '';
 alter table public.event_guests add column if not exists dietary_notes text not null default '';
 alter table public.event_guests add column if not exists responded_at timestamptz;
+
+-- === migrations_moneybird.sql ===
+-- Moneybird-koppeling (boekhouding): per organisatie een eigen administration_id + access
+-- token, inert totdat de gebruiker die zelf invult bij Instellingen (zelfde patroon als de
+-- Stripe-scaffold: code + schema nu klaar, pas actief zodra de sleutel er is).
+-- Voer dit één keer uit in de Supabase SQL Editor, ná de eerdere migraties.
+
+alter table public.organizations add column if not exists moneybird_administration_id text;
+alter table public.organizations add column if not exists moneybird_access_token text;
+
+alter table public.projects add column if not exists moneybird_invoice_id text;
+alter table public.projects add column if not exists moneybird_synced_at timestamptz;
