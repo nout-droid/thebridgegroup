@@ -7,6 +7,7 @@ import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -132,6 +133,10 @@ const STATIC_LABELS = [
   "Contact",
   "Notities",
   "Bewerken in locatiecatalogus →",
+  "Dit is een outdoor event",
+  "Plan B bij slecht weer",
+  "bv. indoor alternatief, extra overkapping, aangepaste tijdlijn — zichtbaar voor crew bij een weeralert",
+  "Wordt automatisch getoond aan crew/showcaller zodra er een weeralert actief is voor dit outdoor event.",
   "Totaal aantal huurdagen voor prijsberekening:",
   "Opslaan",
   "Klanttoegang",
@@ -745,6 +750,35 @@ export default async function ProjectPage({
                       <option value="beide">{t("Beide")}</option>
                     </select>
                   </div>
+                </div>
+              </div>
+
+              <div className="space-y-2 rounded-md border p-3 sm:col-span-4">
+                <label className="flex items-center gap-2 text-sm font-medium">
+                  <input
+                    type="checkbox"
+                    name="is_outdoor"
+                    defaultChecked={project.is_outdoor}
+                    className="h-4 w-4"
+                  />
+                  {t("Dit is een outdoor event")}
+                </label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="contingency_plan">{t("Plan B bij slecht weer")}</Label>
+                  <Textarea
+                    id="contingency_plan"
+                    name="contingency_plan"
+                    defaultValue={project.contingency_plan}
+                    rows={3}
+                    placeholder={t(
+                      "bv. indoor alternatief, extra overkapping, aangepaste tijdlijn — zichtbaar voor crew bij een weeralert"
+                    )}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      "Wordt automatisch getoond aan crew/showcaller zodra er een weeralert actief is voor dit outdoor event."
+                    )}
+                  </p>
                 </div>
               </div>
 

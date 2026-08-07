@@ -4,13 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getOrigin } from "@/lib/server/origin";
 import { getWeatherForecast } from "@/lib/server/weather";
 import { renderWeatherAlertEmail } from "@/lib/server/weather-alert-email";
-
-// Slecht-weer-drempel: minimaal 60% kans op neerslag, of een WMO-weathercode voor
-// (onweers)buien of hevige neerslag — zie https://open-meteo.com/en/docs voor de codes.
-const BAD_WEATHER_CODES = new Set([65, 66, 67, 75, 82, 86, 95, 96, 99]);
-function isBadWeather(forecast: { precipitationProbability: number; weatherCode: number }) {
-  return forecast.precipitationProbability >= 60 || BAD_WEATHER_CODES.has(forecast.weatherCode);
-}
+import { isBadWeather } from "@/lib/weather-conditions";
 
 const DAYS_AHEAD = 3;
 

@@ -14,12 +14,12 @@ export async function GET(
 
   const { data: project } = await admin
     .from("projects")
-    .select("venue_id")
+    .select("venue_id, is_outdoor, contingency_plan")
     .eq("share_token", token)
     .maybeSingle();
 
   if (!project?.venue_id) {
-    return NextResponse.json({ days: [] });
+    return NextResponse.json({ days: [], isOutdoor: false, contingencyPlan: "" });
   }
 
   const { data: venue } = await admin
@@ -29,9 +29,13 @@ export async function GET(
     .maybeSingle();
 
   if (!venue?.address) {
-    return NextResponse.json({ days: [] });
+    return NextResponse.json({ days: [], isOutdoor: project.is_outdoor, contingencyPlan: project.contingency_plan });
   }
 
   const days = await getWeatherForecast(venue.address);
-  return NextResponse.json({ days: days ?? [] });
+  return NextResponse.json({
+    days: days ?? [],
+    isOutdoor: project.is_outdoor,
+    contingencyPlan: project.contingency_plan,
+  });
 }

@@ -226,6 +226,8 @@ export async function updateProjectDetails(projectId: string, formData: FormData
     ? showTypeRaw
     : "dag";
   const venueId = String(formData.get("venue_id") ?? "").trim() || null;
+  const isOutdoor = formData.get("is_outdoor") === "on";
+  const contingencyPlan = String(formData.get("contingency_plan") ?? "").trim();
 
   if (!name) return;
 
@@ -243,6 +245,8 @@ export async function updateProjectDetails(projectId: string, formData: FormData
       show_end_date: showEndDate,
       show_type: showType,
       venue_id: venueId,
+      is_outdoor: isOutdoor,
+      contingency_plan: contingencyPlan,
     })
     .eq("id", projectId);
 

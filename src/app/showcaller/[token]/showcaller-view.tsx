@@ -105,6 +105,7 @@ const STATIC_LABELS = [
   "Downloaden",
   "Nog geen sprekers voor dit podium.",
   "regen",
+  "Plan B bij slecht weer",
   ...COLOR_OPTIONS.map((c) => c.label),
   ...DIVISIONS,
 ];
@@ -291,7 +292,13 @@ export function ShowcallerView({
         )}
 
         <div className="mx-auto w-full max-w-5xl px-6 py-2">
-          <WeatherStrip token={token} activeDate={activeDate} rainLabel={t("regen")} dark />
+          <WeatherStrip
+            token={token}
+            activeDate={activeDate}
+            rainLabel={t("regen")}
+            contingencyLabel={t("Plan B bij slecht weer")}
+            dark
+          />
         </div>
 
         {rundown && (

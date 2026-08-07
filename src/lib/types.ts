@@ -370,6 +370,8 @@ export interface Project {
   client_budget: number | null;
   default_margin_percentage: number;
   venue_id: string | null;
+  is_outdoor: boolean;
+  contingency_plan: string;
   invoice_number: string | null;
   invoice_status: InvoiceStatus;
   invoice_date: string | null;

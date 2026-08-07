@@ -62,6 +62,7 @@ const STATIC_LABELS = [
   "Parking",
   "Nog geen parkeerpassen beschikbaar.",
   "regen",
+  "Plan B bij slecht weer",
   "Incident melden",
   "Schade, defect of ander incident — optioneel met foto. Alleen zichtbaar voor de organisator.",
   "Omschrijving",
@@ -294,7 +295,13 @@ export function CrewRundownView({
           </div>
         )}
 
-        <WeatherStrip token={token} activeDate={activeDate} rainLabel={t("regen")} dark />
+        <WeatherStrip
+          token={token}
+          activeDate={activeDate}
+          rainLabel={t("regen")}
+          contingencyLabel={t("Plan B bij slecht weer")}
+          dark
+        />
 
         <Card className="border-white/10 bg-white/5 text-white">
           <CardHeader>

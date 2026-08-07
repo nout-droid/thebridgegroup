@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
+import { isBadWeather } from "@/lib/weather-conditions";
 
 interface DailyForecast {
   date: string;
@@ -28,21 +29,28 @@ export function WeatherStrip({
   token,
   activeDate,
   rainLabel = "regen",
+  contingencyLabel = "Plan B bij slecht weer",
   dark = false,
 }: {
   token: string;
   activeDate: string | null;
   rainLabel?: string;
+  contingencyLabel?: string;
   dark?: boolean;
 }) {
   const [days, setDays] = useState<DailyForecast[] | null>(null);
+  const [isOutdoor, setIsOutdoor] = useState(false);
+  const [contingencyPlan, setContingencyPlan] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     fetch(`/api/weather/${token}`)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) setDays(data.days ?? []);
+        if (cancelled) return;
+        setDays(data.days ?? []);
+        setIsOutdoor(Boolean(data.isOutdoor));
+        setContingencyPlan(data.contingencyPlan ?? "");
       })
       .catch(() => {
         if (!cancelled) setDays([]);
@@ -56,20 +64,30 @@ export function WeatherStrip({
   const forecast = days.find((d) => d.date === activeDate);
   if (!forecast) return null;
 
+  const showContingency = isOutdoor && contingencyPlan && isBadWeather(forecast);
+
   return (
-    <div
-      className={cn(
-        "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm",
-        dark ? "border border-white/10 bg-white/5 text-white" : "border bg-muted/40"
+    <div className="flex flex-col items-start gap-1.5">
+      <div
+        className={cn(
+          "inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm",
+          dark ? "border border-white/10 bg-white/5 text-white" : "border bg-muted/40"
+        )}
+      >
+        <span className="text-base">{weatherIcon(forecast.weatherCode)}</span>
+        <span>
+          {forecast.tempMin}&deg;–{forecast.tempMax}&deg;C
+        </span>
+        <span className={dark ? "text-white/60" : "text-muted-foreground"}>
+          {forecast.precipitationProbability}% {rainLabel}
+        </span>
+      </div>
+      {showContingency && (
+        <div className="max-w-md rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-500">
+          <span className="font-semibold">{contingencyLabel}: </span>
+          {contingencyPlan}
+        </div>
       )}
-    >
-      <span className="text-base">{weatherIcon(forecast.weatherCode)}</span>
-      <span>
-        {forecast.tempMin}&deg;–{forecast.tempMax}&deg;C
-      </span>
-      <span className={dark ? "text-white/60" : "text-muted-foreground"}>
-        {forecast.precipitationProbability}% {rainLabel}
-      </span>
     </div>
   );
 }
