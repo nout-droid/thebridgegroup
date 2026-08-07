@@ -6,8 +6,14 @@ export type DigestProjectGroup = {
   entries: { actorLabel: string; categoryLabel: string; description: string }[];
 };
 
-export function renderDigestEmail(origin: string, groups: DigestProjectGroup[]) {
+export interface DigestCrmData {
+  birthdays: { companyName: string; contactName: string; dateLabel: string }[];
+  followUps: { companyName: string; contactName: string; urgency: "overdue" | "soon"; dateLabel: string }[];
+}
+
+export function renderDigestEmail(origin: string, groups: DigestProjectGroup[], crm?: DigestCrmData) {
   const totalCount = groups.reduce((sum, g) => sum + g.entries.length, 0);
+  const crmCount = (crm?.birthdays.length ?? 0) + (crm?.followUps.length ?? 0);
 
   const projectBlocks = groups
     .map(
@@ -42,6 +48,64 @@ export function renderDigestEmail(origin: string, groups: DigestProjectGroup[]) 
     )
     .join("");
 
+  const crmBlock =
+    crm && crmCount > 0
+      ? `
+        <tr>
+          <td style="padding: 24px 32px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top: 1px solid #eeeeee; padding-top: 16px;">
+              ${
+                crm.birthdays.length > 0
+                  ? `
+              <tr>
+                <td style="padding: 16px 0 4px; font-size: 14px; font-weight: 700; color: #111111;">
+                  🎂 Verjaardagen deze week
+                </td>
+              </tr>
+              ${crm.birthdays
+                .map(
+                  (b) => `
+              <tr>
+                <td style="padding: 6px 0; font-size: 14px; color: #111111; border-bottom: 1px solid #f2f2f2;">
+                  <strong>${escapeHtml(b.contactName)}</strong> — ${escapeHtml(b.companyName)}
+                  <span style="color: #666666;"> · ${escapeHtml(b.dateLabel)}</span>
+                </td>
+              </tr>`
+                )
+                .join("")}`
+                  : ""
+              }
+              ${
+                crm.followUps.length > 0
+                  ? `
+              <tr>
+                <td style="padding: 16px 0 4px; font-size: 14px; font-weight: 700; color: #111111;">
+                  📋 Follow-ups
+                </td>
+              </tr>
+              ${crm.followUps
+                .map(
+                  (f) => `
+              <tr>
+                <td style="padding: 6px 0; font-size: 14px; color: #111111; border-bottom: 1px solid #f2f2f2;">
+                  <span style="display: inline-block; font-size: 11px; font-weight: 700; color: #ffffff; background-color: ${
+                    f.urgency === "overdue" ? "#dc2626" : "#d97706"
+                  }; border-radius: 4px; padding: 2px 6px; margin-right: 6px;">
+                    ${f.urgency === "overdue" ? "VERLOPEN" : "BINNENKORT"}
+                  </span>
+                  <strong>${escapeHtml(f.contactName || f.companyName)}</strong> — ${escapeHtml(f.companyName)}
+                  <span style="color: #666666;"> · ${escapeHtml(f.dateLabel)}</span>
+                </td>
+              </tr>`
+                )
+                .join("")}`
+                  : ""
+              }
+            </table>
+          </td>
+        </tr>`
+      : "";
+
   const html = `<!DOCTYPE html>
 <html>
   <body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif;">
@@ -69,6 +133,7 @@ export function renderDigestEmail(origin: string, groups: DigestProjectGroup[]) 
                 </table>
               </td>
             </tr>
+            ${crmBlock}
             <tr>
               <td style="padding: 24px 32px; border-top: 1px solid #eeeeee;">
                 <a href="${origin}/projects" style="display: inline-block; background-color: #046bd2; color: #ffffff; font-size: 14px; font-weight: 600; text-decoration: none; padding: 10px 20px; border-radius: 6px;">
@@ -83,7 +148,12 @@ export function renderDigestEmail(origin: string, groups: DigestProjectGroup[]) 
   </body>
 </html>`;
 
-  return { subject: `${totalCount} update${totalCount === 1 ? "" : "s"} — The Bridge Productie`, html };
+  const subject =
+    totalCount > 0
+      ? `${totalCount} update${totalCount === 1 ? "" : "s"} — The Bridge Productie`
+      : `Verjaardagen & follow-ups — The Bridge Productie`;
+
+  return { subject, html };
 }
 
 function escapeHtml(value: string) {
