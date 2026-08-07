@@ -23,6 +23,7 @@ export const GUEST_LIST_CARD_LABELS = [
   "Type",
   "Opslaan",
   "Badge-link",
+  "Uitnodigingslink",
   "Naam",
   "E-mail",
   "Telefoon",
@@ -126,14 +127,29 @@ export function GuestListCard({
                     ))}
                   </div>
                   <a
-                    href={`${baseUrl}/guest-badge/${guest.badge_token}`}
+                    href={`${baseUrl}/rsvp/${guest.invite_token}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="ml-auto text-xs text-primary underline"
                   >
+                    {t("Uitnodigingslink")}
+                  </a>
+                  <a
+                    href={`${baseUrl}/guest-badge/${guest.badge_token}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary underline"
+                  >
                     {t("Badge-link")}
                   </a>
                 </div>
+                {(guest.plus_one_name || guest.dietary_notes) && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {guest.plus_one_name && `${t("+1's")}: ${guest.plus_one_name}`}
+                    {guest.plus_one_name && guest.dietary_notes && " · "}
+                    {guest.dietary_notes}
+                  </p>
+                )}
               </li>
             ))}
           </ul>

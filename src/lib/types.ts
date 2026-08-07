@@ -64,6 +64,10 @@ export interface EventGuest {
   plus_ones: number;
   notes: string;
   badge_token: string;
+  invite_token: string;
+  plus_one_name: string;
+  dietary_notes: string;
+  responded_at: string | null;
   checked_in_at: string | null;
   checked_out_at: string | null;
   sort_order: number;
