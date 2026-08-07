@@ -69,8 +69,9 @@ function sortOrders(orders: GuestCateringOrder[]): GuestCateringOrder[] {
 }
 
 function MomentSelect({ id, name, defaultValue, t }: { id: string; name: string; defaultValue?: string; t: Translator }) {
+  const items = GUEST_CATERING_MOMENTS.map((m) => ({ value: m, label: t(GUEST_CATERING_MOMENT_LABELS[m]) }));
   return (
-    <Select name={name} defaultValue={defaultValue ?? "diner"}>
+    <Select name={name} defaultValue={defaultValue ?? "diner"} items={items}>
       <SelectTrigger id={id} className="h-8 text-xs">
         <SelectValue />
       </SelectTrigger>
@@ -86,8 +87,9 @@ function MomentSelect({ id, name, defaultValue, t }: { id: string; name: string;
 }
 
 function StyleSelect({ id, name, defaultValue, t }: { id: string; name: string; defaultValue?: string; t: Translator }) {
+  const items = GUEST_CATERING_STYLES.map((s) => ({ value: s, label: t(GUEST_CATERING_STYLE_LABELS[s]) }));
   return (
-    <Select name={name} defaultValue={defaultValue ?? "buffet"}>
+    <Select name={name} defaultValue={defaultValue ?? "buffet"} items={items}>
       <SelectTrigger id={id} className="h-8 text-xs">
         <SelectValue />
       </SelectTrigger>
