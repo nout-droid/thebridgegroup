@@ -14,7 +14,7 @@ import {
   uploadStorybookImage,
 } from "./storybook-actions";
 import type { Translator } from "@/lib/server/translate";
-import { ConceptGeneratorForm } from "./concept-generator-form";
+import { ConceptGeneratorForm, type ConceptGeneratorLabels } from "./concept-generator-form";
 
 export const STORYBOOK_CARD_LABELS = [
   "Storybook",
@@ -51,6 +51,16 @@ export function StorybookCard({
   chapters: StorybookChapter[];
   t?: Translator;
 }) {
+  const conceptLabels: ConceptGeneratorLabels = {
+    heading: t("AI-conceptgenerator"),
+    briefPlaceholder: t("bv. stoer, industrieel, warm licht"),
+    generate: t("Suggestie genereren"),
+    generating: t("Bezig..."),
+    titleLabel: t("Titel"),
+    descriptionLabel: t("Beschrijving"),
+    keywordsLabel: t("Stijlwoorden/kleuren"),
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -178,7 +188,7 @@ export function StorybookCard({
 
         <div className="space-y-2 border-t pt-4">
           <p className="text-sm font-medium">{t("Nieuw hoofdstuk")}</p>
-          <ConceptGeneratorForm t={t} />
+          <ConceptGeneratorForm labels={conceptLabels} />
           <form action={addStorybookChapter.bind(null, projectId)} className="space-y-2">
             <Input name="title" placeholder={t("bv. Entree, Hoofdpodium, Lounge, Verlichting")} required />
             <Textarea name="description" placeholder={t("Beschrijving")} rows={2} />
