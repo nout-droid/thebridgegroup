@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { publicStorageUrl, removeFromStorage, uploadToStorage } from "@/lib/supabase/storage-rest";
+import { generateStorybookConcept, type StorybookConcept } from "@/lib/server/storybook-concept";
 
 const BUCKET = "project-media";
 
@@ -122,6 +123,19 @@ export async function uploadStorybookImage(projectId: string, chapterId: string,
   });
 
   revalidate(projectId);
+}
+
+export async function generateStorybookConceptSuggestion(
+  brief: string
+): Promise<{ concept?: StorybookConcept; error?: string }> {
+  const concept = await generateStorybookConcept(brief);
+  if (!concept) {
+    return {
+      error:
+        "AI-suggestie genereren is niet geconfigureerd (ANTHROPIC_API_KEY ontbreekt) of is mislukt — probeer het later opnieuw.",
+    };
+  }
+  return { concept };
 }
 
 export async function deleteStorybookImage(projectId: string, imageId: string) {

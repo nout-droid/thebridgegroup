@@ -14,6 +14,7 @@ import {
   uploadStorybookImage,
 } from "./storybook-actions";
 import type { Translator } from "@/lib/server/translate";
+import { ConceptGeneratorForm } from "./concept-generator-form";
 
 export const STORYBOOK_CARD_LABELS = [
   "Storybook",
@@ -31,6 +32,12 @@ export const STORYBOOK_CARD_LABELS = [
   "bv. Entree, Hoofdpodium, Lounge, Verlichting",
   "Door klant goedgekeurd",
   "Storybook downloaden",
+  "AI-conceptgenerator",
+  "bv. stoer, industrieel, warm licht",
+  "Suggestie genereren",
+  "Bezig...",
+  "Titel",
+  "Stijlwoorden/kleuren",
 ];
 
 const identity: Translator = (text) => text;
@@ -171,6 +178,7 @@ export function StorybookCard({
 
         <div className="space-y-2 border-t pt-4">
           <p className="text-sm font-medium">{t("Nieuw hoofdstuk")}</p>
+          <ConceptGeneratorForm t={t} />
           <form action={addStorybookChapter.bind(null, projectId)} className="space-y-2">
             <Input name="title" placeholder={t("bv. Entree, Hoofdpodium, Lounge, Verlichting")} required />
             <Textarea name="description" placeholder={t("Beschrijving")} rows={2} />
