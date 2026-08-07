@@ -230,6 +230,11 @@ export async function updateProjectDetails(projectId: string, formData: FormData
   const contingencyPlan = String(formData.get("contingency_plan") ?? "").trim();
   const eventTypeRaw = String(formData.get("event_type") ?? "festival");
   const eventType = (EVENT_TYPES as readonly string[]).includes(eventTypeRaw) ? eventTypeRaw : "festival";
+  const preProductionWeeksRaw = formData.get("pre_production_weeks");
+  const preProductionWeeks =
+    preProductionWeeksRaw === null || preProductionWeeksRaw === ""
+      ? null
+      : Math.max(0, Number(preProductionWeeksRaw) || 0);
 
   if (!name) return;
 
@@ -250,6 +255,7 @@ export async function updateProjectDetails(projectId: string, formData: FormData
       is_outdoor: isOutdoor,
       contingency_plan: contingencyPlan,
       event_type: eventType,
+      pre_production_weeks: preProductionWeeks,
     })
     .eq("id", projectId);
 

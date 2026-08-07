@@ -27,12 +27,16 @@ const ANALYTICS_PAGE_LABELS = [
   "Aantal projecten",
   "Nog geen werkelijke kosten geregistreerd.",
   "Jaaroverzicht",
-  "Omzet, kosten en marge per jaar, op basis van de event-datum.",
+  "Omzet, kosten en marge per periode, op basis van de event-datum. Klik een rij open voor de onderliggende projecten.",
   "Jaar",
+  "Kwartaal",
+  "Maand",
   "Aantal",
   "Kosten",
   "Omzet",
-  "Nog geen projecten met een event-datum om per jaar te vergelijken.",
+  "Nog geen projecten met een event-datum om te vergelijken.",
+  "vs. dezelfde periode vorig jaar",
+  "Nog geen data voor dezelfde periode vorig jaar.",
   "Forecast",
   "Voorspelling voor dit jaar op basis van het tempo van boekingen t.o.v. vorig jaar.",
   "Al vastgelegd dit jaar",
@@ -59,7 +63,43 @@ function euro(value: number) {
   return `€ ${value.toLocaleString("nl-NL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
-export default async function AnalyticsPage() {
+type Granularity = "year" | "quarter" | "month";
+
+function periodKey(dateStr: string, granularity: Granularity): string {
+  if (granularity === "year") return dateStr.slice(0, 4);
+  if (granularity === "month") return dateStr.slice(0, 7);
+  const year = dateStr.slice(0, 4);
+  const quarter = Math.ceil(Number(dateStr.slice(5, 7)) / 3);
+  return `${year}-Q${quarter}`;
+}
+
+function periodLabel(key: string): string {
+  if (/^\d{4}$/.test(key)) return key;
+  if (key.includes("Q")) return key;
+  const [year, month] = key.split("-");
+  return `${month}/${year}`;
+}
+
+// De "vorig jaar, zelfde periode"-sleutel: 2026 → 2025, 2026-Q3 → 2025-Q3, 2026-08 → 2025-08.
+function previousYearPeriodKey(key: string, granularity: Granularity): string {
+  if (granularity === "year") return String(Number(key) - 1);
+  if (granularity === "quarter") {
+    const [year, quarter] = key.split("-Q");
+    return `${Number(year) - 1}-Q${quarter}`;
+  }
+  const [year, month] = key.split("-");
+  return `${Number(year) - 1}-${month}`;
+}
+
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ granularity?: string }>;
+}) {
+  const { granularity: granularityParam } = await searchParams;
+  const granularity: Granularity =
+    granularityParam === "quarter" || granularityParam === "month" ? granularityParam : "year";
+
   const supabase = await createClient();
 
   // projects/lang hebben geen onderlinge afhankelijkheid — parallel opvragen. De rest van deze
@@ -141,9 +181,37 @@ export default async function AnalyticsPage() {
     })
     .filter((row) => row.cost > 0 || row.client > 0);
 
-  // ---- Jaaroverzicht + forecast ----
-  // Jaar wordt afgeleid uit event_date (niet created_at) — dat is het jaar waarin het
-  // event daadwerkelijk plaatsvindt, dezelfde as die overal elders in de app leidend is.
+  // ---- Periode-vergelijking + forecast ----
+  // Periode wordt afgeleid uit event_date (niet created_at) — dat is wanneer het event
+  // daadwerkelijk plaatsvindt, dezelfde as die overal elders in de app leidend is.
+  interface PeriodStat {
+    key: string;
+    count: number;
+    cost: number;
+    client: number;
+    margin: number;
+    rows: typeof projectMargins;
+  }
+  const periodStats = new Map<string, PeriodStat>();
+  for (const row of projectMargins) {
+    if (!row.project.event_date) continue;
+    const key = periodKey(row.project.event_date, granularity);
+    const stat = periodStats.get(key) ?? { key, count: 0, cost: 0, client: 0, margin: 0, rows: [] };
+    stat.count += 1;
+    stat.cost += row.cost;
+    stat.client += row.client;
+    stat.margin += row.margin;
+    stat.rows.push(row);
+    periodStats.set(key, stat);
+  }
+  const periodCap = granularity === "year" ? 6 : granularity === "quarter" ? 8 : 12;
+  const periodRows = [...periodStats.values()].sort((a, b) => b.key.localeCompare(a.key)).slice(0, periodCap);
+  const periodChartData = [...periodRows]
+    .reverse()
+    .map((p) => ({ period: periodLabel(p.key), omzet: Math.round(p.client), marge: Math.round(p.margin) }));
+
+  // yearStats blijft apart bestaan (onafhankelijk van de granulariteit-toggle) — de forecast
+  // hieronder vergelijkt altijd volledige kalenderjaren, ongeacht welke periode de tabel toont.
   interface YearStat {
     year: number;
     count: number;
@@ -162,10 +230,6 @@ export default async function AnalyticsPage() {
     stat.margin += row.margin;
     yearStats.set(year, stat);
   }
-  const yearRows = [...yearStats.values()].sort((a, b) => b.year - a.year).slice(0, 6);
-  const yearChartData = [...yearRows]
-    .reverse()
-    .map((y) => ({ year: String(y.year), omzet: Math.round(y.client), marge: Math.round(y.margin) }));
 
   // Forecast: vergelijk hoeveel omzet voor dit jaar tot nu toe is VASTGELEGD (created_at van
   // het project, dus het boekingstempo) met hoeveel er op hetzelfde punt vorig jaar was
@@ -242,90 +306,138 @@ export default async function AnalyticsPage() {
           <p className="text-sm text-muted-foreground">{t("Marge, klanten en kostenoverschrijding over al je projecten heen.")}</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <CardTitle className="text-base">{t("Jaaroverzicht")}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("Omzet, kosten en marge per jaar, op basis van de event-datum.")}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {yearRows.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  {t("Nog geen projecten met een event-datum om per jaar te vergelijken.")}
-                </p>
-              ) : (
-                <>
-                  <YearComparisonChart data={yearChartData} omzetLabel={t("Omzet")} margeLabel={t("Marge")} />
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b text-left text-xs text-muted-foreground">
-                          <th className="py-2 pr-3">{t("Jaar")}</th>
-                          <th className="py-2 pr-3 text-right">{t("Aantal")}</th>
-                          <th className="py-2 pr-3 text-right">{t("Kosten")}</th>
-                          <th className="py-2 pr-3 text-right">{t("Omzet")}</th>
-                          <th className="py-2 text-right">{t("Marge")}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {yearRows.map((y) => (
-                          <tr key={y.year} className="border-b last:border-0">
-                            <td className="py-2 pr-3 font-medium">{y.year}</td>
-                            <td className="py-2 pr-3 text-right text-muted-foreground">{y.count}</td>
-                            <td className="py-2 pr-3 text-right">{euro(y.cost)}</td>
-                            <td className="py-2 pr-3 text-right">{euro(y.client)}</td>
-                            <td className="py-2 text-right font-medium">{euro(y.margin)}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">{t("Forecast")}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("Voorspelling voor dit jaar op basis van het tempo van boekingen t.o.v. vorig jaar.")}
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                    {t("Al vastgelegd dit jaar")}
-                  </p>
-                  <p className="text-2xl font-semibold">{euro(bookedThisYear)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("Marge")}: {euro(bookedMarginThisYear)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">{t("Voorspeld jaartotaal")}</p>
-                  <p className="text-2xl font-semibold">{euro(forecastTotal)}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("Marge")}: {euro(forecastMargin)}
-                  </p>
-                </div>
+              <div className="flex gap-1">
+                {(["year", "quarter", "month"] as Granularity[]).map((g) => (
+                  <a
+                    key={g}
+                    href={`/analytics?granularity=${g}`}
+                    className={`rounded-md border px-2.5 py-1 text-xs font-medium ${
+                      granularity === g ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent"
+                    }`}
+                  >
+                    {t(g === "year" ? "Jaar" : g === "quarter" ? "Kwartaal" : "Maand")}
+                  </a>
+                ))}
               </div>
-              {growthPct != null ? (
-                <p className={`text-sm font-medium ${growthPct >= 0 ? "text-green-700" : "text-red-600"}`}>
-                  {growthPct >= 0 ? "+" : ""}
-                  {growthPct.toFixed(0)}% {t("vs. vorig jaar op dit punt in het jaar")}
-                </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">
-                  {t("Nog niet genoeg historie voor een trendvoorspelling — dit toont alleen het al vastgelegde bedrag.")}
-                </p>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "Omzet, kosten en marge per periode, op basis van de event-datum. Klik een rij open voor de onderliggende projecten."
               )}
-            </CardContent>
-          </Card>
-        </div>
+            </p>
+          </CardHeader>
+          <CardContent>
+            {periodRows.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {t("Nog geen projecten met een event-datum om te vergelijken.")}
+              </p>
+            ) : (
+              <>
+                <YearComparisonChart data={periodChartData} omzetLabel={t("Omzet")} margeLabel={t("Marge")} />
+                <div className="mt-4 overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs text-muted-foreground">
+                        <th className="py-2 pr-3"></th>
+                        <th className="py-2 pr-3 text-right">{t("Aantal")}</th>
+                        <th className="py-2 pr-3 text-right">{t("Kosten")}</th>
+                        <th className="py-2 pr-3 text-right">{t("Omzet")}</th>
+                        <th className="py-2 pr-3 text-right">{t("Marge")}</th>
+                        <th className="py-2 text-right">{t("vs. dezelfde periode vorig jaar")}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {periodRows.map((p) => {
+                        const prevKey = previousYearPeriodKey(p.key, granularity);
+                        const prev = periodStats.get(prevKey);
+                        const delta = prev && prev.client > 0 ? ((p.client - prev.client) / prev.client) * 100 : null;
+                        return (
+                          <tr key={p.key} className="border-b last:border-0 align-top">
+                            <td className="py-2 pr-3">
+                              <details>
+                                <summary className="cursor-pointer font-medium">{periodLabel(p.key)}</summary>
+                                <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                                  {p.rows.map((row) => (
+                                    <li key={row.project.id} className="flex items-center justify-between gap-2">
+                                      <span>
+                                        {row.project.name}
+                                        {row.project.client_name ? ` — ${row.project.client_name}` : ""}
+                                      </span>
+                                      <span>{euro(row.client)}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </details>
+                            </td>
+                            <td className="py-2 pr-3 text-right text-muted-foreground">{p.count}</td>
+                            <td className="py-2 pr-3 text-right">{euro(p.cost)}</td>
+                            <td className="py-2 pr-3 text-right">{euro(p.client)}</td>
+                            <td className="py-2 pr-3 text-right font-medium">{euro(p.margin)}</td>
+                            <td className="py-2 text-right">
+                              {delta != null ? (
+                                <span className={delta >= 0 ? "text-green-700" : "text-red-600"}>
+                                  {delta >= 0 ? "+" : ""}
+                                  {delta.toFixed(0)}%
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground" title={t("Nog geen data voor dezelfde periode vorig jaar.")}>
+                                  —
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("Forecast")}</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {t("Voorspelling voor dit jaar op basis van het tempo van boekingen t.o.v. vorig jaar.")}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {t("Al vastgelegd dit jaar")}
+                </p>
+                <p className="text-2xl font-semibold">{euro(bookedThisYear)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("Marge")}: {euro(bookedMarginThisYear)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-muted-foreground">{t("Voorspeld jaartotaal")}</p>
+                <p className="text-2xl font-semibold">{euro(forecastTotal)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("Marge")}: {euro(forecastMargin)}
+                </p>
+              </div>
+            </div>
+            {growthPct != null ? (
+              <p className={`text-sm font-medium ${growthPct >= 0 ? "text-green-700" : "text-red-600"}`}>
+                {growthPct >= 0 ? "+" : ""}
+                {growthPct.toFixed(0)}% {t("vs. vorig jaar op dit punt in het jaar")}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {t("Nog niet genoeg historie voor een trendvoorspelling — dit toont alleen het al vastgelegde bedrag.")}
+              </p>
+            )}
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

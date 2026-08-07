@@ -14,10 +14,10 @@ import { Badge } from "@/components/ui/badge";
 import {
   computeClientPrice,
   EVENT_TYPES,
+  EVENT_TYPE_LABELS,
   type ActivityLogEntry,
   type Category,
   type ClientRequest,
-  type EventType,
   type IncidentReport,
   type Quote,
   type Stage,
@@ -76,16 +76,6 @@ const CLIENT_REQUEST_STATUS_LABELS: Record<string, string> = {
   new: "Nieuw",
   acknowledged: "In behandeling",
   done: "Afgehandeld",
-};
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  festival: "Festival",
-  wedding: "Bruiloft",
-  corporate: "Zakelijk",
-  gala: "Gala",
-  conference: "Conferentie",
-  concert: "Concert",
-  other: "Overig",
 };
 
 const STATIC_LABELS = [
@@ -190,6 +180,8 @@ const STATIC_LABELS = [
   "Nog geen stages. Voeg een stage toe als het event meerdere podia/locaties heeft die je apart wilt begroten.",
   "Nieuwe stage, bv. Hoofdpodium",
   "Stage toevoegen",
+  "Pre-productie (weken)",
+  "Hoeveel weken vóór de opbouw begint pre-productie normaal loopt — zichtbaar in het kalenderoverzicht.",
   ...Object.values(BUDGET_APPROVAL_LABELS),
   ...Object.values(CLIENT_REQUEST_CATEGORY_LABELS),
   ...Object.values(CLIENT_REQUEST_STATUS_LABELS),
@@ -403,6 +395,7 @@ export default async function ProjectPage({
   const pendingDocuments = allPendingDocuments ?? [];
   const t = await createTranslator(lang, [
     ...STATIC_LABELS,
+    ...Object.values(EVENT_TYPE_LABELS),
     ...(stages ?? []).map((s) => s.name),
     ...(activity ?? []).flatMap((entry) => [entry.actor_label, entry.description]),
     ...(clientRequests ?? []).flatMap((request) => [request.description, request.notes ?? ""]),
@@ -728,6 +721,19 @@ export default async function ProjectPage({
                 </select>
                 <p className="text-xs text-muted-foreground">
                   {t("Bepaalt de standaard-stijl bij nieuwe catering gasten-orders.")}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pre_production_weeks">{t("Pre-productie (weken)")}</Label>
+                <Input
+                  id="pre_production_weeks"
+                  name="pre_production_weeks"
+                  type="number"
+                  min={0}
+                  defaultValue={project.pre_production_weeks ?? ""}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("Hoeveel weken vóór de opbouw begint pre-productie normaal loopt — zichtbaar in het kalenderoverzicht.")}
                 </p>
               </div>
 

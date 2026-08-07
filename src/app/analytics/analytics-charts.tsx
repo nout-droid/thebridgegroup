@@ -3,7 +3,7 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
 export interface YearBarDatum {
-  year: string;
+  period: string;
   omzet: number;
   marge: number;
 }
@@ -26,7 +26,7 @@ export function YearComparisonChart({
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-          <XAxis dataKey="year" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
+          <XAxis dataKey="period" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} />
           <YAxis
             tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
             tickFormatter={(value) => euro(Number(value))}

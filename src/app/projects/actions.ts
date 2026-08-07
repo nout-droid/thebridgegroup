@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { getOrgAccess } from "@/lib/server/subscription";
 import { logAudit } from "@/lib/server/audit";
+import { EVENT_TYPES } from "@/lib/types";
 
 // Geen I/L/O/0/1 — voorkomt verwarring als een klant het Event ID moet overtypen.
 const EVENT_CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -23,6 +24,13 @@ export async function createProject(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const clientName = String(formData.get("client_name") ?? "").trim();
   const eventDate = String(formData.get("event_date") ?? "");
+  const eventTypeRaw = String(formData.get("event_type") ?? "festival");
+  const eventType = (EVENT_TYPES as readonly string[]).includes(eventTypeRaw) ? eventTypeRaw : "festival";
+  const preProductionWeeksRaw = formData.get("pre_production_weeks");
+  const preProductionWeeks =
+    preProductionWeeksRaw === null || preProductionWeeksRaw === ""
+      ? null
+      : Math.max(0, Number(preProductionWeeksRaw) || 0);
 
   if (!name) return;
 
@@ -50,6 +58,8 @@ export async function createProject(formData: FormData) {
     p_client_name: clientName,
     p_event_date: eventDate || null,
     p_event_code: generateEventCode(),
+    p_event_type: eventType,
+    p_pre_production_weeks: preProductionWeeks,
   });
 
   if (error || !newId) {
@@ -100,7 +110,7 @@ export async function duplicateProject(projectId: string) {
   const { data: original, error: fetchError } = await supabase
     .from("projects")
     .select(
-      "user_id, name, client_name, event_date, build_start_date, strike_end_date, show_start_date, show_end_date, show_type, suppliers_manage_travel, background_image_url, client_budget, default_margin_percentage"
+      "user_id, name, client_name, event_date, build_start_date, strike_end_date, show_start_date, show_end_date, show_type, suppliers_manage_travel, background_image_url, client_budget, default_margin_percentage, event_type, pre_production_weeks"
     )
     .eq("id", projectId)
     .single();
@@ -130,6 +140,8 @@ export async function duplicateProject(projectId: string) {
     p_background_image_url: original.background_image_url,
     p_client_budget: original.client_budget,
     p_default_margin_percentage: original.default_margin_percentage,
+    p_event_type: original.event_type,
+    p_pre_production_weeks: original.pre_production_weeks,
   });
   const created = newId ? { id: newId } : null;
   if (!created) {

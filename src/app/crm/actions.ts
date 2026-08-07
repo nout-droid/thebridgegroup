@@ -53,6 +53,9 @@ export async function createLead(formData: FormData) {
     expected_close_date: String(formData.get("expected_close_date") ?? "") || null,
     next_follow_up_date: String(formData.get("next_follow_up_date") ?? "") || null,
     notes: String(formData.get("notes") ?? "").trim(),
+    contact_birthday: String(formData.get("contact_birthday") ?? "") || null,
+    contact_family_notes: String(formData.get("contact_family_notes") ?? "").trim(),
+    contact_preferences: String(formData.get("contact_preferences") ?? "").trim(),
   });
 
   revalidatePath("/crm");
@@ -80,6 +83,9 @@ export async function updateLead(leadId: string, formData: FormData) {
       expected_close_date: String(formData.get("expected_close_date") ?? "") || null,
       next_follow_up_date: String(formData.get("next_follow_up_date") ?? "") || null,
       notes: String(formData.get("notes") ?? "").trim(),
+      contact_birthday: String(formData.get("contact_birthday") ?? "") || null,
+      contact_family_notes: String(formData.get("contact_family_notes") ?? "").trim(),
+      contact_preferences: String(formData.get("contact_preferences") ?? "").trim(),
       updated_at: new Date().toISOString(),
     })
     .eq("id", leadId);
@@ -98,9 +104,9 @@ export async function addLeadActivity(leadId: string, formData: FormData) {
   if (!description) return;
 
   const activityTypeRaw = String(formData.get("activity_type") ?? "note");
-  const activityType: SalesLeadActivityType = (["call", "email", "meeting", "note"] as const).includes(
-    activityTypeRaw as SalesLeadActivityType
-  )
+  const activityType: SalesLeadActivityType = (
+    ["call", "cold_call", "email", "meeting", "note"] as const
+  ).includes(activityTypeRaw as SalesLeadActivityType)
     ? (activityTypeRaw as SalesLeadActivityType)
     : "note";
 
@@ -157,4 +163,21 @@ export async function convertLeadToProject(leadId: string, formData: FormData) {
 
   revalidatePath("/crm");
   redirect(`/projects/${projectId}`);
+}
+
+export async function updateAcquisitionTarget(formData: FormData) {
+  const target = Math.max(0, Number(formData.get("target_per_month") ?? 0) || 0);
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const ownerId = await getTeamOwnerId(supabase, user.id);
+
+  await supabase
+    .from("sales_acquisition_targets")
+    .upsert({ user_id: ownerId, target_per_month: target, updated_at: new Date().toISOString() });
+
+  revalidatePath("/crm");
 }

@@ -80,8 +80,8 @@ export async function addTenderActivity(tenderId: string, formData: FormData) {
   if (!description) return;
 
   const activityTypeRaw = String(formData.get("activity_type") ?? "note");
-  const activityType: SalesLeadActivityType = (["call", "email", "meeting", "note"] as const).includes(
-    activityTypeRaw as SalesLeadActivityType
+  const activityType: SalesLeadActivityType = (["call", "email", "meeting", "note"] as readonly string[]).includes(
+    activityTypeRaw
   )
     ? (activityTypeRaw as SalesLeadActivityType)
     : "note";

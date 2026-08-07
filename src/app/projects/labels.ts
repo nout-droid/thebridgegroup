@@ -3,6 +3,8 @@ export const NEW_PROJECT_DIALOG_LABELS = [
   "Projectnaam",
   "Klant",
   "Event datum",
+  "Type event",
+  "Pre-productie (weken)",
   "Aanmaken",
 ];
 

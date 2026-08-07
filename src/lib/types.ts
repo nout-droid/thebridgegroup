@@ -210,12 +210,15 @@ export interface SalesLead {
   next_follow_up_date: string | null;
   notes: string;
   project_id: string | null;
+  contact_birthday: string | null;
+  contact_family_notes: string;
+  contact_preferences: string;
   created_at: string;
   updated_at: string;
   activities?: SalesLeadActivity[];
 }
 
-export type SalesLeadActivityType = "call" | "email" | "meeting" | "note";
+export type SalesLeadActivityType = "call" | "cold_call" | "email" | "meeting" | "note";
 
 export interface SalesLeadActivity {
   id: string;
@@ -224,6 +227,12 @@ export interface SalesLeadActivity {
   description: string;
   created_by: string | null;
   created_at: string;
+}
+
+export interface SalesAcquisitionTarget {
+  user_id: string;
+  target_per_month: number;
+  updated_at: string;
 }
 
 // Platform-backoffice (/admin) — losse pipeline van álle organisaties (dus elke signup) op
@@ -407,19 +416,54 @@ export interface Project {
   ai_client_update_draft: string | null;
   ai_client_update_generated_at: string | null;
   event_type: EventType;
+  pre_production_weeks: number | null;
   created_at: string;
 }
 
 export const EVENT_TYPES = [
   "festival",
+  "concert",
+  "edm",
   "wedding",
   "corporate",
   "gala",
   "conference",
-  "concert",
+  "conference_international",
+  "government",
+  "sports",
   "other",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  festival: "Festival",
+  concert: "Concert",
+  edm: "EDM / dance event",
+  wedding: "Bruiloft",
+  corporate: "Zakelijk evenement",
+  gala: "Gala",
+  conference: "Nationaal congres",
+  conference_international: "Internationaal congres",
+  government: "Overheid",
+  sports: "Sportevenement",
+  other: "Overig",
+};
+
+// Vaste kleur per event-type — gedeeld tussen het projectformulier en het kalender-jaar/maand/
+// weekoverzicht, zodat "wat voor type event" in één oogopslag herkenbaar is.
+export const EVENT_TYPE_COLORS: Record<EventType, string> = {
+  festival: "#f59e0b",
+  concert: "#ec4899",
+  edm: "#8b5cf6",
+  wedding: "#f43f5e",
+  corporate: "#3b82f6",
+  gala: "#eab308",
+  conference: "#0ea5e9",
+  conference_international: "#0369a1",
+  government: "#64748b",
+  sports: "#22c55e",
+  other: "#71717a",
+};
 
 export const GUEST_CATERING_MOMENTS = [
   "ontbijt",
@@ -468,11 +512,15 @@ export const GUEST_CATERING_STYLE_LABELS: Record<string, string> = {
 // "buffet" hoeft te wijzigen naar wat voor dit type event gebruikelijk is.
 export const DEFAULT_GUEST_CATERING_STYLE_BY_EVENT_TYPE: Record<EventType, GuestCateringStyle> = {
   festival: "food_trucks",
+  concert: "borrel",
+  edm: "food_trucks",
   wedding: "seated",
   corporate: "coffee_station",
   gala: "seated",
   conference: "coffee_station",
-  concert: "borrel",
+  conference_international: "coffee_station",
+  government: "coffee_station",
+  sports: "food_trucks",
   other: "buffet",
 };
 

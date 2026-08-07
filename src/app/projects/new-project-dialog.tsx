@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EVENT_TYPES, EVENT_TYPE_LABELS } from "@/lib/types";
 import { createProject } from "./actions";
 
 export interface NewProjectDialogLabels {
@@ -18,7 +19,10 @@ export interface NewProjectDialogLabels {
   projectName: string;
   client: string;
   eventDate: string;
+  eventType: string;
+  preProductionWeeks: string;
   create: string;
+  eventTypeLabels: Record<string, string>;
 }
 
 export function NewProjectDialog({ labels }: { labels: NewProjectDialogLabels }) {
@@ -43,6 +47,25 @@ export function NewProjectDialog({ labels }: { labels: NewProjectDialogLabels })
           <div className="space-y-2">
             <Label htmlFor="event_date">{labels.eventDate}</Label>
             <Input id="event_date" name="event_date" type="date" />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="event_type">{labels.eventType}</Label>
+            <select
+              id="event_type"
+              name="event_type"
+              defaultValue="festival"
+              className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+            >
+              {EVENT_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {labels.eventTypeLabels[type] ?? EVENT_TYPE_LABELS[type]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="pre_production_weeks">{labels.preProductionWeeks}</Label>
+            <Input id="pre_production_weeks" name="pre_production_weeks" type="number" min={0} />
           </div>
           <Button type="submit" className="w-full">
             {labels.create}

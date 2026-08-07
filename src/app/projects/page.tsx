@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { NewProjectDialog } from "./new-project-dialog";
 import { ProjectCardActions } from "./project-card-actions";
 import { NEW_PROJECT_DIALOG_LABELS, PROJECT_CARD_ACTIONS_LABELS } from "./labels";
-import type { Project } from "@/lib/types";
+import { EVENT_TYPE_LABELS, type Project } from "@/lib/types";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { getOrgAccess } from "@/lib/server/subscription";
 import { getAppLang } from "@/lib/server/lang";
@@ -52,15 +52,23 @@ export default async function ProjectsPage({
     ...PROJECTS_PAGE_LABELS,
     ...NEW_PROJECT_DIALOG_LABELS,
     ...PROJECT_CARD_ACTIONS_LABELS,
+    ...Object.values(EVENT_TYPE_LABELS),
     ...(projects ?? []).map((p) => p.status),
   ]);
+
+  const eventTypeLabels = Object.fromEntries(
+    Object.entries(EVENT_TYPE_LABELS).map(([key, label]) => [key, t(label)])
+  );
 
   const newProjectDialogLabels = {
     newProject: t("Nieuw project"),
     projectName: t("Projectnaam"),
     client: t("Klant"),
     eventDate: t("Event datum"),
+    eventType: t("Type event"),
+    preProductionWeeks: t("Pre-productie (weken)"),
     create: t("Aanmaken"),
+    eventTypeLabels,
   };
 
   const projectCardActionsLabels = {
