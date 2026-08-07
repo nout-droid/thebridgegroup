@@ -70,6 +70,18 @@ export interface EventGuest {
   responded_at: string | null;
   checked_in_at: string | null;
   checked_out_at: string | null;
+  table_id: string | null;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface SeatingTable {
+  id: string;
+  project_id: string;
+  stage_id: string | null;
+  name: string;
+  capacity: number;
+  notes: string;
   sort_order: number;
   created_at: string;
 }
