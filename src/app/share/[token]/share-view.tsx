@@ -37,6 +37,7 @@ import {
   type SharedRider,
   type SharedRundowns,
   type SharedScheduleItem,
+  type SharedStorybook,
 } from "@/lib/types";
 import { addSecondsToTime } from "@/lib/rundown-time";
 import { pickDefaultShowDate } from "@/lib/show-dates";
@@ -74,6 +75,10 @@ const STATIC_LABELS = [
   "Begroting",
   "Event rider",
   "Rider downloaden",
+  "Storybook",
+  "Door jou goedgekeurd",
+  "Goedkeuring intrekken",
+  "Dit hoofdstuk goedkeuren",
   "Door de organisator",
   "Jouw invoer",
   "Opslaan",
@@ -194,7 +199,8 @@ function collectDynamicTexts(
   data: SharedProject,
   rider: SharedRider | null,
   production: SharedProduction | null,
-  rundowns: SharedRundowns | null
+  rundowns: SharedRundowns | null,
+  storybook: SharedStorybook | null
 ): string[] {
   const texts = new Set<string>();
   texts.add(data.project.name);
@@ -285,6 +291,16 @@ function collectDynamicTexts(
           texts.add(item.name);
           for (const instr of item.instructions) texts.add(instr.instruction);
         }
+      }
+    }
+  }
+
+  if (storybook) {
+    for (const chapter of storybook) {
+      texts.add(chapter.title);
+      if (chapter.description) texts.add(chapter.description);
+      for (const image of chapter.images) {
+        if (image.caption) texts.add(image.caption);
       }
     }
   }
@@ -666,6 +682,92 @@ function RiderPanel({
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function StorybookPanel({
+  token,
+  chapters,
+  t,
+  onChapterResponded,
+}: {
+  token: string;
+  chapters: SharedStorybook;
+  t: Translator;
+  onChapterResponded: (chapterId: string, approvedAt: string | null) => void;
+}) {
+  const [submittingId, setSubmittingId] = useState<string | null>(null);
+
+  async function respond(chapterId: string, approved: boolean) {
+    setSubmittingId(chapterId);
+    const supabase = createClient();
+    const { data: ok } = await supabase.rpc("respond_to_storybook_chapter_by_client", {
+      p_share_token: token,
+      p_chapter_id: chapterId,
+      p_approved: approved,
+    });
+    setSubmittingId(null);
+    if (ok) onChapterResponded(chapterId, approved ? new Date().toISOString() : null);
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <a
+          href={`/share/${token}/storybook/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-primary underline"
+        >
+          {t("Storybook downloaden")}
+        </a>
+      </div>
+      {chapters.map((chapter) => (
+        <Card key={chapter.id}>
+          <CardHeader>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <CardTitle className="text-base">{t(chapter.title)}</CardTitle>
+              {chapter.client_approved_at ? (
+                <Badge variant="outline" className="whitespace-nowrap text-xs">
+                  {t("Door jou goedgekeurd")}
+                </Badge>
+              ) : null}
+            </div>
+            {chapter.description && (
+              <p className="text-sm text-muted-foreground">{t(chapter.description)}</p>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {chapter.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {chapter.images.map((image) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={image.id}
+                    src={image.url}
+                    alt={image.caption ? t(image.caption) : chapter.title}
+                    className="aspect-video w-full rounded-md object-cover"
+                  />
+                ))}
+              </div>
+            )}
+            <div>
+              <Button
+                type="button"
+                size="sm"
+                variant={chapter.client_approved_at ? "outline" : "default"}
+                disabled={submittingId === chapter.id}
+                onClick={() => respond(chapter.id, !chapter.client_approved_at)}
+              >
+                {chapter.client_approved_at
+                  ? t("Goedkeuring intrekken")
+                  : t("Dit hoofdstuk goedkeuren")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 }
 
@@ -1711,9 +1813,10 @@ export function ShareView({
   const [co2, setCo2] = useState<SharedCo2 | null>(null);
   const [production, setProduction] = useState<SharedProduction | null>(null);
   const [rundowns, setRundowns] = useState<SharedRundowns | null>(null);
+  const [storybook, setStorybook] = useState<SharedStorybook | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "budget" | "rider" | "checklist" | "co2" | "production" | "rundown"
+    "budget" | "rider" | "storybook" | "checklist" | "co2" | "production" | "rundown"
   >("budget");
 
   useEffect(() => {
@@ -1745,6 +1848,8 @@ export function ShareView({
       if (!cancelled && productionData) setProduction(productionData as SharedProduction);
       const { data: rundownData } = await supabase.rpc("get_shared_rundowns", { p_token: token });
       if (!cancelled && rundownData) setRundowns(rundownData as SharedRundowns);
+      const { data: storybookData } = await supabase.rpc("get_shared_storybook", { p_share_token: token });
+      if (!cancelled && storybookData) setStorybook(storybookData as SharedStorybook);
       setData(data as SharedProject);
     }
 
@@ -1757,8 +1862,8 @@ export function ShareView({
   }, [token]);
 
   const dynamicTexts = useMemo(
-    () => (data ? collectDynamicTexts(data, rider, production, rundowns) : []),
-    [data, rider, production, rundowns]
+    () => (data ? collectDynamicTexts(data, rider, production, rundowns, storybook) : []),
+    [data, rider, production, rundowns, storybook]
   );
   const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts, "en");
 
@@ -1851,6 +1956,19 @@ export function ShareView({
               }`}
             >
               {t("Event rider")}
+            </button>
+          )}
+          {storybook && storybook.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("storybook")}
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
+                activeTab === "storybook"
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {t("Storybook")}
             </button>
           )}
           <button
@@ -1947,6 +2065,19 @@ export function ShareView({
                           : s
                       ),
                     }
+                  : prev
+              )
+            }
+          />
+        ) : activeTab === "storybook" && storybook && storybook.length > 0 ? (
+          <StorybookPanel
+            token={token}
+            chapters={storybook}
+            t={t}
+            onChapterResponded={(chapterId, approvedAt) =>
+              setStorybook((prev) =>
+                prev
+                  ? prev.map((c) => (c.id === chapterId ? { ...c, client_approved_at: approvedAt } : c))
                   : prev
               )
             }

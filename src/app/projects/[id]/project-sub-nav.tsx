@@ -10,6 +10,7 @@ const TABS = [
   { key: "intake", label: "Aanvraag checklist" },
   { key: "budget", label: "Begroting" },
   { key: "rider", label: "Event rider" },
+  { key: "storybook", label: "Storybook" },
   { key: "schedule", label: "Draaiboek" },
   { key: "rundown", label: "Rundown" },
   { key: "production", label: "Productie" },

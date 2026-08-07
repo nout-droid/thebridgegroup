@@ -396,6 +396,37 @@ export interface ProjectMedia {
   created_at: string;
 }
 
+export interface StorybookImage {
+  id: string;
+  chapter_id: string;
+  url: string;
+  caption: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface StorybookChapter {
+  id: string;
+  project_id: string;
+  title: string;
+  description: string;
+  sort_order: number;
+  client_approved_at: string | null;
+  created_at: string;
+  updated_at: string;
+  images: StorybookImage[];
+}
+
+export interface SharedStorybookChapter {
+  id: string;
+  title: string;
+  description: string;
+  client_approved_at: string | null;
+  images: { id: string; url: string; caption: string }[];
+}
+
+export type SharedStorybook = SharedStorybookChapter[];
+
 export interface Supplier {
   id: string;
   user_id: string;
