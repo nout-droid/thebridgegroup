@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { AppLangToggle } from "@/components/app-lang-toggle";
 import { MobileNavToggle, type MobileNavLink } from "@/components/mobile-nav-toggle";
 import { GlobalSearch, type GlobalSearchLabels } from "@/components/global-search";
+import { NotificationBell, type NotificationBellLabels } from "@/components/notification-bell";
+import { countUnreadNotifications } from "@/lib/server/notifications";
 import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
@@ -30,7 +32,12 @@ export async function Nav() {
     user ? getViewerTeamInfo(supabase, user.id) : Promise.resolve(null),
   ]);
 
-  const branding = teamInfo ? await getOrgBranding(teamInfo.ownerId) : DEFAULT_BRANDING;
+  // Branding en het ongelezen-aantal hangen allebei alleen af van teamInfo.ownerId (niet van
+  // elkaar) — parallel opvragen i.p.v. na elkaar, zelfde reden als de eerste Promise.all hierboven.
+  const [branding, unreadCount] = await Promise.all([
+    teamInfo ? getOrgBranding(teamInfo.ownerId) : Promise.resolve(DEFAULT_BRANDING),
+    teamInfo ? countUnreadNotifications(supabase, teamInfo.ownerId) : Promise.resolve(0),
+  ]);
   const navSections = teamInfo?.navSections ?? null;
 
   // null = alles zien (eigenaar, of teamlid zonder toegewezen rol) — bestaand gedrag.
@@ -64,6 +71,11 @@ export async function Nav() {
     "Geen resultaten gevonden.",
     "Projecten",
     "Locaties",
+    "Meldingen",
+    "Recente updates van klanten en leveranciers.",
+    "Geen nieuwe meldingen.",
+    "Alles gelezen",
+    "geleden",
   ]);
 
   const searchLabels: GlobalSearchLabels = {
@@ -80,6 +92,14 @@ export async function Nav() {
       venue: t("Locaties"),
       lead: t("Sales"),
     },
+  };
+
+  const notificationLabels: NotificationBellLabels = {
+    title: t("Meldingen"),
+    description: t("Recente updates van klanten en leveranciers."),
+    empty: t("Geen nieuwe meldingen."),
+    markAllRead: t("Alles gelezen"),
+    ago: t("geleden"),
   };
 
   const co2Badge = (
@@ -128,6 +148,7 @@ export async function Nav() {
             {co2Badge}
           </Link>
           <GlobalSearch labels={searchLabels} />
+          {user && <NotificationBell initialCount={unreadCount} labels={notificationLabels} />}
           <AppLangToggle lang={lang} dark />
           <form action={signOut}>
             <Button
