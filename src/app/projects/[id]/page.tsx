@@ -183,21 +183,26 @@ const STATIC_LABELS = [
   "Stage toevoegen",
   "Pre-productie (weken)",
   "Hoeveel weken vóór de opbouw begint pre-productie normaal loopt — zichtbaar in het kalenderoverzicht.",
+  "zojuist",
+  "min geleden",
+  "uur geleden",
+  "dag geleden",
+  "dagen geleden",
   ...Object.values(BUDGET_APPROVAL_LABELS),
   ...Object.values(CLIENT_REQUEST_CATEGORY_LABELS),
   ...Object.values(CLIENT_REQUEST_STATUS_LABELS),
   ...Object.values(ACTIVITY_CATEGORY_LABELS),
 ];
 
-function relativeTime(iso: string) {
+function relativeTime(iso: string, t: (text: string) => string) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return "zojuist";
-  if (minutes < 60) return `${minutes} min geleden`;
+  if (minutes < 1) return t("zojuist");
+  if (minutes < 60) return `${minutes} ${t("min geleden")}`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} uur geleden`;
+  if (hours < 24) return `${hours} ${t("uur geleden")}`;
   const days = Math.floor(hours / 24);
-  return `${days} dag${days === 1 ? "" : "en"} geleden`;
+  return `${days} ${t(days === 1 ? "dag geleden" : "dagen geleden")}`;
 }
 
 export default async function ProjectPage({
@@ -539,7 +544,7 @@ export default async function ProjectPage({
                       </Badge>
                       <span className="font-medium">{t(entry.actor_label)}</span>
                       <span className="text-xs text-muted-foreground">
-                        {relativeTime(entry.created_at)}
+                        {relativeTime(entry.created_at, t)}
                       </span>
                     </div>
                     <p>{t(entry.description)}</p>
@@ -625,7 +630,7 @@ export default async function ProjectPage({
                   <div className="flex flex-wrap items-center gap-2">
                     {report.division && <Badge variant="secondary">{t(report.division)}</Badge>}
                     <span className="text-xs text-muted-foreground">
-                      {relativeTime(report.created_at)}
+                      {relativeTime(report.created_at, t)}
                     </span>
                     {report.reported_by && (
                       <span className="text-xs text-muted-foreground">— {t(report.reported_by)}</span>
