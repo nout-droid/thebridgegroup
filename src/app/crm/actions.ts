@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { createProjectForUser } from "@/lib/server/create-project-core";
+import { suggestPersonalTouch } from "@/lib/server/personal-touch";
 import type { SalesLeadActivityType, SalesLeadStage } from "@/lib/types";
 
 const STAGES: SalesLeadStage[] = ["lead", "contacted", "proposal", "quote_sent", "won", "lost"];
@@ -97,6 +98,25 @@ export async function deleteLead(leadId: string) {
   const supabase = await createClient();
   await supabase.from("sales_leads").delete().eq("id", leadId);
   revalidatePath("/crm");
+}
+
+// Alleen-lezen, geen revalidatePath nodig — RLS scoped de select al naar het eigen team.
+export async function generatePersonalTouchSuggestion(leadId: string): Promise<string | null> {
+  const supabase = await createClient();
+  const { data: lead } = await supabase
+    .from("sales_leads")
+    .select("contact_name, company_name, contact_birthday, contact_family_notes, contact_preferences")
+    .eq("id", leadId)
+    .maybeSingle();
+  if (!lead) return null;
+
+  return suggestPersonalTouch({
+    contactName: lead.contact_name,
+    companyName: lead.company_name,
+    birthday: lead.contact_birthday,
+    familyNotes: lead.contact_family_notes,
+    preferences: lead.contact_preferences,
+  });
 }
 
 export async function addLeadActivity(leadId: string, formData: FormData) {

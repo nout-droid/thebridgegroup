@@ -26,6 +26,7 @@ import {
 } from "./actions";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { PersonalTouchButton, type PersonalTouchButtonLabels } from "./personal-touch-button";
 
 const STAGES: SalesLeadStage[] = ["lead", "contacted", "proposal", "quote_sent", "won", "lost"];
 
@@ -101,6 +102,9 @@ const CRM_PAGE_LABELS = [
   "Instellen",
   "van target",
   "Nog geen acquisitie-activiteiten gelogd.",
+  "✨ Suggestie persoonlijk gebaar",
+  "Bezig...",
+  "Vul verjaardag, gezin of voorkeuren in voor een suggestie.",
 ];
 
 function euro(value: number) {
@@ -218,6 +222,12 @@ export default async function CrmPage({
     ...CRM_PAGE_LABELS,
     ...(leads ?? []).map((l) => l.company_name),
   ]);
+
+  const personalTouchLabels: PersonalTouchButtonLabels = {
+    trigger: t("✨ Suggestie persoonlijk gebaar"),
+    loading: t("Bezig..."),
+    unavailable: t("Vul verjaardag, gezin of voorkeuren in voor een suggestie."),
+  };
 
   const ACTIVITY_TYPE_LABELS: Record<SalesLeadActivityType, string> = {
     call: t("Bellen"),
@@ -722,6 +732,7 @@ export default async function CrmPage({
                                   />
                                 </div>
                               </div>
+                              <PersonalTouchButton leadId={lead.id} labels={personalTouchLabels} />
                             </div>
                             <div className="flex gap-2">
                               <Button type="submit" size="sm" className="h-7 text-xs">
