@@ -5,6 +5,8 @@ export const NEW_PROJECT_DIALOG_LABELS = [
   "Event datum",
   "Type event",
   "Pre-productie (weken)",
+  "Locatie",
+  "Bijv. Ziggo Dome, Amsterdam",
   "Aanmaken",
 ];
 

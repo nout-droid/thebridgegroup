@@ -67,6 +67,8 @@ export default async function ProjectsPage({
     eventDate: t("Event datum"),
     eventType: t("Type event"),
     preProductionWeeks: t("Pre-productie (weken)"),
+    venue: t("Locatie"),
+    venuePlaceholder: t("Bijv. Ziggo Dome, Amsterdam"),
     create: t("Aanmaken"),
     eventTypeLabels,
   };

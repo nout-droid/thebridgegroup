@@ -21,6 +21,8 @@ export interface NewProjectDialogLabels {
   eventDate: string;
   eventType: string;
   preProductionWeeks: string;
+  venue: string;
+  venuePlaceholder: string;
   create: string;
   eventTypeLabels: Record<string, string>;
 }
@@ -66,6 +68,10 @@ export function NewProjectDialog({ labels }: { labels: NewProjectDialogLabels })
           <div className="space-y-2">
             <Label htmlFor="pre_production_weeks">{labels.preProductionWeeks}</Label>
             <Input id="pre_production_weeks" name="pre_production_weeks" type="number" min={0} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="venue_name">{labels.venue}</Label>
+            <Input id="venue_name" name="venue_name" placeholder={labels.venuePlaceholder} />
           </div>
           <Button type="submit" className="w-full">
             {labels.create}

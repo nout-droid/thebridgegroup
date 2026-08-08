@@ -31,6 +31,7 @@ export async function createProject(formData: FormData) {
     preProductionWeeksRaw === null || preProductionWeeksRaw === ""
       ? null
       : Math.max(0, Number(preProductionWeeksRaw) || 0);
+  const venueName = String(formData.get("venue_name") ?? "").trim();
 
   if (!name) return;
 
@@ -64,6 +65,29 @@ export async function createProject(formData: FormData) {
 
   if (error || !newId) {
     redirect(`/projects?error=${encodeURIComponent(error?.message ?? "Onbekende fout")}`);
+  }
+
+  // Losse update na de RPC i.p.v. een extra p_venue_id-parameter erbij — voorkomt weer een
+  // create_project_secure-signatuurwijziging (zie de drop function-aantekening verderop in
+  // full_schema.sql voor waarom dat een keer fout ging). Locatie op naam zoeken/aanmaken,
+  // zelfde find-or-create-patroon als findOrCreateCategory.
+  if (venueName) {
+    const { data: existingVenue } = await supabase
+      .from("venues")
+      .select("id")
+      .eq("user_id", ownerId)
+      .ilike("name", venueName)
+      .maybeSingle();
+
+    const venueId = existingVenue?.id
+      ? existingVenue.id
+      : (
+          await supabase.from("venues").insert({ user_id: ownerId, name: venueName }).select("id").single()
+        ).data?.id;
+
+    if (venueId) {
+      await supabase.from("projects").update({ venue_id: venueId }).eq("id", newId);
+    }
   }
 
   revalidatePath("/projects");

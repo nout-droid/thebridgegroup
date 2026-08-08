@@ -23,25 +23,44 @@ export function TodoCard({
   todos: ProjectTodo[];
   labels: TodoCardLabels;
 }) {
-  const open = todos.filter((t) => !t.done);
-  const done = todos.filter((t) => t.done);
+  // Open bovenaan, afgevinkt onderaan — maar in dezelfde lijst, zodat een klik op de
+  // checkbox meteen zichtbaar is (niet weggestopt in een dichtgeklapt "Voltooid"-blok,
+  // wat aanvoelde als "afvinken werkt niet").
+  const sorted = [...todos].sort((a, b) => Number(a.done) - Number(b.done));
+  const doneCount = todos.filter((t) => t.done).length;
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">{labels.title}</CardTitle>
+        <CardTitle className="text-base">
+          {labels.title}
+          {todos.length > 0 && (
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              {doneCount}/{todos.length}
+            </span>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {open.length === 0 && done.length === 0 ? (
+        {sorted.length === 0 ? (
           <p className="text-sm text-muted-foreground">{labels.empty}</p>
         ) : (
           <ul className="space-y-1">
-            {open.map((todo) => (
+            {sorted.map((todo) => (
               <li key={todo.id} className="flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-sm">
                 <form action={toggleProjectTodo.bind(null, projectId, todo.id)} className="min-w-0 flex-1">
-                  <button type="submit" className="flex w-full items-center gap-2 text-left">
-                    <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-input" />
-                    <span className="truncate">{todo.title}</span>
+                  <button
+                    type="submit"
+                    className={`flex w-full items-center gap-2 text-left ${todo.done ? "text-muted-foreground" : ""}`}
+                  >
+                    <span
+                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border border-input ${
+                        todo.done ? "bg-primary/20 text-primary" : ""
+                      }`}
+                    >
+                      {todo.done && "✓"}
+                    </span>
+                    <span className={`truncate ${todo.done ? "line-through" : ""}`}>{todo.title}</span>
                   </button>
                 </form>
                 <form action={deleteProjectTodo.bind(null, projectId, todo.id)}>
@@ -60,33 +79,6 @@ export function TodoCard({
             {labels.add}
           </Button>
         </form>
-
-        {done.length > 0 && (
-          <details className="rounded-md border p-2">
-            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-              {labels.completed} ({done.length})
-            </summary>
-            <ul className="mt-2 space-y-1">
-              {done.map((todo) => (
-                <li key={todo.id} className="flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs">
-                  <form action={toggleProjectTodo.bind(null, projectId, todo.id)} className="min-w-0 flex-1">
-                    <button type="submit" className="flex w-full items-center gap-2 text-left text-muted-foreground">
-                      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded border border-input bg-primary/20 text-primary">
-                        ✓
-                      </span>
-                      <span className="truncate line-through">{todo.title}</span>
-                    </button>
-                  </form>
-                  <form action={deleteProjectTodo.bind(null, projectId, todo.id)}>
-                    <Button type="submit" size="sm" variant="ghost" className="h-6 shrink-0 px-1.5 text-[10px] text-destructive">
-                      {labels.delete}
-                    </Button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
 
         {todos.length > 0 && (
           <form action={saveProjectTodosAsDefaultTemplate.bind(null, projectId)}>
