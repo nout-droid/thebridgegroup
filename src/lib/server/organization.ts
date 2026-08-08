@@ -52,3 +52,25 @@ export async function getOrgBranding(ownerUserId: string | null | undefined): Pr
     iban: data.iban || null,
   };
 }
+
+// Zorgt dat er een organizations-rij (en dus een ics_token) bestaat voor deze eigenaar, ook
+// voor accounts van vóór de signup-flow die zo'n rij automatisch aanmaakt. on conflict op de
+// bestaande unique constraint owner_user_id — bestaande rij blijft ongemoeid, alleen het
+// ontbrekende geval krijgt een nieuwe met default-waarden.
+export async function getOrCreateIcsToken(ownerUserId: string): Promise<string> {
+  const admin = createAdminClient();
+  const { data: existing } = await admin
+    .from("organizations")
+    .select("ics_token")
+    .eq("owner_user_id", ownerUserId)
+    .maybeSingle();
+  if (existing?.ics_token) return existing.ics_token;
+
+  const { data: created } = await admin
+    .from("organizations")
+    .upsert({ owner_user_id: ownerUserId }, { onConflict: "owner_user_id" })
+    .select("ics_token")
+    .single();
+
+  return created!.ics_token;
+}

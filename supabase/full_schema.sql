@@ -6864,3 +6864,8 @@ grant select, insert, update, delete on public.sales_acquisition_targets to auth
 drop function if exists public.create_project_secure(
   uuid, text, text, date, text, date, date, date, date, text, boolean, text, numeric, numeric
 );
+
+-- Kalendersync (ICS-feed): elke organisatie krijgt een geheime, niet-giswerk token waarmee
+-- Google/Outlook/Apple Calendar zich kunnen abonneren op een read-only feed van alle projecten.
+alter table public.organizations add column if not exists ics_token uuid not null default gen_random_uuid();
+create unique index if not exists organizations_ics_token_key on public.organizations(ics_token);

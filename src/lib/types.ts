@@ -167,6 +167,7 @@ export interface Organization {
   early_adopter: boolean;
   moneybird_administration_id: string | null;
   moneybird_access_token: string | null;
+  ics_token: string;
   created_at: string;
 }
 

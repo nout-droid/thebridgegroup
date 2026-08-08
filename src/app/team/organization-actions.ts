@@ -158,3 +158,20 @@ export async function deleteOrganizationAccount(formData: FormData) {
   await supabase.auth.signOut();
   redirect("/login?message=" + encodeURIComponent("Je account en alle bijbehorende gegevens zijn verwijderd."));
 }
+
+// Alleen te gebruiken als de bestaande link per ongeluk gedeeld is — de token IS de
+// autorisatie voor de ICS-feed (geen ingelogde sessie mogelijk vanuit een kalender-app).
+export async function regenerateIcsToken() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const admin = createAdminClient();
+  await admin
+    .from("organizations")
+    .upsert({ owner_user_id: user.id, ics_token: crypto.randomUUID() }, { onConflict: "owner_user_id" });
+
+  revalidatePath("/team");
+}

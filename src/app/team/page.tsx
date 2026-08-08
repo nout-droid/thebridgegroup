@@ -39,6 +39,10 @@ import {
   deleteOrganizationAccount,
 } from "./organization-actions";
 import { isMoneybirdConfigured } from "@/lib/server/moneybird";
+import { ShareLinkBox } from "../projects/[id]/share-link-box";
+import { getOrCreateIcsToken } from "@/lib/server/organization";
+import { getOrigin } from "@/lib/server/origin";
+import { regenerateIcsToken } from "./organization-actions";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
 
@@ -90,6 +94,12 @@ const TEAM_PAGE_LABELS = [
   "Verbonden",
   "Niet verbonden",
   "Opslaan",
+  "Kalendersync",
+  "Abonneer met deze link in Google Calendar, Outlook of Apple Calendar (\"Agenda toevoegen via URL\") om al je projecten automatisch in je eigen agenda te zien — opbouw t/m afbouw, per project.",
+  "Kopieer link",
+  "Gekopieerd",
+  "Link opnieuw genereren",
+  "Genereer een nieuwe link als de huidige per ongeluk gedeeld is — de oude link werkt dan niet meer.",
   "Logboek",
   "Wie deed wat, voor gevoelige acties zoals projectverwijdering en teamwijzigingen.",
   "Actie",
@@ -151,6 +161,8 @@ export default async function TeamPage({
     { data: projects },
     { data: auditLog },
     lang,
+    icsToken,
+    origin,
   ] = await Promise.all([
     supabase
       .from("team_members")
@@ -178,6 +190,8 @@ export default async function TeamPage({
       .limit(50)
       .returns<AuditLogEntry[]>(),
     getAppLang(),
+    isOwner ? getOrCreateIcsToken(ownerId) : Promise.resolve(null),
+    getOrigin(),
   ]);
 
   const viewerMembership = members?.find((m) => m.member_user_id === user.id);
@@ -367,6 +381,26 @@ export default async function TeamPage({
                     </div>
                     <Button type="submit" size="sm">
                       {t("Opslaan")}
+                    </Button>
+                  </form>
+                </div>
+              )}
+              {isOwner && icsToken && (
+                <div className="space-y-3 border-t pt-4">
+                  <Label>{t("Kalendersync")}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t(
+                      'Abonneer met deze link in Google Calendar, Outlook of Apple Calendar ("Agenda toevoegen via URL") om al je projecten automatisch in je eigen agenda te zien — opbouw t/m afbouw, per project.'
+                    )}
+                  </p>
+                  <ShareLinkBox
+                    url={`${origin}/api/calendar/${icsToken}`}
+                    copyLabel={t("Kopieer link")}
+                    copiedLabel={t("Gekopieerd")}
+                  />
+                  <form action={regenerateIcsToken}>
+                    <Button type="submit" variant="ghost" size="sm">
+                      {t("Link opnieuw genereren")}
                     </Button>
                   </form>
                 </div>
