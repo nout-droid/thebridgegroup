@@ -1,8 +1,9 @@
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { GUEST_RSVP_STATUS_LABELS, GUEST_TYPE_LABELS, type GuestRsvpStatus, type GuestType } from "@/lib/types";
+import { type GuestRsvpStatus, type GuestType } from "@/lib/types";
 import { getOrganizationName } from "@/lib/server/organization";
 import { checkInEventGuest, checkOutEventGuest } from "./actions";
+import { GuestBadgeView } from "./guest-badge-view";
 
 interface GuestBadgeRow {
   name: string;
@@ -35,9 +36,13 @@ export default async function GuestBadgeScanPage({
 
   if (!guest) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-red-700 p-6">
-        <p className="text-lg font-semibold text-white">Badge niet gevonden of ongeldig</p>
-      </div>
+      <GuestBadgeView
+        guest={null}
+        orgName="The Bridge Group B.V."
+        projectName={undefined}
+        checkInAction={checkInEventGuest.bind(null, token)}
+        checkOutAction={checkOutEventGuest.bind(null, token)}
+      />
     );
   }
 
@@ -49,87 +54,13 @@ export default async function GuestBadgeScanPage({
 
   const orgName = project ? await getOrganizationName(project.user_id) : "The Bridge Group B.V.";
 
-  const declined = guest.rsvp_status === "afgemeld";
-  const typeLabel = GUEST_TYPE_LABELS[guest.guest_type as GuestType] ?? guest.guest_type;
-  const rsvpLabel = GUEST_RSVP_STATUS_LABELS[guest.rsvp_status as GuestRsvpStatus] ?? guest.rsvp_status;
-
   return (
-    <div
-      className={`flex min-h-screen flex-col items-center justify-center gap-6 p-6 text-white ${
-        declined ? "bg-red-700" : "bg-black"
-      }`}
-    >
-      <div className="text-center">
-        <p className="text-sm uppercase tracking-widest text-[#7dff43]">{orgName}</p>
-        <p className="mt-1 text-xs text-white/60">{project?.name}</p>
-      </div>
-
-      {declined && (
-        <div className="rounded-md bg-white px-6 py-3 text-center">
-          <p className="text-xl font-bold text-red-700">AFGEMELD</p>
-        </div>
-      )}
-
-      <div className="w-full max-w-sm space-y-4 rounded-lg bg-white p-6 text-black">
-        <div>
-          <p className="text-2xl font-bold">{guest.name || "Naam onbekend"}</p>
-          <p className="text-sm text-muted-foreground">
-            {typeLabel}
-            {guest.plus_ones > 0 && ` · +${guest.plus_ones}`}
-          </p>
-        </div>
-
-        <div
-          className={`rounded-md p-3 text-center font-semibold ${
-            declined ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800"
-          }`}
-        >
-          RSVP: {rsvpLabel}
-        </div>
-
-        {!declined && (
-          <div className="space-y-2 border-t pt-3">
-            {guest.checked_in_at ? (
-              <>
-                <p className="rounded-md bg-green-100 p-3 text-center font-semibold text-green-800">
-                  Ingecheckt om{" "}
-                  {new Date(guest.checked_in_at).toLocaleTimeString("nl-NL", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </p>
-                {guest.checked_out_at ? (
-                  <p className="rounded-md bg-muted p-3 text-center font-semibold text-muted-foreground">
-                    Uitgecheckt om{" "}
-                    {new Date(guest.checked_out_at).toLocaleTimeString("nl-NL", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </p>
-                ) : (
-                  <form action={checkOutEventGuest.bind(null, token)}>
-                    <button
-                      type="submit"
-                      className="w-full rounded-md border border-primary py-3 text-center font-semibold text-primary"
-                    >
-                      Uitchecken
-                    </button>
-                  </form>
-                )}
-              </>
-            ) : (
-              <form action={checkInEventGuest.bind(null, token)}>
-                <button
-                  type="submit"
-                  className="w-full rounded-md bg-primary py-3 text-center font-semibold text-primary-foreground"
-                >
-                  Inchecken
-                </button>
-              </form>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
+    <GuestBadgeView
+      guest={guest}
+      orgName={orgName}
+      projectName={project?.name}
+      checkInAction={checkInEventGuest.bind(null, token)}
+      checkOutAction={checkOutEventGuest.bind(null, token)}
+    />
   );
 }
