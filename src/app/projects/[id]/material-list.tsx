@@ -45,6 +45,13 @@ export const MATERIAL_LIST_LABELS = [
   "% marge)",
   "Overnemen als offerte",
   "Geschatte DMX-netwerkbehoefte (vuistregel)",
+  "lichtarmaturen in deze lijst → circa",
+  "DMX-universe",
+  "node",
+  "(4 universes/node)",
+  "netwerkswitch",
+  "(4 nodes/switch)",
+  "Controleer altijd de daadwerkelijke fixture-specs en netwerktopologie — voeg de juiste node/switch-modellen hieronder toe via",
   ...MATCH_PICKER_LABELS,
   ...ADD_MATERIAL_LIST_ITEM_LABELS,
 ];
@@ -288,12 +295,18 @@ export function MaterialList({
               <div className="space-y-1 rounded-md border border-dashed p-3 text-sm">
                 <p className="font-medium">{t("Geschatte DMX-netwerkbehoefte (vuistregel)")}</p>
                 <p className="text-muted-foreground">
-                  {lightFixtureCount} lichtarmaturen in deze lijst → circa {estimatedUniverses}{" "}
-                  DMX-universe{estimatedUniverses === 1 ? "" : "s"}, {estimatedNodes} node
-                  {estimatedNodes === 1 ? "" : "s"} (4 universes/node), {estimatedSwitches}{" "}
-                  netwerkswitch{estimatedSwitches === 1 ? "" : "es"} (4 nodes/switch). Controleer
-                  altijd de daadwerkelijke fixture-specs en netwerktopologie — voeg de juiste
-                  node/switch-modellen hieronder toe via &quot;+ Regel toevoegen&quot;.
+                  {lightFixtureCount} {t("lichtarmaturen in deze lijst → circa")} {estimatedUniverses}
+                  {" "}
+                  {t("DMX-universe")}
+                  {estimatedUniverses === 1 ? "" : "s"}, {estimatedNodes} {t("node")}
+                  {estimatedNodes === 1 ? "" : "s"} {t("(4 universes/node)")}, {estimatedSwitches}
+                  {" "}
+                  {t("netwerkswitch")}
+                  {estimatedSwitches === 1 ? "" : "es"} {t("(4 nodes/switch)")}.{" "}
+                  {t(
+                    "Controleer altijd de daadwerkelijke fixture-specs en netwerktopologie — voeg de juiste node/switch-modellen hieronder toe via"
+                  )}{" "}
+                  &quot;{t("+ Regel toevoegen")}&quot;.
                 </p>
               </div>
             )}
