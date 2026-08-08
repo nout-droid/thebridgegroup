@@ -31,6 +31,7 @@ import {
   type Supplier,
 } from "@/lib/types";
 import { getSupplierConflicts, type SupplierConflict } from "@/lib/server/supplier-conflicts";
+import { getCategoryPriceBenchmarks, type PriceBenchmark } from "@/lib/server/category-price-benchmarks";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { CategoryCard, CATEGORY_CARD_LABELS, type ActualCostRow } from "../category-card";
 import { AddCategoryForm, ADD_CATEGORY_FORM_LABELS } from "../add-category-form";
@@ -127,6 +128,7 @@ function BudgetGroup({
   suppliers,
   conflictsBySupplier,
   actualCostsByCategory,
+  priceBenchmarks,
   projectId,
   stageId,
   t,
@@ -137,6 +139,7 @@ function BudgetGroup({
   suppliers: Supplier[];
   conflictsBySupplier: Map<string, SupplierConflict[]>;
   actualCostsByCategory: Map<string, ActualCostRow[]>;
+  priceBenchmarks: Map<string, PriceBenchmark>;
   projectId: string;
   stageId: string | null;
   t: Translator;
@@ -178,6 +181,7 @@ function BudgetGroup({
           suppliers={suppliers}
           conflictsBySupplier={conflictsBySupplier}
           actualCosts={actualCostsByCategory.get(category.id) ?? []}
+          priceBenchmark={priceBenchmarks.get(category.name.trim())}
           t={t}
         />
       ))}
@@ -268,7 +272,7 @@ export default async function ProjectBudgetPage({
   // opvragen i.p.v. na elkaar.
   const supplierIds = (suppliers ?? []).map((s) => s.id);
   const categoryIds = (categories ?? []).map((c) => c.id);
-  const [{ data: supplierRatings }, { data: quotes }] = await Promise.all([
+  const [{ data: supplierRatings }, { data: quotes }, priceBenchmarks] = await Promise.all([
     supplierIds.length
       ? supabase.from("supplier_ratings").select("supplier_id, rating").in("supplier_id", supplierIds)
       : Promise.resolve({ data: [] as { supplier_id: string; rating: number }[] }),
@@ -280,6 +284,7 @@ export default async function ProjectBudgetPage({
           .order("created_at", { ascending: true })
           .returns<Quote[]>()
       : Promise.resolve({ data: [] as Quote[] }),
+    getCategoryPriceBenchmarks(supabase, project.user_id),
   ]);
   const ratingsBySupplier = new Map<string, number[]>();
   for (const r of supplierRatings ?? []) {
@@ -655,6 +660,7 @@ export default async function ProjectBudgetPage({
             suppliers={suppliersWithRatings}
             conflictsBySupplier={conflictsBySupplier}
             actualCostsByCategory={actualCostsByCategory}
+            priceBenchmarks={priceBenchmarks}
             projectId={project.id}
             stageId={stage.id}
             t={t}
@@ -668,6 +674,7 @@ export default async function ProjectBudgetPage({
           suppliers={suppliersWithRatings}
           conflictsBySupplier={conflictsBySupplier}
           actualCostsByCategory={actualCostsByCategory}
+          priceBenchmarks={priceBenchmarks}
           projectId={project.id}
           stageId={null}
           t={t}

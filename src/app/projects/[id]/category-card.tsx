@@ -47,6 +47,7 @@ import { addActualCost, deleteActualCost } from "./actual-costs-actions";
 import { QuoteLineItems, QUOTE_LINE_ITEMS_LABELS } from "./quote-line-items";
 import type { Translator } from "@/lib/server/translate";
 import type { SupplierConflict } from "@/lib/server/supplier-conflicts";
+import { priceDeviation, type PriceBenchmark } from "@/lib/server/category-price-benchmarks";
 
 // Werkelijke kost + evt. een vooraf opgehaalde signed download-URL (portal-documents is een
 // privé bucket — zie src/lib/server/portal-storage.ts). De URL wordt op paginaniveau
@@ -119,6 +120,9 @@ export const CATEGORY_CARD_LABELS = [
   "Afbouw vanaf",
   "Categorie-instellingen",
   "Details",
+  "boven het historisch gemiddelde",
+  "onder het historisch gemiddelde",
+  "hist. gem.",
 ];
 
 export function CategoryCard({
@@ -128,6 +132,7 @@ export function CategoryCard({
   suppliers,
   conflictsBySupplier,
   actualCosts,
+  priceBenchmark,
   t,
 }: {
   projectId: string;
@@ -136,6 +141,7 @@ export function CategoryCard({
   suppliers: Supplier[];
   conflictsBySupplier?: Map<string, SupplierConflict[]>;
   actualCosts?: ActualCostRow[];
+  priceBenchmark?: PriceBenchmark;
   t: Translator;
 }) {
   const chosenQuote = quotes.find((q) => q.status === "gekozen");
@@ -294,7 +300,19 @@ export function CategoryCard({
                 <Fragment key={quote.id}>
                   <TableRow>
                     <TableCell className="font-medium">{quote.supplier?.name}</TableCell>
-                    <TableCell>&euro;&nbsp;{quote.cost_price.toFixed(2)}</TableCell>
+                    <TableCell>
+                      &euro;&nbsp;{quote.cost_price.toFixed(2)}
+                      {(() => {
+                        const deviation = priceDeviation(quote.cost_price, priceBenchmark);
+                        if (deviation === null) return null;
+                        return (
+                          <span className="ml-1.5 text-xs text-amber-600" title={`${t("hist. gem.")} € ${priceBenchmark!.avg.toFixed(2)}`}>
+                            ⚠️ {Math.abs(Math.round(deviation))}%{" "}
+                            {deviation > 0 ? t("boven het historisch gemiddelde") : t("onder het historisch gemiddelde")}
+                          </span>
+                        );
+                      })()}
+                    </TableCell>
                     <TableCell>
                       <Badge variant={quote.status === "gekozen" ? "default" : "secondary"}>
                         {t(QUOTE_STATUS_LABELS[quote.status])}
