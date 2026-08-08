@@ -124,6 +124,7 @@ const STATIC_LABELS = [
   "Materieel",
   "Aantal",
   "Duur",
+  "Allergieën",
   "Naam",
   "Toestel",
   "Kanalen",
@@ -297,11 +298,13 @@ function collectDynamicTexts(
     for (const c of production.catering) {
       if (c.party) texts.add(c.party);
       if (c.notes) texts.add(c.notes);
+      if (c.allergies) texts.add(c.allergies);
       if (c.supplier_name) texts.add(c.supplier_name);
     }
     for (const g of production.guest_catering) {
       if (g.stage_name) texts.add(g.stage_name);
       if (g.notes) texts.add(g.notes);
+      if (g.allergies) texts.add(g.allergies);
       if (g.supplier_name) texts.add(g.supplier_name);
     }
     for (const d of production.guest_dietary) {
@@ -1713,6 +1716,7 @@ function ProductionPanel({
                         <TableHead>Lunch</TableHead>
                         <TableHead>Diner</TableHead>
                         <TableHead>{t("Leverancier")}</TableHead>
+                        <TableHead>{t("Allergieën")}</TableHead>
                         {canClientEdit(permissions, "catering") && <TableHead />}
                       </TableRow>
                     </TableHeader>
@@ -1727,6 +1731,7 @@ function ProductionPanel({
                             {c.crew_dinner + c.veggie_dinner} ({c.veggie_dinner} veg)
                           </TableCell>
                           <TableCell>{c.supplier_name ? t(c.supplier_name) : "—"}</TableCell>
+                          <TableCell>{c.allergies ? t(c.allergies) : "—"}</TableCell>
                           {canClientEdit(permissions, "catering") && (
                             <TableCell>
                               <ClientDeleteButton
@@ -1755,6 +1760,7 @@ function ProductionPanel({
                       { key: "party", label: "Party", type: "text" },
                       { key: "crew_lunch", label: "Lunch", type: "number" },
                       { key: "crew_dinner", label: "Diner", type: "number" },
+                      { key: "allergies", label: "Allergieën", type: "text" },
                     ]}
                     onSubmit={async (v) => {
                       const supabase = createClient();
@@ -1764,6 +1770,7 @@ function ProductionPanel({
                         p_party: v.party || "",
                         p_crew_lunch: Number(v.crew_lunch) || 0,
                         p_crew_dinner: Number(v.crew_dinner) || 0,
+                        p_allergies: v.allergies || "",
                       });
                       if (!id) return false;
                       setProduction((prev) =>
@@ -1777,6 +1784,7 @@ function ProductionPanel({
                                   order_date: v.order_date,
                                   party: v.party || "",
                                   crew_lunch: Number(v.crew_lunch) || 0,
+                                  allergies: v.allergies || "",
                                   veggie_lunch: 0,
                                   crew_dinner: Number(v.crew_dinner) || 0,
                                   veggie_dinner: 0,
@@ -1817,6 +1825,7 @@ function ProductionPanel({
                           <TableHead>{t("Stijl")}</TableHead>
                           <TableHead>{t("Gasten")}</TableHead>
                           <TableHead>{t("Leverancier")}</TableHead>
+                          <TableHead>{t("Allergieën")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1830,6 +1839,7 @@ function ProductionPanel({
                               {g.guest_count} ({g.veggie_count} veg / {g.vegan_count} vegan / {g.kids_count} kids)
                             </TableCell>
                             <TableCell>{g.supplier_name ? t(g.supplier_name) : "—"}</TableCell>
+                            <TableCell>{g.allergies ? t(g.allergies) : "—"}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

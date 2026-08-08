@@ -23,7 +23,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const [{ data: orders }, { data: guests }] = await Promise.all([
     supabase
       .from("guest_catering_orders")
-      .select("order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, supplier:suppliers(name), stage:stages(name)")
+      .select("order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, allergies, supplier:suppliers(name), stage:stages(name)")
       .eq("project_id", id)
       .order("order_date", { ascending: true })
       .order("sort_order", { ascending: true }),
@@ -51,6 +51,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         special_diet_count: item.special_diet_count,
         supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
         notes: item.notes,
+        allergies: item.allergies,
       })),
       dietary: (guests ?? []).map((g) => ({
         name: g.name,

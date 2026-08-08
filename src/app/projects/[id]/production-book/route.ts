@@ -278,7 +278,7 @@ export async function GET(
   const { data: catering } = await supabase
     .from("catering_orders")
     .select(
-      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, supplier:suppliers(name), stage:stages(name)"
+      "order_date, party, crew_lunch, veggie_lunch, crew_dinner, veggie_dinner, night_snacks, notes, allergies, supplier:suppliers(name), stage:stages(name)"
     )
     .eq("project_id", id)
     .order("order_date", { ascending: true })
@@ -298,6 +298,7 @@ export async function GET(
             veggie_dinner: item.veggie_dinner,
             night_snacks: item.night_snacks,
             notes: item.notes,
+            allergies: item.allergies,
             supplier_name: name(item.supplier),
             stage_name: name(item.stage),
           })),
@@ -312,7 +313,7 @@ export async function GET(
     supabase
       .from("guest_catering_orders")
       .select(
-        "order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, supplier:suppliers(name), stage:stages(name)"
+        "order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, allergies, supplier:suppliers(name), stage:stages(name)"
       )
       .eq("project_id", id)
       .order("order_date", { ascending: true })
@@ -342,6 +343,7 @@ export async function GET(
             special_diet_count: item.special_diet_count,
             supplier_name: name(item.supplier),
             notes: item.notes,
+            allergies: item.allergies,
           })),
           dietary: (dietaryGuests ?? []).map((g) => ({
             name: g.name,

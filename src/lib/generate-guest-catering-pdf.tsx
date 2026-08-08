@@ -16,6 +16,7 @@ export interface GuestCateringPdfEntry {
   special_diet_count: number;
   supplier_name: string | null;
   notes: string;
+  allergies: string;
 }
 
 export interface GuestCateringPdfDietary {
@@ -73,12 +74,13 @@ const styles = StyleSheet.create({
   tableHeaderRow: { flexDirection: "row", paddingVertical: 6, backgroundColor: "#f7f7f7" },
   headerCell: { fontSize: 8, fontWeight: 700, textTransform: "uppercase", color: "#555" },
   colDate: { width: "10%", fontSize: 9 },
-  colStage: { width: "11%", fontSize: 9 },
-  colMoment: { width: "10%", fontSize: 9 },
-  colStyle: { width: "13%", fontSize: 9 },
-  colSupplier: { width: "13%", fontSize: 9 },
-  colNum: { width: "8%", fontSize: 9, textAlign: "center" },
-  colNotes: { width: "16%", fontSize: 8, color: "#666" },
+  colStage: { width: "10%", fontSize: 9 },
+  colMoment: { width: "9%", fontSize: 9 },
+  colStyle: { width: "11%", fontSize: 9 },
+  colSupplier: { width: "11%", fontSize: 9 },
+  colNum: { width: "7%", fontSize: 9, textAlign: "center" },
+  colNotes: { width: "11%", fontSize: 8, color: "#666" },
+  colAllergies: { width: "10%", fontSize: 8, color: "#b91c1c" },
   dietaryRow: { flexDirection: "row", paddingVertical: 4, borderBottom: 1, borderBottomColor: "#f2f2f2" },
   dietaryName: { width: "35%", fontSize: 9, fontWeight: 600 },
   dietaryNotes: { width: "65%", fontSize: 9, color: "#333" },
@@ -141,6 +143,7 @@ export async function generateGuestCateringPdf(
               <Text style={[styles.colNum, styles.headerCell]}>Veg/Vgn</Text>
               <Text style={[styles.colNum, styles.headerCell]}>Kids</Text>
               <Text style={[styles.colNotes, styles.headerCell]}>Opmerkingen</Text>
+              <Text style={[styles.colAllergies, styles.headerCell]}>Allergieën</Text>
             </View>
             {data.entries.map((entry, index) => (
               <View key={index} style={styles.tableRow} wrap={false}>
@@ -155,6 +158,7 @@ export async function generateGuestCateringPdf(
                 </Text>
                 <Text style={styles.colNum}>{entry.kids_count}</Text>
                 <Text style={styles.colNotes}>{entry.notes}</Text>
+                <Text style={styles.colAllergies}>{entry.allergies || "—"}</Text>
               </View>
             ))}
           </View>

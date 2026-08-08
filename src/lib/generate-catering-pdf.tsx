@@ -15,6 +15,7 @@ export interface CateringPdfEntry {
   veggie_dinner: number;
   night_snacks: number;
   notes: string;
+  allergies: string;
 }
 
 export interface CateringPdfData {
@@ -69,8 +70,9 @@ const styles = StyleSheet.create({
   colParty: { width: "14%", fontSize: 9 },
   colStage: { width: "12%", fontSize: 9 },
   colSupplier: { width: "14%", fontSize: 9 },
-  colNum: { width: "10%", fontSize: 9, textAlign: "center" },
+  colNum: { width: "8%", fontSize: 9, textAlign: "center" },
   colNotes: { width: "16%", fontSize: 8, color: "#666" },
+  colAllergies: { width: "10%", fontSize: 8, color: "#b91c1c" },
   footer: {
     position: "absolute",
     bottom: 20,
@@ -126,6 +128,7 @@ export function buildCateringPage(
             <Text style={[styles.colNum, styles.headerCell]}>Diner</Text>
             <Text style={[styles.colNum, styles.headerCell]}>Veggie D.</Text>
             <Text style={[styles.colNum, styles.headerCell]}>Snacks</Text>
+            <Text style={[styles.colAllergies, styles.headerCell]}>Allergieën</Text>
           </View>
           {data.entries.map((entry, index) => (
             <View key={index} style={styles.tableRow}>
@@ -138,6 +141,7 @@ export function buildCateringPage(
               <Text style={styles.colNum}>{entry.crew_dinner}</Text>
               <Text style={styles.colNum}>{entry.veggie_dinner}</Text>
               <Text style={styles.colNum}>{entry.night_snacks}</Text>
+              <Text style={styles.colAllergies}>{entry.allergies || "—"}</Text>
             </View>
           ))}
         </View>

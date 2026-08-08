@@ -543,6 +543,7 @@ export interface GuestCateringOrder {
   special_diet_count: number;
   supplier_id: string | null;
   notes: string;
+  allergies: string;
   sort_order: number;
   created_at: string;
 }
@@ -753,6 +754,7 @@ export interface SharedCatering {
   veggie_dinner: number;
   night_snacks: number;
   notes: string;
+  allergies: string;
   supplier_name: string | null;
 }
 
@@ -768,6 +770,7 @@ export interface SharedGuestCatering {
   kids_count: number;
   special_diet_count: number;
   notes: string;
+  allergies: string;
   supplier_name: string | null;
 }
 
@@ -1135,6 +1138,7 @@ export interface CateringOrder {
   veggie_dinner: number;
   night_snacks: number;
   notes: string;
+  allergies: string;
   supplier_id: string | null;
   stage_id: string | null;
   sort_order: number;

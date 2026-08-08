@@ -28,6 +28,7 @@ export const CATERING_CARD_LABELS = [
   "Veggie diner",
   "Night snacks",
   "Opmerkingen",
+  "Allergieën",
   "Opslaan",
   "Verwijderen",
   "bv. Think",
@@ -245,6 +246,15 @@ export function CateringCard({
                 className="h-8 text-xs"
               />
             </div>
+            <div className="space-y-1 sm:col-span-2">
+              <Label htmlFor={`allergies-${order.id}`} className="text-xs">{t("Allergieën")}</Label>
+              <Input
+                id={`allergies-${order.id}`}
+                name="allergies"
+                defaultValue={order.allergies}
+                className="h-8 text-xs"
+              />
+            </div>
             <div className="flex items-end gap-2 sm:col-span-8">
               <Button type="submit" size="sm" className="h-8 text-xs">
                 {t("Opslaan")}
@@ -305,6 +315,10 @@ export function CateringCard({
           <div className="space-y-1 sm:col-span-2">
             <Label htmlFor="new-notes" className="text-xs">{t("Opmerkingen")}</Label>
             <Input id="new-notes" name="notes" className="h-8 text-xs" />
+          </div>
+          <div className="space-y-1 sm:col-span-2">
+            <Label htmlFor="new-allergies" className="text-xs">{t("Allergieën")}</Label>
+            <Input id="new-allergies" name="allergies" className="h-8 text-xs" />
           </div>
           <div className="sm:col-span-8">
             <Button type="submit" size="sm" className="h-8 text-xs">

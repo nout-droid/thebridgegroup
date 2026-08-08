@@ -25,7 +25,7 @@ export async function GET(
     admin
       .from("guest_catering_orders")
       .select(
-        "order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, supplier:suppliers(name), stage:stages(name)"
+        "order_date, moment, style, guest_count, veggie_count, vegan_count, kids_count, special_diet_count, notes, allergies, supplier:suppliers(name), stage:stages(name)"
       )
       .eq("project_id", project.id)
       .order("order_date", { ascending: true })
@@ -54,6 +54,7 @@ export async function GET(
         special_diet_count: item.special_diet_count,
         supplier_name: (item.supplier as unknown as { name: string } | null)?.name ?? null,
         notes: item.notes,
+        allergies: item.allergies,
       })),
       dietary: (guests ?? []).map((g) => ({
         name: g.name,
