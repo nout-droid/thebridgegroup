@@ -20,6 +20,7 @@ export interface CommsCardLabels {
   supplier: string;
   allSuppliers: string;
   searchUser: string;
+  searchUserPlaceholder: string;
   downloadPdf: string;
   user: string;
   save: string;
@@ -280,7 +281,7 @@ export function CommsCard({
               id="comms-filter-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="bv. Jan"
+              placeholder={labels.searchUserPlaceholder}
               className="h-8 w-40 text-xs"
             />
           </div>
