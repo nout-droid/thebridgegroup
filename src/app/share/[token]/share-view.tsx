@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { Fragment, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { useTranslator, type Translator } from "@/hooks/use-translator";
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
@@ -24,6 +26,8 @@ import {
   CLIENT_REQUEST_CATEGORIES,
   GUEST_CATERING_MOMENT_LABELS,
   GUEST_CATERING_STYLE_LABELS,
+  GUEST_RSVP_STATUS_LABELS,
+  GUEST_TYPE_LABELS,
   type BudgetAccess,
   type ClientRequest,
   type ClientRequestCategory,
@@ -34,13 +38,17 @@ import {
   type SharedMedia,
   type SharedCatering,
   type SharedEquipment,
+  type SharedGuests,
   type SharedProduction,
   type SharedProject,
   type SharedRider,
   type SharedRundowns,
   type SharedScheduleItem,
+  type SharedSpeaker,
   type SharedStorybook,
 } from "@/lib/types";
+import { canClientEdit, canClientView } from "@/lib/client-permissions";
+import type { ClientPermissions } from "@/lib/client-permissions";
 import { addSecondsToTime } from "@/lib/rundown-time";
 import { pickDefaultShowDate } from "@/lib/show-dates";
 import { computeCo2Total, FLIGHT_CO2_KG, KM_CO2_KG_PER_KM } from "@/lib/co2";
@@ -110,6 +118,23 @@ const STATIC_LABELS = [
   "Bijlage toevoegen",
   "Bekijken",
   "Verwijderen",
+  "Bezig...",
+  "Toevoegen",
+  "Terug naar projecten",
+  "Materieel",
+  "Aantal",
+  "Duur",
+  "Naam",
+  "Toestel",
+  "Kanalen",
+  "Omschrijving",
+  "Positie",
+  "Tijd",
+  "Activiteit",
+  "Party",
+  "Artiest",
+  "Notities",
+  "Vraag",
   "Jouw reactie op de begroting",
   "Goedkeuren",
   "Aanpassing vragen",
@@ -130,8 +155,25 @@ const STATIC_LABELS = [
   "Leveranciers (opgegeven)",
   `Vuistregels: ${FLIGHT_CO2_KG} kg per vlucht (gemiddelde retourvlucht, korte/middellange afstand), ${KM_CO2_KG_PER_KM} kg per km wegtransport.`,
   ...Object.values(CATEGORY_STATUS_LABELS),
+  "Plan B bij slecht weer",
+  "Offerte downloaden (PDF)",
+  "Factuur downloaden (PDF)",
   "Productie",
   "Rundown",
+  "Sprekers",
+  "Nog geen sprekers toegevoegd.",
+  "Presentatie downloaden",
+  "Gasten",
+  "Nog geen gasten toegevoegd.",
+  "Totaal:",
+  "Bevestigd:",
+  "Afgemeld:",
+  "Naam",
+  "RSVP",
+  "Tafel",
+  "Dieetwensen",
+  ...Object.values(GUEST_TYPE_LABELS),
+  ...Object.values(GUEST_RSVP_STATUS_LABELS),
   "Catering",
   "Materieel",
   "Comms & Portofoons",
@@ -221,11 +263,13 @@ function collectDynamicTexts(
   rider: SharedRider | null,
   production: SharedProduction | null,
   rundowns: SharedRundowns | null,
-  storybook: SharedStorybook | null
+  storybook: SharedStorybook | null,
+  guests: SharedGuests | null
 ): string[] {
   const texts = new Set<string>();
   texts.add(data.project.name);
   if (data.project.client_name) texts.add(data.project.client_name);
+  if (data.project.contingency_plan) texts.add(data.project.contingency_plan);
 
   const addCategory = (category: SharedCategory) => {
     texts.add(category.name);
@@ -324,6 +368,12 @@ function collectDynamicTexts(
         }
       }
     }
+    for (const speaker of rundowns.speakers) {
+      texts.add(speaker.name);
+      if (speaker.title) texts.add(speaker.title);
+      if (speaker.company) texts.add(speaker.company);
+      if (speaker.bio) texts.add(speaker.bio);
+    }
   }
 
   if (storybook) {
@@ -333,6 +383,15 @@ function collectDynamicTexts(
       for (const image of chapter.images) {
         if (image.caption) texts.add(image.caption);
       }
+    }
+  }
+
+  if (guests) {
+    for (const g of guests.guests) {
+      texts.add(g.name);
+      if (g.plus_one_name) texts.add(g.plus_one_name);
+      if (g.dietary_notes) texts.add(g.dietary_notes);
+      if (g.table_name) texts.add(g.table_name);
     }
   }
 
@@ -1431,11 +1490,79 @@ function PdfDownloadLink({ token, path, t }: { token: string; path: string; t: T
   );
 }
 
+type ClientFieldConfig = {
+  key: string;
+  label: string;
+  type: "text" | "number" | "date" | "time" | "textarea";
+  required?: boolean;
+};
+
+function ClientAddForm({
+  fields,
+  submitLabel,
+  onSubmit,
+  t,
+}: {
+  fields: ClientFieldConfig[];
+  submitLabel: string;
+  onSubmit: (values: Record<string, string>) => Promise<boolean>;
+  t: Translator;
+}) {
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSubmitting(true);
+    const ok = await onSubmit(values);
+    setSubmitting(false);
+    if (ok) setValues({});
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2 rounded-md border border-dashed p-3">
+      {fields.map((f) => (
+        <div key={f.key} className="space-y-1">
+          <Label className="text-xs">{t(f.label)}</Label>
+          {f.type === "textarea" ? (
+            <Textarea
+              className="h-9 min-h-9 w-40"
+              value={values[f.key] ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+            />
+          ) : (
+            <Input
+              type={f.type}
+              className="h-9 w-32"
+              required={f.required}
+              value={values[f.key] ?? ""}
+              onChange={(e) => setValues((v) => ({ ...v, [f.key]: e.target.value }))}
+            />
+          )}
+        </div>
+      ))}
+      <Button type="submit" size="sm" disabled={submitting}>
+        {submitting ? t("Bezig...") : t(submitLabel)}
+      </Button>
+    </form>
+  );
+}
+
+function ClientDeleteButton({ onDelete, t }: { onDelete: () => void; t: Translator }) {
+  return (
+    <button type="button" onClick={onDelete} className="text-xs text-destructive underline">
+      {t("Verwijderen")}
+    </button>
+  );
+}
+
 function ProductionPanel({
   token,
   clientAccountId,
   canSubmitRequests,
   production,
+  permissions,
+  setProduction,
   t,
   onRequestSubmitted,
 }: {
@@ -1443,6 +1570,8 @@ function ProductionPanel({
   clientAccountId: string | null;
   canSubmitRequests: boolean;
   production: SharedProduction;
+  permissions: ClientPermissions;
+  setProduction: (updater: (prev: SharedProduction | null) => SharedProduction | null) => void;
   t: Translator;
   onRequestSubmitted: (request: ClientRequest) => void;
 }) {
@@ -1584,6 +1713,7 @@ function ProductionPanel({
                         <TableHead>Lunch</TableHead>
                         <TableHead>Diner</TableHead>
                         <TableHead>{t("Leverancier")}</TableHead>
+                        {canClientEdit(permissions, "catering") && <TableHead />}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1597,11 +1727,71 @@ function ProductionPanel({
                             {c.crew_dinner + c.veggie_dinner} ({c.veggie_dinner} veg)
                           </TableCell>
                           <TableCell>{c.supplier_name ? t(c.supplier_name) : "—"}</TableCell>
+                          {canClientEdit(permissions, "catering") && (
+                            <TableCell>
+                              <ClientDeleteButton
+                                t={t}
+                                onDelete={async () => {
+                                  const supabase = createClient();
+                                  await supabase.rpc("delete_catering_by_client", { p_token: token, p_id: c.id });
+                                  setProduction((prev) =>
+                                    prev ? { ...prev, catering: prev.catering.filter((x) => x.id !== c.id) } : prev
+                                  );
+                                }}
+                              />
+                            </TableCell>
+                          )}
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </div>
+                {canClientEdit(permissions, "catering") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "order_date", label: "Datum", type: "date", required: true },
+                      { key: "party", label: "Party", type: "text" },
+                      { key: "crew_lunch", label: "Lunch", type: "number" },
+                      { key: "crew_dinner", label: "Diner", type: "number" },
+                    ]}
+                    onSubmit={async (v) => {
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_catering_by_client", {
+                        p_token: token,
+                        p_order_date: v.order_date || null,
+                        p_party: v.party || "",
+                        p_crew_lunch: Number(v.crew_lunch) || 0,
+                        p_crew_dinner: Number(v.crew_dinner) || 0,
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              catering: [
+                                ...prev.catering,
+                                {
+                                  id,
+                                  order_date: v.order_date,
+                                  party: v.party || "",
+                                  crew_lunch: Number(v.crew_lunch) || 0,
+                                  veggie_lunch: 0,
+                                  crew_dinner: Number(v.crew_dinner) || 0,
+                                  veggie_dinner: 0,
+                                  night_snacks: 0,
+                                  notes: "",
+                                  supplier_name: null,
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1699,13 +1889,71 @@ function ProductionPanel({
                 )}
                 <ul className="space-y-1.5 text-sm">
                   {production.equipment.map((e) => (
-                    <li key={e.id} className="rounded-md border p-2">
-                      {e.quantity}× {t(e.machine_type)}
-                      {e.reservation_date && ` · ${e.reservation_date}`}
-                      {e.supplier_name && ` · ${t(e.supplier_name)}`}
+                    <li key={e.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                      <span>
+                        {e.quantity}× {t(e.machine_type)}
+                        {e.reservation_date && ` · ${e.reservation_date}`}
+                        {e.supplier_name && ` · ${t(e.supplier_name)}`}
+                      </span>
+                      {canClientEdit(permissions, "equipment") && (
+                        <ClientDeleteButton
+                          t={t}
+                          onDelete={async () => {
+                            const supabase = createClient();
+                            await supabase.rpc("delete_equipment_by_client", { p_token: token, p_id: e.id });
+                            setProduction((prev) =>
+                              prev ? { ...prev, equipment: prev.equipment.filter((x) => x.id !== e.id) } : prev
+                            );
+                          }}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>
+                {canClientEdit(permissions, "equipment") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "machine_type", label: "Materieel", type: "text", required: true },
+                      { key: "quantity", label: "Aantal", type: "number" },
+                      { key: "reservation_date", label: "Datum", type: "date" },
+                      { key: "duration", label: "Duur", type: "text" },
+                    ]}
+                    onSubmit={async (v) => {
+                      if (!v.machine_type?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_equipment_by_client", {
+                        p_token: token,
+                        p_machine_type: v.machine_type,
+                        p_quantity: Number(v.quantity) || 1,
+                        p_reservation_date: v.reservation_date || null,
+                        p_duration: v.duration || "",
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              equipment: [
+                                ...prev.equipment,
+                                {
+                                  id,
+                                  machine_type: v.machine_type,
+                                  quantity: Number(v.quantity) || 1,
+                                  accessories: "",
+                                  reservation_date: v.reservation_date || null,
+                                  duration: v.duration || "",
+                                  supplier_name: null,
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1721,12 +1969,67 @@ function ProductionPanel({
               <CardContent>
                 <ul className="space-y-1.5 text-sm">
                   {production.comms.map((c) => (
-                    <li key={c.id} className="rounded-md border p-2">
-                      {t(c.user_name)} — {t(c.device_type)}
-                      {c.channels && ` · ${c.channels}`}
+                    <li key={c.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                      <span>
+                        {t(c.user_name)} — {t(c.device_type)}
+                        {c.channels && ` · ${c.channels}`}
+                      </span>
+                      {canClientEdit(permissions, "comms") && (
+                        <ClientDeleteButton
+                          t={t}
+                          onDelete={async () => {
+                            const supabase = createClient();
+                            await supabase.rpc("delete_comms_by_client", { p_token: token, p_id: c.id });
+                            setProduction((prev) =>
+                              prev ? { ...prev, comms: prev.comms.filter((x) => x.id !== c.id) } : prev
+                            );
+                          }}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>
+                {canClientEdit(permissions, "comms") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "user_name", label: "Naam", type: "text", required: true },
+                      { key: "device_type", label: "Toestel", type: "text" },
+                      { key: "channels", label: "Kanalen", type: "text" },
+                    ]}
+                    onSubmit={async (v) => {
+                      if (!v.user_name?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_comms_by_client", {
+                        p_token: token,
+                        p_user_name: v.user_name,
+                        p_device_type: v.device_type || "",
+                        p_channels: v.channels || "",
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              comms: [
+                                ...prev.comms,
+                                {
+                                  id,
+                                  kind: "intercom",
+                                  user_name: v.user_name,
+                                  device_type: v.device_type || "",
+                                  channels: v.channels || "",
+                                  supplier_name: null,
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1742,13 +2045,69 @@ function ProductionPanel({
               <CardContent>
                 <ul className="space-y-1.5 text-sm">
                   {production.power.map((p) => (
-                    <li key={p.id} className="rounded-md border p-2">
-                      {p.stage_name && `[${t(p.stage_name)}] `}
-                      {p.quantity}× {t(p.description)}
-                      {p.position && ` · ${t(p.position)}`}
+                    <li key={p.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                      <span>
+                        {p.stage_name && `[${t(p.stage_name)}] `}
+                        {p.quantity}× {t(p.description)}
+                        {p.position && ` · ${t(p.position)}`}
+                      </span>
+                      {canClientEdit(permissions, "power") && (
+                        <ClientDeleteButton
+                          t={t}
+                          onDelete={async () => {
+                            const supabase = createClient();
+                            await supabase.rpc("delete_power_by_client", { p_token: token, p_id: p.id });
+                            setProduction((prev) =>
+                              prev ? { ...prev, power: prev.power.filter((x) => x.id !== p.id) } : prev
+                            );
+                          }}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>
+                {canClientEdit(permissions, "power") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "description", label: "Omschrijving", type: "text", required: true },
+                      { key: "quantity", label: "Aantal", type: "number" },
+                      { key: "position", label: "Positie", type: "text" },
+                    ]}
+                    onSubmit={async (v) => {
+                      if (!v.description?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_power_by_client", {
+                        p_token: token,
+                        p_description: v.description,
+                        p_quantity: Number(v.quantity) || 1,
+                        p_position: v.position || "",
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              power: [
+                                ...prev.power,
+                                {
+                                  id,
+                                  stage_name: null,
+                                  description: v.description,
+                                  quantity: Number(v.quantity) || 1,
+                                  position: v.position || "",
+                                  notes: "",
+                                  supplier_name: null,
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1769,16 +2128,72 @@ function ProductionPanel({
                     </p>
                     <ul className="space-y-1.5 text-sm">
                       {group.items.map((s) => (
-                        <li key={s.id} className="rounded-md border p-2">
-                          <span className="text-muted-foreground">{s.activity_time}</span>{" "}
-                          {s.stage_name && `[${t(s.stage_name)}] `}
-                          {t(s.activity)}
-                          {s.suppliers.length > 0 && ` · ${s.suppliers.map((n) => t(n)).join(", ")}`}
+                        <li key={s.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                          <span>
+                            <span className="text-muted-foreground">{s.activity_time}</span>{" "}
+                            {s.stage_name && `[${t(s.stage_name)}] `}
+                            {t(s.activity)}
+                            {s.suppliers.length > 0 && ` · ${s.suppliers.map((n) => t(n)).join(", ")}`}
+                          </span>
+                          {canClientEdit(permissions, "schedule") && (
+                            <ClientDeleteButton
+                              t={t}
+                              onDelete={async () => {
+                                const supabase = createClient();
+                                await supabase.rpc("delete_schedule_item_by_client", { p_token: token, p_id: s.id });
+                                setProduction((prev) =>
+                                  prev ? { ...prev, schedule: prev.schedule.filter((x) => x.id !== s.id) } : prev
+                                );
+                              }}
+                            />
+                          )}
                         </li>
                       ))}
                     </ul>
                   </div>
                 ))}
+                {canClientEdit(permissions, "schedule") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "activity_date", label: "Datum", type: "date", required: true },
+                      { key: "activity_time", label: "Tijd", type: "time", required: true },
+                      { key: "activity", label: "Activiteit", type: "text", required: true },
+                    ]}
+                    onSubmit={async (v) => {
+                      if (!v.activity_date || !v.activity_time || !v.activity?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_schedule_item_by_client", {
+                        p_token: token,
+                        p_activity_date: v.activity_date,
+                        p_activity_time: v.activity_time,
+                        p_activity: v.activity,
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              schedule: [
+                                ...prev.schedule,
+                                {
+                                  id,
+                                  stage_name: null,
+                                  activity_date: v.activity_date,
+                                  activity_time: v.activity_time,
+                                  activity: v.activity,
+                                  notes: "",
+                                  suppliers: [],
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1791,14 +2206,70 @@ function ProductionPanel({
               <CardContent>
                 <ul className="space-y-1.5 text-sm">
                   {production.artist_riders.map((a) => (
-                    <li key={a.id} className="rounded-md border p-2">
-                      <p className="font-medium">{t(a.artist_name)}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {a.rider_received ? t("Rider aanwezig") : t("Nog geen rider")}
-                      </p>
+                    <li key={a.id} className="flex items-center justify-between gap-2 rounded-md border p-2">
+                      <span>
+                        <p className="font-medium">{t(a.artist_name)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {a.rider_received ? t("Rider aanwezig") : t("Nog geen rider")}
+                        </p>
+                      </span>
+                      {canClientEdit(permissions, "artist_riders") && (
+                        <ClientDeleteButton
+                          t={t}
+                          onDelete={async () => {
+                            const supabase = createClient();
+                            await supabase.rpc("delete_artist_rider_by_client", { p_token: token, p_id: a.id });
+                            setProduction((prev) =>
+                              prev
+                                ? { ...prev, artist_riders: prev.artist_riders.filter((x) => x.id !== a.id) }
+                                : prev
+                            );
+                          }}
+                        />
+                      )}
                     </li>
                   ))}
                 </ul>
+                {canClientEdit(permissions, "artist_riders") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[
+                      { key: "artist_name", label: "Artiest", type: "text", required: true },
+                      { key: "notes", label: "Notities", type: "textarea" },
+                    ]}
+                    onSubmit={async (v) => {
+                      if (!v.artist_name?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_artist_rider_by_client", {
+                        p_token: token,
+                        p_artist_name: v.artist_name,
+                        p_notes: v.notes || "",
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              artist_riders: [
+                                ...prev.artist_riders,
+                                {
+                                  id,
+                                  artist_name: v.artist_name,
+                                  rider_received: false,
+                                  notes: v.notes || "",
+                                  own_light_operator: false,
+                                  own_audio_operator: false,
+                                  rider_link: "",
+                                },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1810,11 +2281,27 @@ function ProductionPanel({
               </CardHeader>
               <CardContent className="space-y-3">
                 {production.open_questions.map((q) => (
-                  <div key={q.id} className="rounded-md border p-2 text-sm">
-                    <p className="font-medium">{t(q.question)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {q.pending ? t("Nog open") : `${t("Antwoord")}: ${t(q.answer)}`}
-                    </p>
+                  <div key={q.id} className="flex items-center justify-between gap-2 rounded-md border p-2 text-sm">
+                    <span>
+                      <p className="font-medium">{t(q.question)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {q.pending ? t("Nog open") : `${t("Antwoord")}: ${t(q.answer)}`}
+                      </p>
+                    </span>
+                    {canClientEdit(permissions, "questions") && q.pending && (
+                      <ClientDeleteButton
+                        t={t}
+                        onDelete={async () => {
+                          const supabase = createClient();
+                          await supabase.rpc("delete_open_question_by_client", { p_token: token, p_id: q.id });
+                          setProduction((prev) =>
+                            prev
+                              ? { ...prev, open_questions: prev.open_questions.filter((x) => x.id !== q.id) }
+                              : prev
+                          );
+                        }}
+                      />
+                    )}
                   </div>
                 ))}
                 {production.meeting_notes.map((n) => (
@@ -1822,6 +2309,34 @@ function ProductionPanel({
                     {t(n.note)}
                   </p>
                 ))}
+                {canClientEdit(permissions, "questions") && (
+                  <ClientAddForm
+                    t={t}
+                    submitLabel="Toevoegen"
+                    fields={[{ key: "question", label: "Vraag", type: "textarea", required: true }]}
+                    onSubmit={async (v) => {
+                      if (!v.question?.trim()) return false;
+                      const supabase = createClient();
+                      const { data: id } = await supabase.rpc("add_open_question_by_client", {
+                        p_token: token,
+                        p_question: v.question,
+                      });
+                      if (!id) return false;
+                      setProduction((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              open_questions: [
+                                ...prev.open_questions,
+                                { id, question: v.question, answer: "", pending: true },
+                              ],
+                            }
+                          : prev
+                      );
+                      return true;
+                    }}
+                  />
+                )}
               </CardContent>
             </Card>
           )}
@@ -1951,6 +2466,108 @@ function RundownPanel({ rundowns, t }: { rundowns: SharedRundowns; t: Translator
   );
 }
 
+function SpeakersPanel({
+  token,
+  speakers,
+  t,
+}: {
+  token: string;
+  speakers: SharedSpeaker[];
+  t: Translator;
+}) {
+  if (!speakers.length) {
+    return <p className="text-sm text-muted-foreground">{t("Nog geen sprekers toegevoegd.")}</p>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {speakers.map((speaker) => (
+        <Card key={speaker.id}>
+          <CardContent className="space-y-1 pt-4">
+            <p className="font-medium">{t(speaker.name)}</p>
+            {(speaker.title || speaker.company) && (
+              <p className="text-sm text-muted-foreground">
+                {[speaker.title, speaker.company].filter(Boolean).map((part) => t(part)).join(" · ")}
+              </p>
+            )}
+            {speaker.bio && <p className="text-sm">{t(speaker.bio)}</p>}
+            {speaker.has_presentation && (
+              <a
+                href={`/share/${token}/speakers/${speaker.id}/download`}
+                className="inline-block text-sm font-medium text-primary underline"
+              >
+                {t("Presentatie downloaden")}
+              </a>
+            )}
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function GuestsPanel({ guests, t }: { guests: SharedGuests; t: Translator }) {
+  if (!guests.guests.length) {
+    return <p className="text-sm text-muted-foreground">{t("Nog geen gasten toegevoegd.")}</p>;
+  }
+
+  const confirmed = guests.guests.filter((g) => g.rsvp_status === "bevestigd").length;
+  const declined = guests.guests.filter((g) => g.rsvp_status === "afgemeld").length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+        <span>
+          {t("Totaal:")} <span className="font-medium text-foreground">{guests.guests.length}</span>
+        </span>
+        <span>
+          {t("Bevestigd:")} <span className="font-medium text-foreground">{confirmed}</span>
+        </span>
+        <span>
+          {t("Afgemeld:")} <span className="font-medium text-foreground">{declined}</span>
+        </span>
+      </div>
+      <Card>
+        <CardContent className="pt-4">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("Naam")}</TableHead>
+                <TableHead>{t("Type")}</TableHead>
+                <TableHead>{t("RSVP")}</TableHead>
+                <TableHead>{t("Tafel")}</TableHead>
+                <TableHead>{t("Dieetwensen")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {guests.guests.map((g) => (
+                <TableRow key={g.id}>
+                  <TableCell>
+                    {t(g.name)}
+                    {g.plus_ones > 0 && (
+                      <span className="text-muted-foreground">
+                        {" "}
+                        +{g.plus_ones}
+                        {g.plus_one_name ? ` (${t(g.plus_one_name)})` : ""}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell>{t((GUEST_TYPE_LABELS as Record<string, string>)[g.guest_type] ?? g.guest_type)}</TableCell>
+                  <TableCell>
+                    {t((GUEST_RSVP_STATUS_LABELS as Record<string, string>)[g.rsvp_status] ?? g.rsvp_status)}
+                  </TableCell>
+                  <TableCell>{g.table_name ? t(g.table_name) : "—"}</TableCell>
+                  <TableCell>{g.dietary_notes ? t(g.dietary_notes) : "—"}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export function ShareView({
   token,
   clientAccountId = null,
@@ -1969,9 +2586,18 @@ export function ShareView({
   const [production, setProduction] = useState<SharedProduction | null>(null);
   const [rundowns, setRundowns] = useState<SharedRundowns | null>(null);
   const [storybook, setStorybook] = useState<SharedStorybook | null>(null);
+  const [guests, setGuests] = useState<SharedGuests | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<
-    "budget" | "rider" | "storybook" | "checklist" | "co2" | "production" | "rundown"
+    | "budget"
+    | "rider"
+    | "storybook"
+    | "checklist"
+    | "co2"
+    | "production"
+    | "rundown"
+    | "speakers"
+    | "guests"
   >("budget");
 
   useEffect(() => {
@@ -2005,6 +2631,10 @@ export function ShareView({
       if (!cancelled && rundownData) setRundowns(rundownData as SharedRundowns);
       const { data: storybookData } = await supabase.rpc("get_shared_storybook", { p_share_token: token });
       if (!cancelled && storybookData) setStorybook(storybookData as SharedStorybook);
+      if (canClientView((data as SharedProject).project.client_permissions, "guests")) {
+        const { data: guestsData } = await supabase.rpc("get_shared_guests", { p_token: token });
+        if (!cancelled && guestsData) setGuests(guestsData as SharedGuests);
+      }
       setData(data as SharedProject);
     }
 
@@ -2017,8 +2647,8 @@ export function ShareView({
   }, [token]);
 
   const dynamicTexts = useMemo(
-    () => (data ? collectDynamicTexts(data, rider, production, rundowns, storybook) : []),
-    [data, rider, production, rundowns, storybook]
+    () => (data ? collectDynamicTexts(data, rider, production, rundowns, storybook, guests) : []),
+    [data, rider, production, rundowns, storybook, guests]
   );
   const { lang, setLang, t, translationError } = useTranslator(STATIC_LABELS, dynamicTexts, "en");
 
@@ -2037,7 +2667,7 @@ export function ShareView({
   return (
     <div>
       <header className="flex items-center justify-between gap-2 bg-black px-6 py-3 text-primary">
-        <div className="flex min-w-0 items-center gap-2 font-heading text-base font-extrabold tracking-tight">
+        <div className="flex min-w-0 items-center gap-3 font-heading text-base font-extrabold tracking-tight">
           <Image
             src="/logo.png"
             alt={data.project.organization_name || "The Bridge Group B.V."}
@@ -2046,6 +2676,14 @@ export function ShareView({
             className="shrink-0"
           />
           <span className="truncate">{t(data.project.organization_name || "The Bridge Group B.V.")}</span>
+          {clientAccountId && (
+            <Link
+              href="/client-portal/projects"
+              className="ml-2 shrink-0 text-xs font-normal normal-case text-white/70 underline hover:text-white"
+            >
+              ← {t("Terug naar projecten")}
+            </Link>
+          )}
         </div>
         <div className="shrink-0">
           <LanguageToggle lang={lang} onChange={setLang} variant="dark" />
@@ -2176,6 +2814,34 @@ export function ShareView({
               {t("Rundown")}
             </button>
           )}
+          {rundowns &&
+            rundowns.speakers.length > 0 &&
+            canClientView(data.project.client_permissions, "speakers") && (
+              <button
+                type="button"
+                onClick={() => setActiveTab("speakers")}
+                className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
+                  activeTab === "speakers"
+                    ? "border-b-2 border-primary text-foreground"
+                    : "text-muted-foreground"
+                }`}
+              >
+                {t("Sprekers")}
+              </button>
+            )}
+          {guests && guests.guests.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("guests")}
+              className={`whitespace-nowrap px-3 py-2 text-sm font-medium ${
+                activeTab === "guests"
+                  ? "border-b-2 border-primary text-foreground"
+                  : "text-muted-foreground"
+              }`}
+            >
+              {t("Gasten")}
+            </button>
+          )}
         </div>
 
         {activeTab === "rider" && rider && rider.sections.length > 0 ? (
@@ -2280,6 +2946,8 @@ export function ShareView({
             clientAccountId={clientAccountId}
             canSubmitRequests={canSubmitRequests}
             production={production}
+            permissions={data.project.client_permissions}
+            setProduction={setProduction}
             t={t}
             onRequestSubmitted={(request) =>
               setProduction((prev) =>
@@ -2289,8 +2957,44 @@ export function ShareView({
           />
         ) : activeTab === "rundown" && rundowns ? (
           <RundownPanel rundowns={rundowns} t={t} />
+        ) : activeTab === "speakers" && rundowns ? (
+          <SpeakersPanel token={token} speakers={rundowns.speakers} t={t} />
+        ) : activeTab === "guests" && guests ? (
+          <GuestsPanel guests={guests} t={t} />
         ) : (
           <>
+            {data.project.is_outdoor &&
+              data.project.contingency_plan &&
+              canClientView(data.project.client_permissions, "contingency") && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">{t("Plan B bij slecht weer")}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="whitespace-pre-wrap text-sm">{t(data.project.contingency_plan)}</p>
+                  </CardContent>
+                </Card>
+              )}
+
+            <div className="flex flex-wrap gap-4">
+              <a
+                href={`/share/${token}/quote${lang === "en" ? "?lang=en" : ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary underline"
+              >
+                {t("Offerte downloaden (PDF)")}
+              </a>
+              <a
+                href={`/share/${token}/invoice${lang === "en" ? "?lang=en" : ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-primary underline"
+              >
+                {t("Factuur downloaden (PDF)")}
+              </a>
+            </div>
+
             <MediaGallery media={data.media} t={t} />
 
             {data.project.budget_access === "closed" && (

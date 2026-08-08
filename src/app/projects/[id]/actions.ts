@@ -13,6 +13,8 @@ import {
 } from "@/lib/server/category-helpers";
 import { catalogCategoryLabel, EVENT_TYPES } from "@/lib/types";
 import type { CategoryStatus, MarginType, QuoteStatus } from "@/lib/types";
+import { DEFAULT_CLIENT_PERMISSIONS } from "@/lib/client-permissions";
+import type { ClientPermissionLevel, ClientPermissionSection, ClientPermissions } from "@/lib/client-permissions";
 import { getTeamOwnerId } from "@/lib/server/team";
 import { logAudit } from "@/lib/server/audit";
 import { computeRentalDays } from "@/lib/rental-days";
@@ -317,6 +319,26 @@ export async function setClientPassword(projectId: string, formData: FormData) {
 
   const supabase = await createClient();
   await supabase.rpc("set_client_password", { p_project_id: projectId, p_password: password });
+
+  revalidatePath(`/projects/${projectId}`);
+}
+
+export async function updateClientPermissions(projectId: string, formData: FormData) {
+  const permissions: ClientPermissions = {};
+  for (const section of Object.keys(DEFAULT_CLIENT_PERMISSIONS) as ClientPermissionSection[]) {
+    const raw = String(formData.get(`perm_${section}`) ?? "view");
+    permissions[section] = (["none", "view", "edit"] as const).includes(raw as ClientPermissionLevel)
+      ? (raw as ClientPermissionLevel)
+      : "view";
+  }
+  const budgetAccessRaw = String(formData.get("budget_access") ?? "open");
+  const budgetAccess = budgetAccessRaw === "closed" ? "closed" : "open";
+
+  const supabase = await createClient();
+  await supabase
+    .from("projects")
+    .update({ client_permissions: permissions, budget_access: budgetAccess })
+    .eq("id", projectId);
 
   revalidatePath(`/projects/${projectId}`);
 }

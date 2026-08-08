@@ -27,7 +27,20 @@ import { ACTIVITY_CATEGORY_LABELS } from "@/lib/activity-labels";
 import { getSignedPortalUrl } from "@/lib/server/portal-storage";
 import { computeRentalDays } from "@/lib/rental-days";
 import { computeCo2Total } from "@/lib/co2";
-import { generateClientUpdateDraft, setClientPassword, updateEventCode, updateProjectDetails } from "./actions";
+import {
+  generateClientUpdateDraft,
+  setClientPassword,
+  updateClientPermissions,
+  updateEventCode,
+  updateProjectDetails,
+} from "./actions";
+import {
+  CLIENT_EDITABLE_SECTIONS,
+  CLIENT_PERMISSION_SECTION_LABELS,
+  DEFAULT_CLIENT_PERMISSIONS,
+  getClientPermission,
+} from "@/lib/client-permissions";
+import type { ClientPermissionSection } from "@/lib/client-permissions";
 import { createStage } from "./stages/actions";
 import { acknowledgeActivity } from "./activity-actions";
 import { updateClientRequestStatus } from "./client-requests-actions";
@@ -161,6 +174,15 @@ const STATIC_LABELS = [
   "Directe link (voor jezelf)",
   "Kopieer link",
   "Gekopieerd",
+  "Klantrechten",
+  "Bepaal per onderdeel wat de klant in het portaal ziet, en waar jullie samen op mogen bewerken.",
+  "Geen toegang",
+  "Alleen bekijken",
+  "Samen bewerken",
+  "Rechten opslaan",
+  "Openheid begroting",
+  "Gesloten — alleen prijs per onderdeel",
+  "Open — incl. inkoopprijs, marge, leverancier",
   "Totaalbudget (klant):",
   "Reactie klant op begroting",
   "Leveranciers-uploads ter controle",
@@ -402,6 +424,7 @@ export default async function ProjectPage({
   const t = await createTranslator(lang, [
     ...STATIC_LABELS,
     ...Object.values(EVENT_TYPE_LABELS),
+    ...Object.values(CLIENT_PERMISSION_SECTION_LABELS),
     ...(stages ?? []).map((s) => s.name),
     ...(activity ?? []).flatMap((entry) => [entry.actor_label, entry.description]),
     ...(clientRequests ?? []).flatMap((request) => [request.description, request.notes ?? ""]),
@@ -902,6 +925,48 @@ export default async function ProjectPage({
                   <ShareLinkBox url={shareUrl} copyLabel={t("Kopieer link")} copiedLabel={t("Gekopieerd")} />
                 </div>
               </details>
+            </div>
+
+            <div className="space-y-3 border-t pt-4">
+              <Label>{t("Klantrechten")}</Label>
+              <p className="text-sm text-muted-foreground">
+                {t("Bepaal per onderdeel wat de klant in het portaal ziet, en waar jullie samen op mogen bewerken.")}
+              </p>
+              <form action={updateClientPermissions.bind(null, project.id)} className="space-y-2">
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span>{t("Openheid begroting")}</span>
+                  <select
+                    name="budget_access"
+                    defaultValue={project.budget_access}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                  >
+                    <option value="closed">{t("Gesloten — alleen prijs per onderdeel")}</option>
+                    <option value="open">{t("Open — incl. inkoopprijs, marge, leverancier")}</option>
+                  </select>
+                </div>
+                <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                  {(Object.keys(DEFAULT_CLIENT_PERMISSIONS) as ClientPermissionSection[]).map((section) => {
+                    const editable = CLIENT_EDITABLE_SECTIONS.includes(section);
+                    return (
+                      <div key={section} className="flex items-center justify-between gap-3 text-sm">
+                        <span>{t(CLIENT_PERMISSION_SECTION_LABELS[section])}</span>
+                        <select
+                          name={`perm_${section}`}
+                          defaultValue={getClientPermission(project.client_permissions, section)}
+                          className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                        >
+                          <option value="none">{t("Geen toegang")}</option>
+                          <option value="view">{t("Alleen bekijken")}</option>
+                          {editable && <option value="edit">{t("Samen bewerken")}</option>}
+                        </select>
+                      </div>
+                    );
+                  })}
+                </div>
+                <Button type="submit" size="sm">
+                  {t("Rechten opslaan")}
+                </Button>
+              </form>
             </div>
 
             {canViewBudget && (

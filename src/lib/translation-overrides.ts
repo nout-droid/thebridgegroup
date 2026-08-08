@@ -44,10 +44,26 @@ const PROTECTED_WORDS = ["stage", "vlucht"];
 const PROTECTED_WORD_RE = new RegExp(`\\b(${PROTECTED_WORDS.join("|")})\\b`, "gi");
 export const DEEPL_IGNORE_TAG = "keep";
 
+// tag_handling: "xml" betekent dat DeepL de hele tekst als XML parsed — een kale "&" of "<" die
+// een klant/crew-lid gewoon typt (bv. "fish & chips", "temp < 20 graden") maakt de tekst dan
+// ongeldige XML en DeepL antwoordt met 400 Bad Request, wat de hele vertaalbatch laat mislukken.
+// Eerst escapen naar entities, dan pas de <keep>-tags injecteren (in die volgorde, anders
+// escapen we onze eigen tags mee) lost dat op zonder de zichtbare tekst te veranderen.
+function escapeXmlEntities(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function unescapeXmlEntities(text: string): string {
+  return text.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+}
+
 export function wrapAmbiguousWords(text: string): string {
-  return text.replace(PROTECTED_WORD_RE, (match) => `<${DEEPL_IGNORE_TAG}>${match}</${DEEPL_IGNORE_TAG}>`);
+  return escapeXmlEntities(text).replace(
+    PROTECTED_WORD_RE,
+    (match) => `<${DEEPL_IGNORE_TAG}>${match}</${DEEPL_IGNORE_TAG}>`
+  );
 }
 
 export function unwrapAmbiguousWords(text: string): string {
-  return text.replace(new RegExp(`</?${DEEPL_IGNORE_TAG}>`, "g"), "");
+  return unescapeXmlEntities(text.replace(new RegExp(`</?${DEEPL_IGNORE_TAG}>`, "g"), ""));
 }

@@ -6869,3 +6869,649 @@ drop function if exists public.create_project_secure(
 -- Google/Outlook/Apple Calendar zich kunnen abonneren op een read-only feed van alle projecten.
 alter table public.organizations add column if not exists ics_token uuid not null default gen_random_uuid();
 create unique index if not exists organizations_ics_token_key on public.organizations(ics_token);
+
+-- === migrations_client_permissions.sql ===
+
+-- Klantrechten per onderdeel: de producer bepaalt per sectie van het klantenportaal of de klant
+-- niets ziet ("none"), alleen mag meekijken ("view"), of mag meebewerken ("edit" — echte
+-- samenwerking op dat onderdeel). Eén jsonb-kolom op projects i.p.v. losse booleans per sectie,
+-- zodat nieuwe secties later zonder schemawijziging toegevoegd kunnen worden. Geldt voor beide
+-- klant-loginvormen (het lichte Event ID/wachtwoord-project en het gekoppelde client_account),
+-- want dit is een keuze van de producer per project, niet per inlogmethode.
+-- Voer dit één keer uit in de Supabase SQL Editor, ná alle eerdere migraties.
+
+alter table public.projects add column if not exists client_permissions jsonb not null default '{
+  "catering": "view",
+  "guest_catering": "view",
+  "equipment": "view",
+  "comms": "view",
+  "power": "view",
+  "schedule": "view",
+  "artist_riders": "view",
+  "questions": "view",
+  "travel": "view",
+  "speakers": "view",
+  "guests": "view",
+  "contingency": "view"
+}'::jsonb;
+
+-- Fix voor een gat in de bestaande budget-zichtbaarheid: get_shared_project deed tot nu toe
+-- budget_closed = false (dus altijd de VOLLEDIGE begroting incl. inkoopprijs/marge/leverancier)
+-- zodra er geen klantaccount is — d.w.z. voor élk project dat nog via het lichte Event
+-- ID/wachtwoord-mechanisme werkt, ongeacht wat de producer zou willen. Er was voor die
+-- inlogvorm geen toggle om dit dicht te zetten (alleen client_accounts.budget_access, en die
+-- geldt alleen voor het gekoppelde klantaccount-mechanisme). Deze kolom voegt diezelfde
+-- open/closed-keuze toe op projectniveau. Default 'open' = geen gedragswijziging voor
+-- bestaande projecten; de producer kan 'm per project alsnog dichtzetten.
+alter table public.projects add column if not exists budget_access text not null default 'open'
+  check (budget_access in ('closed', 'open'));
+
+-- get_shared_project geeft client_permissions mee zodat share-view.tsx per sectie kan bepalen
+-- of hij verborgen/read-only/bewerkbaar getoond moet worden, én gebruikt nu projects.budget_access
+-- i.p.v. een hardcoded "false" voor de Event ID/wachtwoord-inlogvorm. Overload-val: dit is
+-- dezelfde 2-parameter signatuur als de bestaande functie (migrations_client_accounts.sql), dus
+-- create or replace vervangt hem gewoon — geen drop nodig.
+create or replace function public.get_shared_project(p_token uuid, p_client_account_id uuid default null)
+returns json
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with proj as (
+    select * from public.projects where share_token = p_token
+  ),
+  access as (
+    select case
+      when p_client_account_id is null then (select budget_access = 'closed' from proj)
+      else coalesce(
+        (
+          select ca.budget_access = 'closed'
+          from public.client_accounts ca
+          join public.client_account_projects cap on cap.client_account_id = ca.id
+          where ca.id = p_client_account_id
+            and cap.project_id = (select id from proj)
+        ),
+        true
+      )
+    end as budget_closed
+  ),
+  cat_data as (
+    select
+      c.id,
+      c.stage_id,
+      c.name,
+      c.sort_order,
+      c.status,
+      c.margin_type,
+      c.margin_value,
+      coalesce(chosen.cost_price, c.manual_cost) as cost_price,
+      chosen.supplier_name,
+      case
+        when coalesce(chosen.cost_price, c.manual_cost) is null then null
+        when c.margin_type = 'percentage' then round(coalesce(chosen.cost_price, c.manual_cost) * (1 + c.margin_value / 100), 2)
+        else coalesce(chosen.cost_price, c.manual_cost) + c.margin_value
+      end as client_price,
+      coalesce(chosen.line_items, '[]'::json) as line_items
+    from public.categories c
+    join proj p on p.id = c.project_id
+    left join lateral (
+      select
+        q.cost_price,
+        s.name as supplier_name,
+        (
+          select json_agg(
+            json_build_object(
+              'description', qli.description,
+              'quantity', qli.quantity,
+              'unit_price', qli.unit_price
+            ) order by qli.created_at
+          )
+          from public.quote_line_items qli
+          where qli.quote_id = q.id
+        ) as line_items
+      from public.quotes q
+      join public.suppliers s on s.id = q.supplier_id
+      where q.category_id = c.id and q.status = 'gekozen'
+      limit 1
+    ) chosen on true
+  ),
+  cat_json as (
+    select
+      cd.stage_id,
+      json_build_object(
+        'id', cd.id,
+        'name', cd.name,
+        'sort_order', cd.sort_order,
+        'status', cd.status,
+        'margin_type', case when a.budget_closed then null else cd.margin_type end,
+        'margin_value', case when a.budget_closed then null else cd.margin_value end,
+        'cost_price', case when a.budget_closed then null else cd.cost_price end,
+        'supplier_name', case when a.budget_closed then null else cd.supplier_name end,
+        'client_price', cd.client_price,
+        'line_items', case when a.budget_closed then '[]'::json else cd.line_items end
+      ) as data,
+      cd.sort_order
+    from cat_data cd, access a
+  )
+  select json_build_object(
+    'project', json_build_object(
+      'name', p.name,
+      'client_name', p.client_name,
+      'event_date', p.event_date,
+      'status', p.status,
+      'background_image_url', p.background_image_url,
+      'budget_approval_status', p.budget_approval_status,
+      'budget_approval_comment', p.budget_approval_comment,
+      'organization_name', coalesce(
+        (select o.name from public.organizations o where o.owner_user_id = p.user_id),
+        'The Bridge AV Group'
+      ),
+      'budget_access', case when (select budget_closed from access) then 'closed' else 'open' end,
+      'client_permissions', p.client_permissions,
+      'signature_url', p.signature_url,
+      'signature_signed_by', p.signature_signed_by,
+      'signature_signed_at', p.signature_signed_at,
+      'is_outdoor', p.is_outdoor,
+      'contingency_plan', p.contingency_plan
+    ),
+    'project_wide_categories', coalesce((
+      select json_agg(cj.data order by cj.sort_order)
+      from cat_json cj
+      where cj.stage_id is null
+    ), '[]'::json),
+    'stages', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', s.id,
+          'name', s.name,
+          'categories', coalesce((
+            select json_agg(cj.data order by cj.sort_order)
+            from cat_json cj
+            where cj.stage_id = s.id
+          ), '[]'::json)
+        ) order by s.sort_order
+      )
+      from public.stages s
+      where s.project_id = p.id
+    ), '[]'::json),
+    'media', coalesce((
+      select json_agg(
+        json_build_object('kind', pm.kind, 'url', pm.url, 'caption', pm.caption)
+        order by pm.sort_order
+      )
+      from public.project_media pm
+      where pm.project_id = p.id
+    ), '[]'::json)
+  )
+  from proj p;
+$$;
+
+grant execute on function public.get_shared_project(uuid, uuid) to anon;
+
+-- get_shared_guests: samenvatting van de gastenlijst + tafelindeling voor de klant, zodra
+-- client_permissions.guests dat toestaat (afgedwongen client-side in share-view.tsx, dit is
+-- puur de data-laag). Bewust GEEN email/telefoon/interne notities/badge_token — dat is contact-
+-- en operationele info die de klant niet per-gast hoeft te zien, alleen de RSVP-status en
+-- indeling die voor hen relevant is.
+create or replace function public.get_shared_guests(p_token uuid)
+returns json
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  with proj as (
+    select id from public.projects where share_token = p_token
+  )
+  select json_build_object(
+    'guests', coalesce((
+      select json_agg(
+        json_build_object(
+          'id', eg.id,
+          'name', eg.name,
+          'guest_type', eg.guest_type,
+          'rsvp_status', eg.rsvp_status,
+          'plus_ones', eg.plus_ones,
+          'plus_one_name', eg.plus_one_name,
+          'dietary_notes', eg.dietary_notes,
+          'table_name', st.name
+        ) order by eg.sort_order
+      )
+      from public.event_guests eg
+      left join public.seating_tables st on st.id = eg.table_id
+      where eg.project_id = proj.id
+    ), '[]'::json),
+    'tables', coalesce((
+      select json_agg(
+        json_build_object('id', t.id, 'name', t.name, 'capacity', t.capacity)
+        order by t.sort_order
+      )
+      from public.seating_tables t
+      where t.project_id = proj.id
+    ), '[]'::json)
+  )
+  from proj;
+$$;
+
+grant execute on function public.get_shared_guests(uuid) to anon;
+
+-- === migrations_client_edit_production.sql ===
+
+-- Klant-bewerkbare productie-onderdelen: zodra de producer een sectie op "edit" zet via
+-- client_permissions (zie migrations_client_permissions.sql), mag de klant zelf regels
+-- toevoegen/verwijderen in die sectie — echte samenwerking op materieel, comms, stroom,
+-- draaiboek, catering, artiestenriders en open vragen. Zelfde RPC-patroon als het bestaande
+-- add_client_request/upsert_intake_checklist_answer_by_client: geen "use server"-actions nodig
+-- (geen file-uploads hier), de permissiecheck zit in de functie zelf, aangeroepen met de
+-- anon-key rechtstreeks vanuit share-view.tsx. Voer dit één keer uit in de Supabase SQL Editor,
+-- ná migrations_client_permissions.sql.
+
+create or replace function public.client_can_edit_section(p_project_id uuid, p_section text)
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select coalesce(
+    (select client_permissions ->> p_section from public.projects where id = p_project_id) = 'edit',
+    false
+  );
+$$;
+
+-- === Materieel (equipment_reservations) ===
+
+create or replace function public.add_equipment_by_client(
+  p_token uuid,
+  p_machine_type text,
+  p_quantity int default 1,
+  p_accessories text default '',
+  p_reservation_date date default null,
+  p_duration text default ''
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'equipment') or coalesce(trim(p_machine_type), '') = '' then
+    return null;
+  end if;
+
+  insert into public.equipment_reservations (project_id, machine_type, quantity, accessories, reservation_date, duration)
+  values (v_project_id, p_machine_type, coalesce(p_quantity, 1), coalesce(p_accessories, ''), p_reservation_date, coalesce(p_duration, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'materieel', 'Materieel toegevoegd: ' || p_machine_type);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_equipment_by_client(uuid, text, int, text, date, text) to anon;
+
+create or replace function public.delete_equipment_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'equipment') then
+    return false;
+  end if;
+
+  delete from public.equipment_reservations where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_equipment_by_client(uuid, uuid) to anon;
+
+-- === Comms & portofoons (comms_assignments) ===
+
+create or replace function public.add_comms_by_client(
+  p_token uuid,
+  p_user_name text,
+  p_device_type text default '',
+  p_channels text default '',
+  p_kind text default 'intercom'
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'comms') or coalesce(trim(p_user_name), '') = '' then
+    return null;
+  end if;
+
+  insert into public.comms_assignments (project_id, kind, user_name, device_type, channels)
+  values (v_project_id, coalesce(p_kind, 'intercom'), p_user_name, coalesce(p_device_type, ''), coalesce(p_channels, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'comms', 'Comms toegevoegd: ' || p_user_name);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_comms_by_client(uuid, text, text, text, text) to anon;
+
+create or replace function public.delete_comms_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'comms') then
+    return false;
+  end if;
+
+  delete from public.comms_assignments where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_comms_by_client(uuid, uuid) to anon;
+
+-- === Stroom (power_requests) ===
+
+create or replace function public.add_power_by_client(
+  p_token uuid,
+  p_description text,
+  p_quantity int default 1,
+  p_position text default '',
+  p_notes text default ''
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'power') or coalesce(trim(p_description), '') = '' then
+    return null;
+  end if;
+
+  insert into public.power_requests (project_id, description, quantity, position, notes)
+  values (v_project_id, p_description, coalesce(p_quantity, 1), coalesce(p_position, ''), coalesce(p_notes, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'stroom', 'Stroomaanvraag toegevoegd: ' || p_description);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_power_by_client(uuid, text, int, text, text) to anon;
+
+create or replace function public.delete_power_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'power') then
+    return false;
+  end if;
+
+  delete from public.power_requests where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_power_by_client(uuid, uuid) to anon;
+
+-- === Draaiboek (schedule_items) ===
+
+create or replace function public.add_schedule_item_by_client(
+  p_token uuid,
+  p_activity_date date,
+  p_activity_time time,
+  p_activity text,
+  p_notes text default ''
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'schedule')
+     or p_activity_date is null or p_activity_time is null or coalesce(trim(p_activity), '') = '' then
+    return null;
+  end if;
+
+  insert into public.schedule_items (project_id, activity_date, activity_time, activity, notes)
+  values (v_project_id, p_activity_date, p_activity_time, p_activity, coalesce(p_notes, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'draaiboek', 'Draaiboek-item toegevoegd: ' || p_activity);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_schedule_item_by_client(uuid, date, time, text, text) to anon;
+
+create or replace function public.delete_schedule_item_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'schedule') then
+    return false;
+  end if;
+
+  delete from public.schedule_items where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_schedule_item_by_client(uuid, uuid) to anon;
+
+-- === Catering (catering_orders) ===
+
+create or replace function public.add_catering_by_client(
+  p_token uuid,
+  p_order_date date,
+  p_party text default '',
+  p_crew_lunch int default 0,
+  p_crew_dinner int default 0,
+  p_notes text default ''
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'catering') or p_order_date is null then
+    return null;
+  end if;
+
+  insert into public.catering_orders (project_id, order_date, party, crew_lunch, crew_dinner, notes)
+  values (v_project_id, p_order_date, coalesce(p_party, ''), coalesce(p_crew_lunch, 0), coalesce(p_crew_dinner, 0), coalesce(p_notes, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'catering', 'Catering toegevoegd voor ' || p_order_date::text);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_catering_by_client(uuid, date, text, int, int, text) to anon;
+
+create or replace function public.delete_catering_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'catering') then
+    return false;
+  end if;
+
+  delete from public.catering_orders where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_catering_by_client(uuid, uuid) to anon;
+
+-- === Artiestenriders (artist_riders) ===
+
+create or replace function public.add_artist_rider_by_client(
+  p_token uuid,
+  p_artist_name text,
+  p_notes text default '',
+  p_rider_link text default ''
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'artist_riders') or coalesce(trim(p_artist_name), '') = '' then
+    return null;
+  end if;
+
+  insert into public.artist_riders (project_id, artist_name, notes, rider_link)
+  values (v_project_id, p_artist_name, coalesce(p_notes, ''), coalesce(p_rider_link, ''))
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'artiesten', 'Artiest toegevoegd: ' || p_artist_name);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_artist_rider_by_client(uuid, text, text, text) to anon;
+
+create or replace function public.delete_artist_rider_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'artist_riders') then
+    return false;
+  end if;
+
+  delete from public.artist_riders where id = p_id and project_id = v_project_id;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_artist_rider_by_client(uuid, uuid) to anon;
+
+-- === Open vragen (open_questions) ===
+
+create or replace function public.add_open_question_by_client(p_token uuid, p_question text)
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+  v_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'questions') or coalesce(trim(p_question), '') = '' then
+    return null;
+  end if;
+
+  insert into public.open_questions (project_id, question)
+  values (v_project_id, p_question)
+  returning id into v_id;
+
+  insert into public.activity_log (project_id, actor_type, actor_label, category, description)
+  values (v_project_id, 'client', 'Klant', 'vragen', 'Vraag gesteld: ' || p_question);
+
+  return v_id;
+end;
+$$;
+
+grant execute on function public.add_open_question_by_client(uuid, text) to anon;
+
+create or replace function public.delete_open_question_by_client(p_token uuid, p_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_project_id uuid;
+begin
+  select id into v_project_id from public.projects where share_token = p_token;
+  -- Alleen de eigen (nog niet beantwoorde) vraag verwijderen, niet producer-content overschrijven.
+  if v_project_id is null or not public.client_can_edit_section(v_project_id, 'questions') then
+    return false;
+  end if;
+
+  delete from public.open_questions where id = p_id and project_id = v_project_id and pending = true;
+  return found;
+end;
+$$;
+
+grant execute on function public.delete_open_question_by_client(uuid, uuid) to anon;

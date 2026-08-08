@@ -1,3 +1,5 @@
+import type { ClientPermissions } from "./client-permissions";
+
 export type MarginType = "percentage" | "fixed";
 
 export type CategoryStatus =
@@ -418,6 +420,8 @@ export interface Project {
   ai_client_update_generated_at: string | null;
   event_type: EventType;
   pre_production_weeks: number | null;
+  client_permissions: ClientPermissions;
+  budget_access: "closed" | "open";
   created_at: string;
 }
 
@@ -1308,6 +1312,28 @@ export interface SharedParkingPass {
   title: string;
 }
 
+export interface SharedGuestSummary {
+  id: string;
+  name: string;
+  guest_type: string;
+  rsvp_status: string;
+  plus_ones: number;
+  plus_one_name: string;
+  dietary_notes: string;
+  table_name: string | null;
+}
+
+export interface SharedSeatingTable {
+  id: string;
+  name: string;
+  capacity: number;
+}
+
+export interface SharedGuests {
+  guests: SharedGuestSummary[];
+  tables: SharedSeatingTable[];
+}
+
 export interface SharedRundowns {
   project: { name: string; event_date: string | null };
   scopes: SharedRundownScope[];
@@ -1413,9 +1439,12 @@ export interface SharedProject {
     budget_approval_comment: string | null;
     organization_name: string;
     budget_access: BudgetAccess;
+    client_permissions: ClientPermissions;
     signature_url: string | null;
     signature_signed_by: string | null;
     signature_signed_at: string | null;
+    is_outdoor: boolean;
+    contingency_plan: string;
   };
   project_wide_categories: SharedCategory[];
   stages: SharedStage[];
