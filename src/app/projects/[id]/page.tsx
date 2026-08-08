@@ -157,6 +157,7 @@ const STATIC_LABELS = [
   "Nieuw wachtwoord",
   "Wachtwoord instellen",
   "Nog geen wachtwoord ingesteld — de klant kan nog niet inloggen.",
+  "Terugkerende klant? Geef ze in plaats daarvan één vaste login voor al hun projecten via",
   "Directe link (voor jezelf)",
   "Kopieer link",
   "Gekopieerd",
@@ -883,6 +884,13 @@ export default async function ProjectPage({
                   {t("Nog geen wachtwoord ingesteld — de klant kan nog niet inloggen.")}
                 </p>
               )}
+              <p className="text-xs text-muted-foreground">
+                {t("Terugkerende klant? Geef ze in plaats daarvan één vaste login voor al hun projecten via")}{" "}
+                <Link href="/clients" className="underline">
+                  /clients
+                </Link>
+                .
+              </p>
               <details className="text-sm text-muted-foreground">
                 <summary className="cursor-pointer">{t("Directe link (voor jezelf)")}</summary>
                 <div className="mt-2">
