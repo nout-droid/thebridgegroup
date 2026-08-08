@@ -35,6 +35,8 @@ export const CREW_CARD_LABELS = [
   "Bv. FOH, monitoren, rigging",
   "Tarief gekoppeld in Planning",
   "Beheer tarieven in Planning",
+  "Dag toevoegen",
+  "Geen dagen ingesteld = toegang alle dagen.",
 ];
 
 const identity: Translator = (text) => text;
@@ -50,6 +52,10 @@ export function CrewCard({
   suppliers: Supplier[];
   t?: Translator;
 }) {
+  const accessDatesLabels = {
+    addDay: t("Dag toevoegen"),
+    noDaysHint: t("Geen dagen ingesteld = toegang alle dagen."),
+  };
   return (
     <Card>
       <CardHeader>
@@ -184,7 +190,7 @@ export function CrewCard({
             </div>
             <div className="space-y-1 sm:col-span-3">
               <Label className="text-xs">{t("Toegangsdagen")}</Label>
-              <AccessDatesInput defaultValues={member.access_dates} />
+              <AccessDatesInput defaultValues={member.access_dates} labels={accessDatesLabels} />
             </div>
             <div className="space-y-1 sm:col-span-3">
               <Label htmlFor={`skills-${member.id}`} className="text-xs">{t("Skills (komma-gescheiden)")}</Label>
@@ -271,7 +277,7 @@ export function CrewCard({
           </div>
           <div className="space-y-1 sm:col-span-3">
             <Label className="text-xs">{t("Toegangsdagen")}</Label>
-            <AccessDatesInput />
+            <AccessDatesInput labels={accessDatesLabels} />
           </div>
           <div className="space-y-1 sm:col-span-3">
             <Label htmlFor="new-skills" className="text-xs">{t("Skills (komma-gescheiden)")}</Label>

@@ -58,6 +58,7 @@ export default async function ProductionCommsPage({
     supplier: t("Leverancier"),
     allSuppliers: t("Alle leveranciers"),
     searchUser: t("Zoek op gebruiker"),
+    searchUserPlaceholder: t("bv. Jan"),
     downloadPdf: t("Comms & portofoons downloaden (PDF)"),
     user: t("Gebruiker"),
     save: t("Opslaan"),

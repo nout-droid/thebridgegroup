@@ -13,12 +13,24 @@ function formatDate(date: string) {
   });
 }
 
+export interface AccessDatesInputLabels {
+  addDay: string;
+  noDaysHint: string;
+}
+
+const DEFAULT_LABELS: AccessDatesInputLabels = {
+  addDay: "Dag toevoegen",
+  noDaysHint: "Geen dagen ingesteld = toegang alle dagen.",
+};
+
 export function AccessDatesInput({
   name = "access_dates",
   defaultValues = [],
+  labels = DEFAULT_LABELS,
 }: {
   name?: string;
   defaultValues?: string[];
+  labels?: AccessDatesInputLabels;
 }) {
   const [dates, setDates] = useState<string[]>([...defaultValues].sort());
   const [draft, setDraft] = useState("");
@@ -60,11 +72,11 @@ export function AccessDatesInput({
           className="h-8 text-xs"
         />
         <Button type="button" size="sm" variant="outline" className="h-8 shrink-0 text-xs" onClick={addDate}>
-          Dag toevoegen
+          {labels.addDay}
         </Button>
       </div>
       {dates.length === 0 && (
-        <p className="text-xs text-muted-foreground">Geen dagen ingesteld = toegang alle dagen.</p>
+        <p className="text-xs text-muted-foreground">{labels.noDaysHint}</p>
       )}
     </div>
   );

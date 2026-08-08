@@ -27,6 +27,7 @@ export interface EquipmentCardLabels {
   search: string;
   searchPlaceholder: string;
   downloadPdf: string;
+  machineTypePlaceholder: string;
   machineType: string;
   quantity: string;
   accessories: string;
@@ -273,7 +274,7 @@ export function EquipmentCard({
         >
           <div className="space-y-1">
             <Label htmlFor="new-type" className="text-xs">{labels.machineType}</Label>
-            <Input id="new-type" name="machine_type" placeholder="bv. Manitou" className="h-8 text-xs" required />
+            <Input id="new-type" name="machine_type" placeholder={labels.machineTypePlaceholder} className="h-8 text-xs" required />
           </div>
           <div className="space-y-1">
             <Label htmlFor="new-stage" className="text-xs">{labels.area}</Label>
