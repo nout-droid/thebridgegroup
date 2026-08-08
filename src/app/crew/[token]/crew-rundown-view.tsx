@@ -19,6 +19,7 @@ import type { SharedRundowns } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
 import { pickDefaultShowDate } from "@/lib/show-dates";
 import { DIVISIONS } from "@/lib/divisions";
+import { RundownTimeline } from "@/components/rundown-timeline";
 import { RundownChat } from "@/components/rundown-chat";
 import { WeatherStrip } from "@/components/weather-strip";
 import { Footer } from "@/components/footer";
@@ -38,6 +39,7 @@ const STATIC_LABELS = [
   "Lettergrootte",
   "Show rundown",
   "Open klok",
+  "Tijdlijn van de show — de witte lijn toont live waar je nu staat.",
   "LIVE",
   "Totaal opgelopen: +",
   "Nog geen cues voor deze rundown.",
@@ -383,6 +385,16 @@ export function CrewRundownView({
           <CardContent className="space-y-2" style={{ zoom: FONT_SCALES[fontScale] }}>
             {!rows.length && (
               <p className="text-sm text-white/60">{t("Nog geen cues voor deze rundown.")}</p>
+            )}
+            {rows.length > 0 && rundown && (
+              <RundownTimeline
+                items={rundown.items}
+                currentItemId={rundown.current_item_id}
+                currentItemStartedAt={rundown.current_item_started_at}
+                isLive={rundown.is_live}
+                now={Date.now()}
+                labels={{ legend: t("Tijdlijn van de show — de witte lijn toont live waar je nu staat.") }}
+              />
             )}
             {rows.map(({ item, start, end }) => {
               const isCurrent = item.id === rundown?.current_item_id;

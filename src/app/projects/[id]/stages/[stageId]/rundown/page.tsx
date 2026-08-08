@@ -85,6 +85,7 @@ export default async function StageRundownPage({
     newNamePlaceholder: t("bv. Opening VJ set"),
     newDurationPlaceholder: t("bv. 3:00"),
     addCue: t("Cue toevoegen"),
+    timelineLegend: t("Tijdlijn van de show — de witte lijn toont live waar je nu staat."),
     colorLabels: {
       none: t("Geen"),
       red: t("Rood"),

@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
+import { RundownTimeline } from "@/components/rundown-timeline";
 import type { Rundown, RundownItem } from "@/lib/types";
 import { addSecondsToTime, calcTotalOvertimeSeconds, formatDuration } from "@/lib/rundown-time";
 import {
@@ -85,6 +86,7 @@ export interface RundownLiveLabels {
   addCue: string;
   colorLabels: Record<string, string>;
   divisionLabels: Record<string, string>;
+  timelineLegend: string;
 }
 
 function ColorSelect({
@@ -312,6 +314,15 @@ export function RundownLive({
             {labels.save}
           </SubmitButton>
         </form>
+
+        <RundownTimeline
+          items={items}
+          currentItemId={rundown.current_item_id}
+          currentItemStartedAt={rundown.current_item_started_at}
+          isLive={rundown.is_live}
+          now={now ?? Date.now()}
+          labels={{ legend: labels.timelineLegend }}
+        />
 
         {rows.map(({ item, start, end }) => {
           const isCurrent = item.id === rundown.current_item_id;

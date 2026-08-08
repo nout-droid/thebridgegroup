@@ -286,6 +286,7 @@ export const RUNDOWN_LIVE_LABELS = [
   "bv. Opening VJ set",
   "bv. 3:00",
   "Cue toevoegen",
+  "Tijdlijn van de show — de witte lijn toont live waar je nu staat.",
   "Geen",
   "Rood",
   "Oranje",

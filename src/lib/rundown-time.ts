@@ -82,3 +82,45 @@ export function calcTotalOvertimeSeconds({
 
   return priorDelaySeconds + currentOverrunSeconds;
 }
+
+// Kleurnamen (zelfde set als de cue-kleur-select) naar een achtergrondklasse
+// voor de tijdlijnbalk — los van COLOR_BORDER_CLASSES in rundown-live.tsx/
+// showcaller-view.tsx, die is voor de linkerrand van een cue-rij.
+export const RUNDOWN_COLOR_BG_CLASSES: Record<string, string> = {
+  red: "bg-red-500",
+  orange: "bg-orange-500",
+  yellow: "bg-yellow-500",
+  green: "bg-green-500",
+  blue: "bg-blue-500",
+  purple: "bg-purple-500",
+};
+
+// Positie van de "nu"-marker op de tijdlijnbalk, als percentage (0-100) van de
+// totale geplande showduur: cumulatieve duur van alle cues vóór de huidige,
+// plus verstreken tijd in de huidige cue. Bewust los van calcTotalOvertimeSeconds
+// (die telt vertraging t.o.v. het schema) — dit is puur "waar sta ik in de lijst".
+export function calcTimelinePositionPercent({
+  items,
+  currentItemId,
+  currentItemStartedAt,
+  now,
+}: {
+  items: { id: string; duration_seconds: number }[];
+  currentItemId: string | null;
+  currentItemStartedAt: string | null;
+  now: number;
+}): number | null {
+  if (!currentItemId || !currentItemStartedAt) return null;
+
+  const idx = items.findIndex((i) => i.id === currentItemId);
+  if (idx === -1) return null;
+
+  const totalSeconds = items.reduce((sum, i) => sum + i.duration_seconds, 0);
+  if (totalSeconds <= 0) return null;
+
+  const cumBeforeSeconds = items.slice(0, idx).reduce((sum, i) => sum + i.duration_seconds, 0);
+  const elapsedInCurrentSeconds = (now - new Date(currentItemStartedAt).getTime()) / 1000;
+
+  const positionSeconds = cumBeforeSeconds + Math.max(0, elapsedInCurrentSeconds);
+  return Math.min(100, Math.max(0, (positionSeconds / totalSeconds) * 100));
+}

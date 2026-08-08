@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { DivisionSelect } from "@/components/division-select";
+import { RundownTimeline } from "@/components/rundown-timeline";
 import { DIVISIONS } from "@/lib/divisions";
 import { RundownChat } from "@/components/rundown-chat";
 import { WeatherStrip } from "@/components/weather-strip";
@@ -97,6 +98,7 @@ const STATIC_LABELS = [
   "bv. Opening VJ set",
   "bv. 3:00",
   "Cue toevoegen",
+  "Tijdlijn van de show — de witte lijn toont live waar je nu staat.",
   "Notes van crew",
   "Nog geen notes.",
   "Sprekers",
@@ -398,6 +400,15 @@ export function ShowcallerView({
                 {t("Opslaan")}
               </SubmitButton>
             </form>
+
+            <RundownTimeline
+              items={rundown.items}
+              currentItemId={rundown.current_item_id}
+              currentItemStartedAt={rundown.current_item_started_at}
+              isLive={rundown.is_live}
+              now={Date.now()}
+              labels={{ legend: t("Tijdlijn van de show — de witte lijn toont live waar je nu staat.") }}
+            />
 
             {rows.map(({ item, start, end }) => {
               const isCurrent = item.id === rundown.current_item_id;
