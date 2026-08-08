@@ -3,6 +3,7 @@ import { signOut } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { AppLangToggle } from "@/components/app-lang-toggle";
 import { MobileNavToggle, type MobileNavLink } from "@/components/mobile-nav-toggle";
+import { GlobalSearch, type GlobalSearchLabels } from "@/components/global-search";
 import { createClient } from "@/lib/supabase/server";
 import { computeCo2Total } from "@/lib/co2";
 import { getAppLang } from "@/lib/server/lang";
@@ -56,7 +57,30 @@ export async function Nav() {
     "Team",
     "Backoffice",
     "Uitloggen",
+    "Zoeken",
+    "Zoek in projecten, leveranciers, crew, locaties en sales...",
+    "Zoek in projecten, leveranciers, crew, locaties en sales-leads.",
+    "Typ minimaal 2 tekens om te zoeken.",
+    "Geen resultaten gevonden.",
+    "Projecten",
+    "Locaties",
   ]);
+
+  const searchLabels: GlobalSearchLabels = {
+    title: t("Zoeken"),
+    description: t("Zoek in projecten, leveranciers, crew, locaties en sales-leads."),
+    placeholder: t("Zoek in projecten, leveranciers, crew, locaties en sales..."),
+    noResults: t("Geen resultaten gevonden."),
+    typeToSearch: t("Typ minimaal 2 tekens om te zoeken."),
+    triggerLabel: t("Zoeken"),
+    typeLabels: {
+      project: t("Projecten"),
+      supplier: t("Leveranciers"),
+      freelancer: t("Freelancers"),
+      venue: t("Locaties"),
+      lead: t("Sales"),
+    },
+  };
 
   const co2Badge = (
     <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[11px] normal-case tracking-normal text-primary">
@@ -103,6 +127,7 @@ export async function Nav() {
           >
             {co2Badge}
           </Link>
+          <GlobalSearch labels={searchLabels} />
           <AppLangToggle lang={lang} dark />
           <form action={signOut}>
             <Button
