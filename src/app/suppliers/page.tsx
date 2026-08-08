@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,8 @@ import {
 } from "./actions";
 import { getAppLang } from "@/lib/server/lang";
 import { createTranslator } from "@/lib/server/translate";
+import { getTeamOwnerId } from "@/lib/server/team";
+import { getSupplierScorecards } from "@/lib/server/supplier-scorecard";
 
 const SUPPLIERS_PAGE_LABELS = [
   "Leveranciers",
@@ -51,6 +54,12 @@ const SUPPLIERS_PAGE_LABELS = [
   "Code",
   "Wachtwoord",
   "Verwijderen",
+  "Score",
+  "Score = beoordeling + prijs t.o.v. categoriegemiddelde + aantal gekozen offertes.",
+  "goedkoper dan gemiddeld",
+  "duurder dan gemiddeld",
+  "gekozen offertes",
+  "Nog niet genoeg data",
 ];
 
 export default async function SuppliersPage({
@@ -111,6 +120,15 @@ export default async function SuppliersPage({
       });
     }
   }
+
+  // Scorecard combineert rating + prijsconcurrentie + ervaring tot één getal (0-100) — geeft in
+  // één oogopslag aan welke leverancier structureel goed presteert, i.p.v. los per project.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const scorecards = user
+    ? await getSupplierScorecards(supabase, await getTeamOwnerId(supabase, user.id), avgRatings)
+    : new Map();
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -175,6 +193,9 @@ export default async function SuppliersPage({
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("Naam")}</TableHead>
+                    <TableHead title={t("Score = beoordeling + prijs t.o.v. categoriegemiddelde + aantal gekozen offertes.")}>
+                      {t("Score")}
+                    </TableHead>
                     <TableHead>{t("Specialismen")}</TableHead>
                     <TableHead>{t("Contact")}</TableHead>
                     <TableHead>{t("Korting")}</TableHead>
@@ -186,6 +207,7 @@ export default async function SuppliersPage({
                 <TableBody>
                   {suppliers.map((supplier) => {
                     const rating = avgRatings.get(supplier.id);
+                    const scorecard = scorecards.get(supplier.id);
                     return (
                     <TableRow key={supplier.id}>
                       <TableCell className="font-medium">
@@ -194,6 +216,28 @@ export default async function SuppliersPage({
                           <span className="ml-2 whitespace-nowrap text-xs font-normal text-muted-foreground">
                             ★ {rating.avg.toFixed(1)} ({rating.count})
                           </span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {!scorecard || (scorecard.ratingScore == null && scorecard.priceScore == null && scorecard.quoteCount === 0) ? (
+                          <span className="text-xs text-muted-foreground">{t("Nog niet genoeg data")}</span>
+                        ) : (
+                          <div
+                            className="flex flex-col gap-0.5"
+                            title={
+                              scorecard.avgPriceDeviationPct != null
+                                ? `${Math.abs(Math.round(scorecard.avgPriceDeviationPct))}% ${
+                                    scorecard.avgPriceDeviationPct < 0 ? t("goedkoper dan gemiddeld") : t("duurder dan gemiddeld")
+                                  } · ${scorecard.quoteCount} ${t("gekozen offertes")}`
+                                : `${scorecard.quoteCount} ${t("gekozen offertes")}`
+                            }
+                          >
+                            <Badge
+                              variant={scorecard.score >= 70 ? "default" : scorecard.score >= 40 ? "secondary" : "outline"}
+                            >
+                              {scorecard.score}
+                            </Badge>
+                          </div>
                         )}
                       </TableCell>
                       <TableCell>{supplier.specialties}</TableCell>
