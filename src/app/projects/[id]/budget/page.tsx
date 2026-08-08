@@ -347,7 +347,7 @@ export default async function ProjectBudgetPage({
   const quotePdfImportLabels: QuotePdfImportLabels = {
     title: t("Offerte-PDF importeren"),
     description: t(
-      "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt."
+      "Upload een offerte-PDF van een leverancier. Regels worden gekoppeld aan een categorie op basis van eerdere matches en de catalogus — controleer en corrigeer voordat je overneemt. Herkent de leverancier eigen kopregels per podium of discipline, dan worden regels daaronder automatisch aan het juiste podium gekoppeld."
     ),
     supplier: t("Leverancier"),
     chooseSupplier: t("Kies leverancier"),
